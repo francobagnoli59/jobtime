@@ -32,6 +32,11 @@ class RegoleFatturazione
      */
     private $createdAt;
 
+    public function __toString(): string
+    {
+            return (string) $this->getBillingCadence();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -72,4 +77,15 @@ class RegoleFatturazione
 
         return $this;
     }
+
+    /**
+    *    @ORM\PrePersist
+    *    @ORM\PreUpdate
+    */
+
+    public function setCreatedAtValue()
+    {
+         $this->createdAt = new \DateTime();
+    }
+
 }

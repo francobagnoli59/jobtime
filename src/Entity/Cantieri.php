@@ -116,6 +116,11 @@ class Cantieri
         $this->commentiPubblici = new ArrayCollection();
     }
 
+    public function __toString(): string
+    {
+            return $this->nameJob.' '.$this->city;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -302,6 +307,17 @@ class Cantieri
 
         return $this;
     }
+
+    /**
+    *    @ORM\PrePersist
+    *    @ORM\PreUpdate
+    */
+
+    public function setCreatedAtValue()
+    {
+         $this->createdAt = new \DateTime();
+    }
+
 
     /**
      * @return Collection|CommentiPubblici[]

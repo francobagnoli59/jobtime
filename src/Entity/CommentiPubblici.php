@@ -53,7 +53,12 @@ class CommentiPubblici
      */
     private $cantieri;
 
-   
+    public function __toString(): string
+    {
+            return (string) $this->getEmail();
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -129,6 +134,16 @@ class CommentiPubblici
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    /**
+    *    @ORM\PrePersist
+    *    @ORM\PreUpdate
+    */
+
+    public function setCreatedAtValue()
+    {
+         $this->createdAt = new \DateTime();
     }
 
     public function getCantieri(): ?Cantieri
