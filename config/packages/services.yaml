@@ -1,0 +1,9 @@
+parameters:
+    app.path.personale_images: /uploads/photos
+    app.path.prodotti_images: /uploads/images
+         # ...
+
+# services:
+    # _defaults:
+    #   bind:
+    #       $photoDir: "%kernel.project_dir%/public/uploads/photos"  

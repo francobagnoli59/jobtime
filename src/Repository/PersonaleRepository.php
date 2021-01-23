@@ -2,35 +2,25 @@
 
 namespace App\Repository;
 
-use App\Entity\Province;
+use App\Entity\Personale;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method Province|null find($id, $lockMode = null, $lockVersion = null)
- * @method Province|null findOneBy(array $criteria, array $orderBy = null)
- * @method Province[]    findAll()
- * @method Province[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Personale|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Personale|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Personale[]    findAll()
+ * @method Personale[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ProvinceRepository extends ServiceEntityRepository
+class PersonaleRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Province::class);
-    }
-
-    public function findAll()
-    {
-        return $this->createQueryBuilder('p')
-            ->orderBy('p.name', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        parent::__construct($registry, Personale::class);
     }
 
     // /**
-    //  * @return Province[] Returns an array of Province objects
+    //  * @return Personale[] Returns an array of Personale objects
     //  */
     /*
     public function findByExampleField($value)
@@ -47,7 +37,7 @@ class ProvinceRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?Province
+    public function findOneBySomeField($value): ?Personale
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.exampleField = :val')

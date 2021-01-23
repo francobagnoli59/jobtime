@@ -4,10 +4,14 @@ namespace App\Entity;
 
 use App\Repository\RegoleFatturazioneRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=RegoleFatturazioneRepository::class)
- */
+ * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("billingCadence")
+*/
 class RegoleFatturazione
 {
     /**
@@ -18,17 +22,19 @@ class RegoleFatturazione
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=20, unique=true)
      */
     private $billingCadence;
 
     /**
      * @ORM\Column(type="smallint")
+     * @Assert\GreaterThanOrEqual(value = 0)
+     * @Assert\LessThanOrEqual(value = 360)
      */
     private $daysRange;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
 
@@ -49,7 +55,7 @@ class RegoleFatturazione
 
     public function setBillingCadence(string $billingCadence): self
     {
-        $this->billingCadence = $billingCadence;
+        $this->billingCadence = strtoupper($billingCadence);
 
         return $this;
     }

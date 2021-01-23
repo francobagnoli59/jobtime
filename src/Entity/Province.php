@@ -4,10 +4,16 @@ namespace App\Entity;
 
 use App\Repository\ProvinceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=ProvinceRepository::class)
+ * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("code")
+ * @Assert\Callback({"App\Validator\ProvinceValidator", "validate"})  
  */
+
 class Province
 {
     /**
@@ -18,19 +24,35 @@ class Province
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=2)
+     * @ORM\Column(type="string", length=2, unique=true)
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 2,
+     *  )
      */
     private $code;
 
     /**
      * @ORM\Column(type="string", length=40)
+     * @Assert\Length(
+     *      min = 4,
+     *      max = 40,
+     *  )
      */
     private $name;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
+
+    public function getIsNotTba(): ?bool
+    {
+        $isNotTba = false;
+        $isNotTba = 'XX' != $this->getCode();
+        return (bool) $isNotTba;
+    }
+
 
     public function __toString(): string
     {
@@ -49,7 +71,7 @@ class Province
 
     public function setCode(string $code): self
     {
-        $this->code = $code;
+        $this->code = strtoupper($code);
 
         return $this;
     }
@@ -87,5 +109,6 @@ class Province
     {
          $this->createdAt = new \DateTime();
     }
+
 
 }

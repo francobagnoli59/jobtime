@@ -6,8 +6,9 @@ use App\Repository\CommentiPubbliciRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=CommentiPubbliciRepository::class)
- */
+* @ORM\Entity(repositoryClass=CommentiPubbliciRepository::class)
+* @ORM\HasLifecycleCallbacks()
+*/
 class CommentiPubblici
 {
     /**
@@ -43,7 +44,7 @@ class CommentiPubblici
     private $state = 'submitted';
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
 

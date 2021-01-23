@@ -1,0 +1,10 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+
+{% if field.value  is null or field.value == '' %}
+   <a>nessuna mappa</a>
+{% endif %}
+{% if field.value  is not null and field.value != '' %}
+<a href="{{ field.value }}" target = '_blank'>Vedi google maps</a>
+{% endif %}

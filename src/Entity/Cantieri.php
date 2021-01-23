@@ -6,9 +6,15 @@ use App\Repository\CantieriRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\Constraints as MasotechAssert;
 
 /**
  * @ORM\Entity(repositoryClass=CantieriRepository::class)
+ * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("nameJob")
+ * @Assert\Callback({"App\Validator\CantieriValidator", "validate"}) 
  */
 class Cantieri
 {
@@ -20,12 +26,16 @@ class Cantieri
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $nameJob;
 
     /**
      * @ORM\Column(type="string", length=60)
+     * @Assert\Length(
+     *      min = 4,
+     *      max = 60,
+     *  )
      */
     private $city;
 
@@ -41,6 +51,7 @@ class Cantieri
 
     /**
      * @ORM\Column(type="date")
+     * @Assert\GreaterThanOrEqual(propertyPath="dateStartJob")
      */
     private $dateEndJob;
 
@@ -49,23 +60,21 @@ class Cantieri
      */
     private $descriptionJob;
 
-    /**
-     * @ORM\Column(type="string", length=50, nullable=true)
-     */
-    private $maps;
-
-    /**
+     /**
      * @ORM\Column(type="smallint")
+     * @MasotechAssert\SmallIntRequirements()
      */
     private $distance;
 
     /**
-     * @ORM\Column(type="decimal", precision=5, scale=2)
+     * @ORM\Column(type="decimal", precision=7, scale=2)
+     * @MasotechAssert\Decimal7_2Requirements()
      */
     private $hourlyRate;
 
     /**
      * @ORM\Column(type="decimal", precision=10, scale=2)
+     * @MasotechAssert\Decimal10_2Requirements()
      */
     private $flatRate;
 
@@ -76,6 +85,7 @@ class Cantieri
 
     /**
      * @ORM\Column(type="smallint")
+     * @MasotechAssert\SmallIntRequirements()
      */
     private $planningHours;
 
@@ -86,11 +96,53 @@ class Cantieri
 
     /**
      * @ORM\Column(type="decimal", precision=10, scale=2)
+     * @MasotechAssert\Decimal10_2Requirements()
      */
     private $planningCostMaterial;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="string", length=512, nullable=true)
+     */
+    private $mapsGoogle;
+
+    /**
+     * @ORM\Column(type="string", length=1, nullable=true, options={"default": "N"})
+     * @Assert\Choice({"N", "C", "E", "O"})
+     */
+    private $typeOrderPA;
+
+    /**
+     * @ORM\Column(type="string", length=20, nullable=true)
+     * @Assert\Length(
+     *      max = 20,
+     *  )
+     */
+    private $numDocumento;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $dateDocumento;
+
+    /**
+     * @ORM\Column(type="string", length=15, nullable=true)
+     * @Assert\Length(
+     *      max = 15,
+     * )
+     */
+    private $codiceCIG;
+
+    /**
+     * @ORM\Column(type="string", length=15, nullable=true)
+     * @Assert\Length(
+     *      max = 15,
+     * )
+     */
+    private $codiceCUP;
+
+    
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
 
@@ -100,25 +152,39 @@ class Cantieri
     private $commentiPubblici;
 
     /**
-     * @ORM\OneToOne(targetEntity=Province::class, cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity=Province::class)
      * @ORM\JoinColumn(nullable=false)
      */
     private $provincia;
 
     /**
-     * @ORM\OneToOne(targetEntity=RegoleFatturazione::class, cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity=RegoleFatturazione::class)
      * @ORM\JoinColumn(nullable=false)
      */
     private $regolaFatturazione;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Personale::class, mappedBy="cantiere")
+     */
+    private $personale;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Aziende::class, inversedBy="cantieri")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $azienda;
+
+   
     public function __construct()
     {
         $this->commentiPubblici = new ArrayCollection();
+        $this->personale = new ArrayCollection();
+
     }
 
     public function __toString(): string
     {
-            return $this->nameJob.' '.$this->city;
+            return $this->nameJob.' - '.$this->city;
     }
 
     public function getId(): ?int
@@ -163,6 +229,16 @@ class Cantieri
         return $this;
     }
 
+    public function getIsNotPA($typeOrder): ?bool
+    {
+        $isNotPA = false;
+      //  $isNotPA = 'N' === $this->getTypeOrderPA();
+        if ($typeOrder === 'N') {
+            $isNotPA = true;
+        } 
+        return (bool) $isNotPA;
+    }
+
     public function getDateStartJob(): ?\DateTimeInterface
     {
         return $this->dateStartJob;
@@ -195,18 +271,6 @@ class Cantieri
     public function setDescriptionJob(?string $descriptionJob): self
     {
         $this->descriptionJob = $descriptionJob;
-
-        return $this;
-    }
-
-    public function getMaps(): ?string
-    {
-        return $this->maps;
-    }
-
-    public function setMaps(?string $maps): self
-    {
-        $this->maps = $maps;
 
         return $this;
     }
@@ -349,6 +413,7 @@ class Cantieri
         return $this;
     }
 
+  
     public function getProvincia(): ?Province
     {
         return $this->provincia;
@@ -369,6 +434,120 @@ class Cantieri
     public function setRegolaFatturazione(RegoleFatturazione $regolaFatturazione): self
     {
         $this->regolaFatturazione = $regolaFatturazione;
+
+        return $this;
+    }
+
+    public function getMapsGoogle(): ?string
+    {
+        return $this->mapsGoogle;
+    }
+
+    public function setMapsGoogle(?string $mapsGoogle): self
+    {
+        $this->mapsGoogle = $mapsGoogle;
+
+        return $this;
+    }
+
+    public function getNumDocumento(): ?string
+    {
+        return $this->numDocumento;
+    }
+
+    public function setNumDocumento(?string $numDocumento): self
+    {
+        $this->numDocumento = $numDocumento;
+
+        return $this;
+    }
+
+    public function getDateDocumento(): ?\DateTimeInterface
+    {
+        return $this->dateDocumento;
+    }
+
+    public function setDateDocumento(?\DateTimeInterface $dateDocumento): self
+    {
+        $this->dateDocumento = $dateDocumento;
+
+        return $this;
+    }
+
+    public function getCodiceCIG(): ?string
+    {
+        return $this->codiceCIG;
+    }
+
+    public function setCodiceCIG(?string $codiceCIG): self
+    {
+        $this->codiceCIG = $codiceCIG;
+
+        return $this;
+    }
+
+    public function getCodiceCUP(): ?string
+    {
+        return $this->codiceCUP;
+    }
+
+    public function setCodiceCUP(?string $codiceCUP): self
+    {
+        $this->codiceCUP = $codiceCUP;
+
+        return $this;
+    }
+
+    public function getTypeOrderPA(): ?string
+    {
+        return $this->typeOrderPA;
+    }
+
+    public function setTypeOrderPA(?string $typeOrderPA): self
+    {
+        $this->typeOrderPA = $typeOrderPA;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Personale[]
+     */
+    public function getPersonale(): Collection
+    {
+        return $this->personale;
+    }
+
+    public function addPersonale(Personale $personale): self
+    {
+        if (!$this->personale->contains($personale)) {
+            $this->personale[] = $personale;
+            $personale->setCantiere($this);
+        }
+
+        return $this;
+    }
+
+    public function removePersonale(Personale $personale): self
+    {
+        if ($this->personale->removeElement($personale)) {
+            // set the owning side to null (unless already changed)
+            if ($personale->getCantiere() === $this) {
+                $personale->setCantiere(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAzienda(): ?Aziende
+    {
+        return $this->azienda;
+    }
+
+    public function setAzienda(?Aziende $azienda): self
+    {
+        $this->azienda = $azienda;
 
         return $this;
     }
