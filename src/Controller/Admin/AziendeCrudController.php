@@ -3,8 +3,10 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Aziende;
+use App\Entity\Province;
 use App\Repository\ProvinceRepository;
-
+use App\EventSubscriber\Dashboard\DashboardExceptionSubscriber;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -18,11 +20,24 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class AziendeCrudController extends AbstractCrudController
 {
+    
     public static function getEntityFqcn(): string
     {
         return Aziende::class;
     }
 
+    protected EntityManagerInterface $entityManager;
+    public function __construct(EntityManagerInterface $entityManager) {
+        $this->entityManager = $entityManager;
+    }
+   
+
+    public function createEntity(string $entityFqcn)
+    {
+        $azienda = new Aziende();
+        $azienda->setProvincia($this->entityManager->getRepository(Province::class)->findOneBy(['code'=>'PI']));
+        return $azienda;
+    }
     public function configureCrud(Crud $crud): Crud
     {
     

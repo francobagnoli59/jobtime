@@ -2,18 +2,20 @@
 
 namespace App\Entity;
 
-use App\Repository\AziendeRepository;
+use App\Repository\ClientiRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass=AziendeRepository::class)
+ * @ORM\Entity(repositoryClass=ClientiRepository::class)
  * @ORM\HasLifecycleCallbacks()
- * @Assert\Callback({"App\Validator\AziendeValidator", "validate"}) 
+ * @UniqueEntity("name") 
+ * @Assert\Callback({"App\Validator\ClientiValidator", "validate"})  
  */
-class Aziende
+class Clienti
 {
     /**
      * @ORM\Id
@@ -24,81 +26,106 @@ class Aziende
 
     /**
      * @ORM\Column(type="string", length=80)
-     * @Assert\Length( max=80  )
+     * @Assert\Length( max=80 )
      */
-    private $companyName;
+    private $name;
 
     /**
-     * @ORM\Column(type="string", length=30)
+     * @ORM\Column(type="string", length=30, nullable=true)
      * @Assert\Length( max=30  )
      */
     private $nickName;
 
     /**
-     * @ORM\Column(type="string", length=60)
+     * @ORM\Column(type="string", length=60, options={"default": " "})
      * @Assert\Length( max=60  )
      */
     private $address;
 
     /**
-     * @ORM\Column(type="string", length=10)
-     * @Assert\Length( min=5, max=10  )
-     */
+    * @ORM\Column(type="string", length=10, options={"default": "00000"})
+    * @Assert\Length( min=5, max=10  )
+    */
     private $zipCode;
 
     /**
-     * @ORM\Column(type="string", length=60)
+     * @ORM\Column(type="string", length=60, options={"default": " "})
      * @Assert\Length( max=60  )
      */
     private $city;
 
     /**
-     * @ORM\Column(type="string", length=11)
-     * @Assert\Length( min=11,  max=11 )
+     * @ORM\Column(type="string", length=2, options={"default": "IT"})
+     */
+    private $country;
+
+    /**
+     * @ORM\Column(type="string", length=11, nullable=true)
+     * @Assert\Length( max = 11  )
      * @Assert\Regex(
-     *     pattern="/^[0-9]{11,11}$/",
-     *     message="La partita IVA deve contenere undici numeri."
+     *     pattern="/^[0-9]*$/",
+     *     message="Caratteri non validi nella partita Iva"
      * )
      */
-    private $partitaIVA;
+    private $partitaIva;
 
     /**
      * @ORM\Column(type="string", length=16)
-     * @Assert\Length( min=11, max=16  )
+     * @Assert\Length( max = 16  )
+     * @Assert\Regex(
+     *     pattern="/^[0-9A-Z]*$/",
+     *     message="Caratteri non validi nel codice fiscale"
+     * )
      */
     private $fiscalCode;
+
+    /**
+     * @ORM\Column(type="string", length=2)
+     */
+    private $typeCliente;
+
+    /**
+     * @ORM\Column(type="string", length=7, nullable=true)
+     * @Assert\Length( max = 7  )
+     * @Assert\Regex(
+     *     pattern="/^[0-9A-Z]*$/",
+     *     message="Caratteri non validi nel codice SDI"
+     * )
+     */
+    private $codeSdi;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
 
-    /**
+     /**
      * @ORM\ManyToOne(targetEntity=Province::class)
      * @ORM\JoinColumn(nullable=false)
      */
     private $provincia;
 
     /**
-     * @ORM\OneToMany(targetEntity=Personale::class, mappedBy="azienda")
-     */
-    private $personale;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Cantieri::class, mappedBy="azienda")
+     * @ORM\OneToMany(targetEntity=Cantieri::class, mappedBy="cliente")
      */
     private $cantieri;
 
     public function __construct()
     {
-        $this->personale = new ArrayCollection();
         $this->cantieri = new ArrayCollection();
     }
 
-
+    public function getNameResult(): ?string
+    {
+        $nameresult = $this->getNickName();
+        if ($nameresult == null || strlen($nameresult) == 0 )  {
+            $nameresult = $this->getName();
+         }
+        return (string) substr($nameresult, 0, 30);
+    }
     public function __toString(): string
     {
-            return (string) $this->getNickName();
+        return (string) $this->getNameResult();
     }
 
     public function getId(): ?int
@@ -106,14 +133,14 @@ class Aziende
         return $this->id;
     }
 
-    public function getCompanyName(): ?string
+    public function getName(): ?string
     {
-        return $this->companyName;
+        return $this->name;
     }
 
-    public function setCompanyName(string $companyName): self
+    public function setName(string $name): self
     {
-        $this->companyName = $companyName;
+        $this->name = $name;
 
         return $this;
     }
@@ -123,7 +150,7 @@ class Aziende
         return $this->nickName;
     }
 
-    public function setNickName(string $nickName): self
+    public function setNickName(?string $nickName): self
     {
         $this->nickName = $nickName;
 
@@ -166,15 +193,27 @@ class Aziende
         return $this;
     }
 
-    public function getPartitaIVA(): ?string
+    public function getCountry(): ?string
     {
-        return $this->partitaIVA;
+        return $this->country;
     }
 
-    public function setPartitaIVA(string $partitaIVA): self
+    public function setCountry(string $country): self
     {
-        // $this->partitaIVA = sprintf("%'.011d", $partitaIVA);
-        $this->partitaIVA = $partitaIVA;
+        $this->country = $country;
+
+        return $this;
+    }
+
+    public function getPartitaIva(): ?string
+    {
+        return $this->partitaIva;
+    }
+
+    public function setPartitaIva(string $partitaIva): self
+    {
+        $this->partitaIva = $partitaIva;
+
         return $this;
     }
 
@@ -190,6 +229,30 @@ class Aziende
         return $this;
     }
 
+    public function getTypeCliente(): ?string
+    {
+        return $this->typeCliente;
+    }
+
+    public function setTypeCliente(string $typeCliente): self
+    {
+        $this->typeCliente = $typeCliente;
+
+        return $this;
+    }
+
+    public function getCodeSdi(): ?string
+    {
+        return $this->codeSdi;
+    }
+
+    public function setCodeSdi(string $codeSdi): self
+    {
+        $this->codeSdi = $codeSdi;
+
+        return $this;
+    }
+
     public function getProvincia(): ?Province
     {
         return $this->provincia;
@@ -197,10 +260,6 @@ class Aziende
 
     public function setProvincia(Province $provincia): self
     {
-       /*      if ($this->getProvincia() === null) {
-                $this->provincia = 'XX';
-            } */
-       
         $this->provincia = $provincia;
 
         return $this;
@@ -211,14 +270,14 @@ class Aziende
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    public function setCreatedAt(?\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    /**
+     /**
     *    @ORM\PrePersist
     *    @ORM\PreUpdate
     */
@@ -226,36 +285,6 @@ class Aziende
     public function setCreatedAtValue()
     {
          $this->createdAt = new \DateTime();
-    }
-
-    /**
-     * @return Collection|Personale[]
-     */
-    public function getPersonale(): Collection
-    {
-        return $this->personale;
-    }
-
-    public function addPersonale(Personale $personale): self
-    {
-        if (!$this->personale->contains($personale)) {
-            $this->personale[] = $personale;
-            $personale->setAzienda($this);
-        }
-
-        return $this;
-    }
-
-    public function removePersonale(Personale $personale): self
-    {
-        if ($this->personale->removeElement($personale)) {
-            // set the owning side to null (unless already changed)
-            if ($personale->getAzienda() === $this) {
-                $personale->setAzienda(null);
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -270,7 +299,7 @@ class Aziende
     {
         if (!$this->cantieri->contains($cantieri)) {
             $this->cantieri[] = $cantieri;
-            $cantieri->setAzienda($this);
+            $cantieri->setCliente($this);
         }
 
         return $this;
@@ -280,8 +309,8 @@ class Aziende
     {
         if ($this->cantieri->removeElement($cantieri)) {
             // set the owning side to null (unless already changed)
-            if ($cantieri->getAzienda() === $this) {
-                $cantieri->setAzienda(null);
+            if ($cantieri->getCliente() === $this) {
+                $cantieri->setCliente(null);
             }
         }
 

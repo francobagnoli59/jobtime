@@ -1,0 +1,32 @@
+{% extends '@EasyAdmin/page/content.html.twig' %} 
+
+{# % extends '@EasyAdmin/crud/edit.html.twig' % #}
+
+{% block page_content %}
+{# {% block edit_form %} #}
+    {{ form_start(form, {'attr': {'id': form.vars.id}}  ) }}
+      {#  {{ form_widget(form) }} #} 
+    <div class="row">
+        <div class="col">
+            {{ form_row(form.author) }}
+        </div>
+        <div class="col" >
+            {{ form_row(form.email) }}
+        </div>
+        <div class="col" >
+            {{ form_row(form.textComment) }}
+        </div>
+        <div class="col" >
+            {{ form_row(form.photoFilename) }}
+        </div>
+         <div >
+           <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save" aria-hidden="true"></i> {{ 'action.save' }}
+           </button>
+        </div>
+    </div>
+ {#        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save" aria-hidden="true"></i> {{ 'action.save' }}
+        </button> #}
+    {{ form_end(form) }}
+{% endblock %}

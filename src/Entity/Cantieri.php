@@ -174,6 +174,11 @@ class Cantieri
      */
     private $azienda;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Clienti::class, inversedBy="cantieri")
+     */
+    private $cliente;
+
    
     public function __construct()
     {
@@ -548,6 +553,18 @@ class Cantieri
     public function setAzienda(?Aziende $azienda): self
     {
         $this->azienda = $azienda;
+
+        return $this;
+    }
+
+    public function getCliente(): ?Clienti
+    {
+        return $this->cliente;
+    }
+
+    public function setCliente(?Clienti $cliente): self
+    {
+        $this->cliente = $cliente;
 
         return $this;
     }

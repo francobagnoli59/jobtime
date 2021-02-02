@@ -8,6 +8,11 @@ use App\Repository\ProvinceRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -52,14 +57,26 @@ class PersonaleCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_DETAIL, fn (Personale $surname) => (string) $surname)
             ->setPageTitle(Crud::PAGE_EDIT, fn (Personale $namefull) => sprintf('Modifica scheda dati di <b>%s</b>', $namefull->getFullName()))
             ->setPageTitle(Crud::PAGE_NEW, 'Crea scheda nuovo personale')
-            ->setSearchFields(['id', 'name', 'surname', 'gender', 'birthday']);
+            ->setSearchFields(['id', 'name', 'surname', 'gender', 'birthday'])
+            ;
     }
 
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
-            ->add('gender')
-        ;
+            ->add('azienda')
+            ->add('cantiere')
+            ->add(ChoiceFilter::new('gender', 'Sesso')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]) )
+            ->add(BooleanFilter::new('isEnforce', 'In forza/assunto'))
+            ->add(DateTimeFilter::new('birthday', 'Data di nascita'))
+            ->add(DateTimeFilter::new('dateHiring', 'Data di assunzione'))
+            ->add(TextFilter::new('fiscalCode', 'Codice Fiscale'))
+            ->add(EntityFilter::new('provincia') 
+            ->setFormTypeOption('value_type_options.query_builder', 
+                static fn(ProvinceRepository $pr) => $pr->createQueryBuilder('provincia')
+                        ->orderBy('provincia.name', 'ASC') )
+             );
+          
     }
  
     public function configureActions(Actions $actions): Actions
@@ -92,7 +109,7 @@ class PersonaleCrudController extends AbstractCrudController
             $fullName = TextField::new('fullName', 'Nominativo');
             $eta = TextField::new('eta', 'Età');
             $totalHourWeek = IntegerField::new('totalHourWeek', 'Ore settimana')->setTextAlign('right');
-            $gender = ChoiceField::new('gender', 'Sesso M/F')->setChoices(['Maschio' => 'M', 'Femmina' => 'F']);
+            $gender = ChoiceField::new('gender', 'Sesso M/F')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]);
             $birthday = DateField::new('birthday', 'Data di nascita');
             $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale');
             $isEnforce = BooleanField::new('isEnforce', 'In forza/assunto');

@@ -21,12 +21,13 @@ class ProvinceRepository extends ServiceEntityRepository
 
     public function findAll()
     {
-        return $this->createQueryBuilder('p')
+        return $this->findBy([], ['name' => 'ASC']);
+      /*    return $this->createQueryBuilder('p')
             ->orderBy('p.name', 'ASC')
-            ->setMaxResults(10)
             ->getQuery()
-            ->getResult()
-        ;
+            ->setMaxResults(5)
+            ->getResult() ; */
+       
     }
 
     // /**

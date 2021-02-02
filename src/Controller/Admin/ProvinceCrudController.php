@@ -30,6 +30,7 @@ class ProvinceCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_EDIT, fn (Province $name) => sprintf('Modifica provincia <b>%s</b>', $name->getName()))
             ->setSearchFields(['id', 'code', 'name'])
             ->setDefaultSort(['code' => 'ASC'])
+           // ->overrideTemplate('crud/edit', 'admin/province/crud.edit.html.twig')
         ;
     }
 

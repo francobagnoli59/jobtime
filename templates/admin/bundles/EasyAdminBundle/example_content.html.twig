@@ -1,0 +1,9 @@
+{% extends '@!EasyAdmin/page/content.html.twig' %}
+
+{% block page_content %}
+    <h2>Vedi che ci siamo!</h2>
+
+    {% for provincia in province %}
+        <h4>{{ provincia }}</h4>
+    {% endfor %}
+{% endblock %}

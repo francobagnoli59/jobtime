@@ -6,10 +6,15 @@ use App\Entity\Cantieri;
 use App\Admin\Field\MapField;
 use App\Repository\ProvinceRepository;
 use App\Repository\AziendeRepository;
+use App\Repository\ClientiRepository;
 use App\Repository\RegoleFatturazioneRepository;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -26,7 +31,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 
 class CantieriCrudController extends AbstractCrudController
 {
@@ -85,12 +90,26 @@ class CantieriCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
+            ->add('azienda')
+            ->add(BooleanFilter::new('isPublic', 'Accetta feedback'))
+            ->add(DateTimeFilter::new('dateStartJob', 'Data inizio lavoro'))
+            ->add(DateTimeFilter::new('dateEndJob', 'Data fine lavoro'))
             ->add('city')
-            ->add('isPublic')
-            ->add('azienda');
+            ->add(EntityFilter::new('provincia') 
+            ->setFormTypeOption('value_type_options.query_builder', 
+                static fn(ProvinceRepository $pr) => $pr->createQueryBuilder('provincia')
+                        ->orderBy('provincia.name', 'ASC') )
+            );
     }
 
+  
+    /* public function createEntity(string $entityFqcn)
+    {
+    $foo = new $entityFqcn();
+    $foo->getCity($this->getCantieri());
 
+    return $foo;
+    } */
 
     public function configureFields(string $pageName): iterable
     {
@@ -118,21 +137,28 @@ class CantieriCrudController extends AbstractCrudController
                     },
                 ])->setRequired(true);        */
 
-        $isPublic = BooleanField::new('isPublic', 'Accetta feedback sul cantiere');
+        $isPublic = BooleanField::new('isPublic', 'Accetta feedback');
         $dateStartJob = DateField::new('dateStartJob', 'Data inizio lavoro');
         $dateEndJob = DateField::new('dateEndJob', 'Data fine lavoro');
-        $descriptionJob = TextareaField::new('descriptionJob', 'Descrizione')->setHelp('Descrivere brevemente il progetto di cantiere');
+        $descriptionJob = TextEditorField::new('descriptionJob', 'Descrizione')->setHelp('Descrivere brevemente il progetto di cantiere');
         // $mapsGoogle = UrlField::new('mapsGoogle');  FUNZIONA MA IL CAMPO E' GRANDE E LA FORM SI ALLARGA DI CONSEGUENZA
         $mapsGoogle = MapField::new('mapsGoogle', 'Localizzazione');
         $distance = IntegerField::new('distance', 'Distanza')->setHelp('Indicare la distanza A/R dalla sede in Km');
-        $azienda = AssociationField::new('azienda', 'Azienda')
+        $cliente = AssociationField::new('cliente', 'Cliente')->setHelp('Scegliere il committente del cantiere')
+        ->setFormTypeOptions([
+        'query_builder' => function (ClientiRepository $cl) {
+            return $cl->createQueryBuilder('c')
+               ->orderBy('c.name', 'ASC');     },
+                             ])
+        ->setCustomOptions(array('widget' => 'native'))->setRequired(true);
+        $panel2 = FormField::addPanel('PIANIFICAZIONE CANTIERE')->setIcon('fas fa-wallet')->setHelp('Inserire i dati per una corretta pianificazione');
+        $azienda = AssociationField::new('azienda', 'Azienda del gruppo')->setHelp('Scegliere l\'azienda del gruppo che eroga i servizi')
             ->setFormTypeOptions([
             'query_builder' => function (AziendeRepository $az) {
                 return $az->createQueryBuilder('a')
                    ->orderBy('a.nickName', 'ASC');     },
                                  ])
             ->setCustomOptions(array('widget' => 'native'))->setRequired(true);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-        $panel2 = FormField::addPanel('PIANIFICAZIONE CANTIERE')->setIcon('fas fa-wallet')->setHelp('Inserire i dati per una corretta pianificazione');
         $hourlyRate = MoneyField::new('hourlyRate', 'Tariffa Oraria')->setCurrency('EUR')->setHelp('Prezzo orario di vendita in alternativa alla tariffa a corpo');
         $flatRate = MoneyField::new('flatRate', 'Prezzo a Corpo')->setCurrency('EUR')->setHelp('Prezzo di vendita secondo la regola del ciclo di fatturazione, in alternativa alla tariffa oraria');
         $regolaFatturazione = AssociationField::new('regolaFatturazione', 'Ciclo di fatturazione')
@@ -166,13 +192,13 @@ class CantieriCrudController extends AbstractCrudController
         $panelPA = FormField::addPanel('CANTIERE PUBBLICA AMMINISTRAZIONE')->setIcon('fas fa-landmark')->setHelp('Inserire i dati se il committente è una pubblica amministrazione')->renderCollapsed($collapsePA);
         // dump($panelPA) ;
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$nameJob, $city, $azienda, $isPublic, $commentiPubblici, $dateStartJob, $dateEndJob, $commentiPubblici];
+            return [$nameJob, $city, $mapsGoogle, $azienda, $isPublic, $commentiPubblici, $cliente, $dateStartJob, $dateEndJob];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $azienda, $isPublic, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $azienda, $isPublic, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP,];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP,];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $azienda, $isPublic, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
         }
     }
 }
