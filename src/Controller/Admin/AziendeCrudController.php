@@ -26,14 +26,17 @@ class AziendeCrudController extends AbstractCrudController
         return Aziende::class;
     }
 
+   
     protected EntityManagerInterface $entityManager;
+   
     public function __construct(EntityManagerInterface $entityManager) {
         $this->entityManager = $entityManager;
-    }
+          }
    
 
     public function createEntity(string $entityFqcn)
     {
+        
         $azienda = new Aziende();
         $azienda->setProvincia($this->entityManager->getRepository(Province::class)->findOneBy(['code'=>'PI']));
         return $azienda;
@@ -48,6 +51,7 @@ class AziendeCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_EDIT, 'Modifica Azienda')
             ->setPageTitle(Crud::PAGE_DETAIL, 'Visualizza Azienda')
             ->setPageTitle(Crud::PAGE_NEW, 'Crea nuova Azienda')
+            ->setDefaultSort(['nickName' => 'ASC'])
             ;
     }
     

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PersonaleRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -209,6 +211,16 @@ class Personale
      * @ORM\ManyToOne(targetEntity=Aziende::class, inversedBy="personale")
      */
     private $azienda;
+
+    /**
+     * @ORM\OneToMany(targetEntity=OreLavorate::class, mappedBy="persona")
+     */
+    private $orelavorate;
+
+    public function __construct()
+    {
+        $this->orelavorate = new ArrayCollection();
+    }
 
 
     public function getFullName(): string
@@ -595,6 +607,36 @@ class Personale
     public function setAzienda(?Aziende $azienda): self
     {
         $this->azienda = $azienda;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|OreLavorate[]
+     */
+    public function getOrelavorate(): Collection
+    {
+        return $this->orelavorate;
+    }
+
+    public function addOrelavorate(OreLavorate $orelavorate): self
+    {
+        if (!$this->orelavorate->contains($orelavorate)) {
+            $this->orelavorate[] = $orelavorate;
+            $orelavorate->setPersona($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrelavorate(OreLavorate $orelavorate): self
+    {
+        if ($this->orelavorate->removeElement($orelavorate)) {
+            // set the owning side to null (unless already changed)
+            if ($orelavorate->getPersona() === $this) {
+                $orelavorate->setPersona(null);
+            }
+        }
 
         return $this;
     }

@@ -12,7 +12,7 @@ class Decimal10_2Requirements extends Compound
     protected function getConstraints(array $options): array
     {
         return [
-            new Assert\Length(['max' => 8]),
+            new Assert\Length(['max' => 10]),
             new Assert\GreaterThanOrEqual(0),
         //    new Assert\LessThanOrEqual(999999)
         ];

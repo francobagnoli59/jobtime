@@ -7,10 +7,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 
 /**
  * @ORM\Entity(repositoryClass=AziendeRepository::class)
  * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("nickName")
  * @Assert\Callback({"App\Validator\AziendeValidator", "validate"}) 
  */
 class Aziende
@@ -89,10 +92,22 @@ class Aziende
      */
     private $cantieri;
 
+    /**
+     * @ORM\OneToMany(targetEntity=MesiAziendali::class, mappedBy="azienda")
+     */
+    private $mesiAziendali;
+
+    /**
+     * @ORM\OneToMany(targetEntity=OreLavorate::class, mappedBy="azienda")
+     */
+    private $orelavorate;
+
     public function __construct()
     {
         $this->personale = new ArrayCollection();
         $this->cantieri = new ArrayCollection();
+        $this->mesiAziendali = new ArrayCollection();
+        $this->orelavorate = new ArrayCollection();
     }
 
 
@@ -222,7 +237,6 @@ class Aziende
     *    @ORM\PrePersist
     *    @ORM\PreUpdate
     */
-
     public function setCreatedAtValue()
     {
          $this->createdAt = new \DateTime();
@@ -282,6 +296,66 @@ class Aziende
             // set the owning side to null (unless already changed)
             if ($cantieri->getAzienda() === $this) {
                 $cantieri->setAzienda(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|MesiAziendali[]
+     */
+    public function getMesiAziendali(): Collection
+    {
+        return $this->mesiAziendali;
+    }
+
+    public function addMesiAziendali(MesiAziendali $mesiAziendali): self
+    {
+        if (!$this->mesiAziendali->contains($mesiAziendali)) {
+            $this->mesiAziendali[] = $mesiAziendali;
+            $mesiAziendali->setAzienda($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMesiAziendali(MesiAziendali $mesiAziendali): self
+    {
+        if ($this->mesiAziendali->removeElement($mesiAziendali)) {
+            // set the owning side to null (unless already changed)
+            if ($mesiAziendali->getAzienda() === $this) {
+                $mesiAziendali->setAzienda(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|OreLavorate[]
+     */
+    public function getOrelavorate(): Collection
+    {
+        return $this->orelavorate;
+    }
+
+    public function addOrelavorate(OreLavorate $orelavorate): self
+    {
+        if (!$this->orelavorate->contains($orelavorate)) {
+            $this->orelavorate[] = $orelavorate;
+            $orelavorate->setAzienda($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrelavorate(OreLavorate $orelavorate): self
+    {
+        if ($this->orelavorate->removeElement($orelavorate)) {
+            // set the owning side to null (unless already changed)
+            if ($orelavorate->getAzienda() === $this) {
+                $orelavorate->setAzienda(null);
             }
         }
 

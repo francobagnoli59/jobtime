@@ -47,7 +47,7 @@ class ClientiCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_NEW, 'Crea nuovo Cliente')
             ->setPageTitle(Crud::PAGE_DETAIL, fn (Clienti $name) => sprintf('Scheda di <b>%s</b>', $name->getName()))
             ->setPageTitle(Crud::PAGE_EDIT, fn (Clienti $name) => sprintf('Modifica Cliente <b>%s</b>', $name->getName()))
-    
+            ->setDefaultSort(['nameResult' => 'ASC'])
          //   ->setSearchFields([$nameResult, $partitaIva, $city, $provincia, $codeSdi ])
             ;
     }

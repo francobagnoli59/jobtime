@@ -179,11 +179,17 @@ class Cantieri
      */
     private $cliente;
 
+    /**
+     * @ORM\OneToMany(targetEntity=OreLavorate::class, mappedBy="cantiere")
+     */
+    private $orelavorate;
+
    
     public function __construct()
     {
         $this->commentiPubblici = new ArrayCollection();
         $this->personale = new ArrayCollection();
+        $this->orelavorate = new ArrayCollection();
 
     }
 
@@ -565,6 +571,36 @@ class Cantieri
     public function setCliente(?Clienti $cliente): self
     {
         $this->cliente = $cliente;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|OreLavorate[]
+     */
+    public function getOrelavorate(): Collection
+    {
+        return $this->orelavorate;
+    }
+
+    public function addOrelavorate(OreLavorate $orelavorate): self
+    {
+        if (!$this->orelavorate->contains($orelavorate)) {
+            $this->orelavorate[] = $orelavorate;
+            $orelavorate->setCantiere($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrelavorate(OreLavorate $orelavorate): self
+    {
+        if ($this->orelavorate->removeElement($orelavorate)) {
+            // set the owning side to null (unless already changed)
+            if ($orelavorate->getCantiere() === $this) {
+                $orelavorate->setCantiere(null);
+            }
+        }
 
         return $this;
     }

@@ -2,33 +2,37 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Causali;
+use App\Entity\FestivitaAnnuali;
+// use App\Form\FestivitaType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+// use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 
-class CausaliCrudController extends AbstractCrudController
+class FestivitaAnnualiCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return Causali::class;
+        return FestivitaAnnuali::class;
     }
 
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setEntityLabelInSingular('Causale paghe')
-            ->setEntityLabelInPlural('Causali paghe')
-            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Causali paghe')
-            ->setPageTitle(Crud::PAGE_NEW, 'Crea nuova Causale paghe')
-            ->setPageTitle(Crud::PAGE_DETAIL, fn (Causali $code) => (string) $code)
-            ->setPageTitle(Crud::PAGE_EDIT, fn (Causali $code) => sprintf('Modifica causale <b>%s</b>', $code->getCode()))
-            ->setSearchFields(['id', 'code', 'description']);
+            ->setEntityLabelInSingular('Festività Annuali')
+            ->setEntityLabelInPlural('Festività Annuali')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Festività Annuali')
+            ->setPageTitle(Crud::PAGE_NEW, 'Crea nuovo Anno Festività Annuali')
+            ->setPageTitle(Crud::PAGE_DETAIL, fn (FestivitaAnnuali $anno) => (string) $anno)
+            ->setPageTitle(Crud::PAGE_EDIT, fn (FestivitaAnnuali $anno) => sprintf('Modifica Anno Festività Annuali <b>%s</b>', $anno->getAnno()))
+            ->setSearchFields(['id', 'anno', 'dateCollection']);
     }
 
     public function configureActions(Actions $actions): Actions
@@ -53,21 +57,23 @@ class CausaliCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $panel1 = FormField::addPanel('CAUSALI PAGHE')->setIcon('fas fa-pencil-ruler');
-        $code = TextField::new('code', 'Codice Causale Paghe');  
-        $description = TextField::new('description', 'Descrizione');
+        $panel1 = FormField::addPanel('FESTE ANNUALI')->setIcon('fas fa-plane-departure');
+        $anno = TextField::new('anno', 'Anno festività annuali');
+       // $festivitaCollection = CollectionField::new("dateFestivita") ->allowDelete(true) ->allowAdd(true) ->setEntryIsComplex(true)
+       // ->setFormTypeOptions(["by_reference" => false, "entry_type" => "App\Form\FestivitaType", "required" => true, "entry_options" => ["label" => false]]);
+        $festeArray = ArrayField::new('dateFestivita', 'Giorno della Festa')->setHelp('Indicare la data nella forma ggmm es. 0101 per il capodanno 2021, se desiderato aggiungere il nome della festa.');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $code, $description, $createdAt];
+            return [$id, $anno, $festeArray,  $createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $code, $description, $panel_ID, $id, $createdAt];
+            return [$panel1, $anno, $festeArray,  $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $code, $description];
+            return [$panel1, $anno, $festeArray];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1, $code, $description, $panel_ID, $id, $createdAt];
+            return [$panel1, $anno, $festeArray, $panel_ID, $id, $createdAt];
         }
     }
 }

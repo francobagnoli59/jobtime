@@ -67,19 +67,36 @@ class DashboardExceptionSubscriber implements EventSubscriberInterface {
         if($crud) {
         $controller = $crud->getControllerFqcn();
         $action     = $crud->getCurrentAction();
-        $arrEntity = ['Aziende', 'Cantieri', 'Causali', 'Clienti', 'Personale', 'Province', 'RegoleFatturazione'];
+        $arrEntity = ['Aziende', 'Cantieri', 'Causali', 'Clienti', 'FestivitaAnnuali', 'MesiAziendali', 'OreLavorate', 'Personale', 'Province', 'RegoleFatturazione'];
            }
         if(!empty($title)) $title = "<b>".$title."</b><br/>";
         if(!empty($title.$message))
         if (str_contains($title.$message, 'ForeignKeyConstraintViolationException')) {
-            foreach ($arrEntity as $entityname) {
-                if (str_contains($title.$message, $entityname)) {
-                   $title = "<b>".'Tentativo di eliminare una entità referenziata.'."</b><br/>";
-                   $message = 'Richiesta non eseguibile per l\'entità <b>'. $entityname .'</b> in quanto utilizzata in altre entità'.'<br/>'. $controller .' '.$action;
+            if($crud) {
+                foreach ($arrEntity as $entityname) {
+                    if (str_contains($title.$message, $entityname)) {
+                      $title = "<b>".'Tentativo di eliminare una entità referenziata.'."</b><br/>";
+                      $message = 'Richiesta non eseguibile per l\'entità <b>'. $entityname .'</b> in quanto utilizzata in altre entità'.'<br/>'. 'Componente: '. $controller .' '.$action;
                    break;
-                }
+                    }
+                } 
+            } else { $title = "<b>".'Tentativo di eliminare una entità referenziata.'."</b><br/>";
+                     $message = 'Richiesta non eseguibile per l\'entità confermata in quanto utilizzata in altre entità'.'<br/>';
+ 
             }
         }
+        if (str_contains($title.$message, 'UniqueConstraintViolationException')) {
+            $title = "<b>".'Chiave duplicata per l\'entità confermata.'."</b><br/>";
+            $pos = stripos($message, '(key_reference)');
+            if ($pos) {
+                    if($crud) {
+                      $message = 'Valore key duplicata: <b>' . substr($message, $pos+18 ).'</b><br/>'. 'Componente: '. $controller .' '.$action;
+                    } else {
+                      $message = 'Valore key duplicata: <b>' . substr($message, $pos+18 ).'</b><br/>';
+                     }
+                } 
+        }
+
             $this->session->getFlashBag()->add($type, $title.$message);
     }
 
@@ -94,19 +111,21 @@ class DashboardExceptionSubscriber implements EventSubscriberInterface {
 
         // Get back crud information
         $crud       = $this->adminContextProvider->getContext()->getCrud();
-        if(!$crud) return;
+        if(!$crud) {
+            $url = $this->adminUrlGenerator->unsetAll(); 
+            $event->setResponse(new RedirectResponse($url));
+
+            }  else { 
 
         $controller = $crud->getControllerFqcn();
         $action     = $crud->getCurrentAction();
-
-        // $url = $this->adminUrlGenerator->unsetAll();   se non commentato ritorna all'index del dashboard
         $url = $this->adminUrlGenerator
         ->setController($controller)
         ->setAction('index')
         ->generateUrl();
 
         $event->setResponse(new RedirectResponse($url));
-
+        }
  
 
         // Avoid infinite redirection

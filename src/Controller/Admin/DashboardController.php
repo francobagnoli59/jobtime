@@ -10,6 +10,9 @@ use App\Entity\Personale;
 use App\Entity\Aziende;
 use App\Entity\Clienti;
 use App\Entity\Causali;
+use App\Entity\FestivitaAnnuali;
+use App\Entity\MesiAziendali;
+use App\Entity\OreLavorate;
 
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -63,19 +66,26 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linktoRoute('Vai ai Feedback', 'fas fa-home', 'homepage');
+        yield MenuItem::section('Inserimento orari di lavoro');
+        yield MenuItem::linkToRoute('Prepara mensilità', 'fas fa-calendar', 'planning_month');
+        yield MenuItem::linkToCrud('Ore lavorate', 'fas fa-clock',  OreLavorate::class);
 
         yield MenuItem::section('Anagrafiche');
         yield MenuItem::linkToCrud('Cantieri', 'fas fa-building', Cantieri::class);
         yield MenuItem::linkToCrud('Personale', 'fas fa-address-card', Personale::class);
         yield MenuItem::linkToCrud('Clienti', 'fas fa-users', Clienti::class);
 
-        yield MenuItem::section('Verifiche');
+        yield MenuItem::section('Report');
+        yield MenuItem::linkToCrud('Consolidati mensili', 'fas fa-calendar', MesiAziendali::class);
+
+        yield MenuItem::section('Manutenzioni');
         yield MenuItem::linkToCrud('Feedback e segnalazioni', 'fas fa-comments', CommentiPubblici::class);
 
         yield MenuItem::section('Configurazioni');
         yield MenuItem::linkToCrud('Aziende', 'fas fa-boxes', Aziende::class);
         yield MenuItem::linkToCrud('Province', 'fas fa-map-marker-alt', Province::class);
         yield MenuItem::linkToCrud('Causali Paghe', 'fas fa-pencil-ruler', Causali::class);
+        yield MenuItem::linkToCrud('Festività annuali', 'fas fa-plane-departure', FestivitaAnnuali::class);
         yield MenuItem::linkToCrud('Regole di fatturazione', 'fas fa-wave-square', RegoleFatturazione::class);
        
         // yield MenuItem::section();
