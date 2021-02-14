@@ -8,12 +8,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use App\Validator\Constraints as MasotechAssert;
 
 /**
  * @ORM\Entity(repositoryClass=PersonaleRepository::class)
  * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("keyReference")
  * @Assert\Callback({"App\Validator\PersonaleValidator", "validate"}) 
  * @Vich\Uploadable
  */
@@ -85,6 +87,11 @@ class Personale
      * )
      */
     private $matricola;
+
+    /**
+     * @ORM\Column(type="string", length=50, unique=true)
+     */
+    private $keyReference;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
@@ -160,6 +167,12 @@ class Personale
     private $fullCostHour;
 
     /**
+    * @ORM\Column(type="decimal", precision=7, scale=2, nullable=true, options={"default": 0})
+    * @MasotechAssert\Decimal7_2Requirements()
+    */
+    private $costoStraordinario;
+
+    /**
      * @ORM\Column(type="string", length=27, nullable=true)
      * @Assert\Length( max = 27  )
      * @Assert\Iban(
@@ -217,9 +230,22 @@ class Personale
      */
     private $orelavorate;
 
+    /**
+     * @ORM\OneToMany(targetEntity=PianoOreCantieri::class, mappedBy="persona")
+     */
+    private $pianoOreCantieri;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ConsolidatiPersonale::class, mappedBy="persona")
+     */
+    private $consolidatiPersonale;
+
+      
     public function __construct()
     {
         $this->orelavorate = new ArrayCollection();
+        $this->pianoOreCantieri = new ArrayCollection();
+        $this->consolidatiPersonale = new ArrayCollection();
     }
 
 
@@ -308,15 +334,60 @@ class Personale
 
     public function getTotalHourWeek()
     {   
-        
-      $hourdayarray = $this->getPlanHourWeek();
+        $hourdayarray = $this->getPlanHourWeek();
         $tothour = 0;
         foreach ($hourdayarray as $d) {
             if (is_numeric($d)) {
                 $tothour +=$d ;
             }
         }
-        return $tothour; 
+        return $tothour;
+    }
+
+    public function getTotalHourPiano()
+    {   
+        // piano ore cantieri
+        $oreCantieri = $this->getPianoOreCantieri();
+        $totpiano = 0;
+        foreach ($oreCantieri as $oc) {
+            if ($oc->getPersona() === $this) {
+                    if (is_numeric($oc->getOrePreviste())) {
+                    $totpiano += $oc->getOrePreviste() ;
+                    }
+               }
+        }
+        return $totpiano;
+    }
+
+    public function getStringTotalHourWeek()
+    {   
+        // piano ore cantieri
+        $totpiano = $this->getTotalHourPiano();
+        // piano settimanale
+        $tothour = $this->getTotalHourWeek();
+        
+        if (is_int($tothour) === true ) {
+            $str_tothour = sprintf('%d',$tothour );
+        } else {
+            $str_tothour = sprintf('%01.2f',$tothour );
+        }
+        if (is_int($totpiano) === true ) {
+            $str_totpiano = sprintf('%d',$totpiano );
+        } else {
+            $str_totpiano = sprintf('%01.2f',$totpiano );
+        }
+        if ($totpiano !== 0 ) {
+            if ( $tothour !== $totpiano) {
+                
+                return sprintf('Alert! %s ne %s', $str_tothour,  $str_totpiano );
+            } else {
+                return sprintf('h %s', $str_tothour );
+              }
+
+        } else {
+            return sprintf('h %s ', $str_tothour );
+         }
+
     }
 
 
@@ -342,6 +413,27 @@ class Personale
          $this->createdAt = new \DateTime();
     }
 
+    public function getKeyReference(): ?string
+    {
+        return $this->keyReference;
+    }
+
+    public function setKeyReference(string $keyReference): self
+    {
+        $this->keyReference = $keyReference;
+
+        return $this;
+    }
+
+     /**
+    *    @ORM\PrePersist
+    *    @ORM\PreUpdate
+    */
+    public function setKeyReferenceValue()
+    {
+        $this->keyReference = sprintf("%010d-%s-%s", $this->getAzienda()->getId(), $this->getFiscalCode(), $this->getMatricola());
+
+    }
     public function getAddress(): ?string
     {
         return $this->address;
@@ -641,4 +733,77 @@ class Personale
         return $this;
     }
 
+    /**
+     * @return Collection|PianoOreCantieri[]
+     */
+    public function getPianoOreCantieri(): Collection
+    {
+        return $this->pianoOreCantieri;
+    }
+
+    public function addPianoOreCantieri(PianoOreCantieri $pianoOreCantieri): self
+    {
+        if (!$this->pianoOreCantieri->contains($pianoOreCantieri)) {
+            $this->pianoOreCantieri[] = $pianoOreCantieri;
+            $pianoOreCantieri->setPersona($this);
+        }
+
+        return $this;
+    }
+
+    public function removePianoOreCantieri(PianoOreCantieri $pianoOreCantieri): self
+    {
+        if ($this->pianoOreCantieri->removeElement($pianoOreCantieri)) {
+            // set the owning side to null (unless already changed)
+            if ($pianoOreCantieri->getPersona() === $this) {
+                $pianoOreCantieri->setPersona(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ConsolidatiPersonale[]
+     */
+    public function getConsolidatiPersonale(): Collection
+    {
+        return $this->consolidatiPersonale;
+    }
+
+    public function addConsolidatiPersonale(ConsolidatiPersonale $consolidatiPersonale): self
+    {
+        if (!$this->consolidatiPersonale->contains($consolidatiPersonale)) {
+            $this->consolidatiPersonale[] = $consolidatiPersonale;
+            $consolidatiPersonale->setPersona($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConsolidatiPersonale(ConsolidatiPersonale $consolidatiPersonale): self
+    {
+        if ($this->consolidatiPersonale->removeElement($consolidatiPersonale)) {
+            // set the owning side to null (unless already changed)
+            if ($consolidatiPersonale->getPersona() === $this) {
+                $consolidatiPersonale->setPersona(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCostoStraordinario(): ?string
+    {
+        return $this->costoStraordinario;
+    }
+
+    public function setCostoStraordinario(?string $costoStraordinario): self
+    {
+        $this->costoStraordinario = $costoStraordinario;
+
+        return $this;
+    }
+
+   
 }

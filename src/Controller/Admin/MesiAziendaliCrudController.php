@@ -144,13 +144,16 @@ class MesiAziendaliCrudController extends AbstractCrudController
         $costMonthHuman = MoneyField::new('costMonthHuman', 'Costo risorse umane')->setCurrency('EUR')->setHelp('Calcolato sull\'ammontare delle ore mensili effettive');
         $costMonthMaterial = MoneyField::new('costMonthMaterial', 'Costo risorse materieli')->setCurrency('EUR')->setHelp('Calcolato sull\'ammontare medio pianificato per cantiere');
         $incomeMonth = MoneyField::new('incomeMonth', 'Ricavi mensili')->setCurrency('EUR')->setHelp('Calcolato sull\'ammontare delle entrate mensili fatturate');
-       
+        $numeroPersone = IntegerField::new('numeroPersone', 'Persone prev.')->setTextAlign('center');
+        $consolidatiPersonale = AssociationField::new('consolidatiPersonale', 'Persone cons.')->setTextAlign('center');
+        $numeroCantieri = IntegerField::new('numeroCantieri', 'Cantieri prev.')->setTextAlign('center');
+        $consolidatiCantieri = AssociationField::new('consolidatiCantieri', 'Cantieri cons.')->setTextAlign('center');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $keyReference = TextField::new('keyReference', 'Chiave registrazione')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
         if (Crud::PAGE_INDEX === $pageName) {
-            return [ $festivitaAnnuale, $azienda, $mese, $costMonthHuman, $costMonthMaterial, $incomeMonth ];
+            return [ $festivitaAnnuale, $azienda, $mese, $numeroPersone, $consolidatiPersonale, $numeroCantieri, $consolidatiCantieri, $costMonthHuman, $costMonthMaterial, $incomeMonth ];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $festivitaAnnuale, $azienda, $mese, $isHoursCompleted, $costMonthHuman, $isInvoicesCompleted, $costMonthMaterial, $incomeMonth, $panel_ID, $id, $keyReference, $createdAt];
          } elseif (Crud::PAGE_NEW === $pageName) {

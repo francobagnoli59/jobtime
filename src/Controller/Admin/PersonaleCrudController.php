@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Personale;
+use App\Entity\Cantieri;
+use App\Entity\PianoOreCantieri;
 use App\Repository\ProvinceRepository;
 use App\Repository\CantieriRepository;
 use App\Repository\AziendeRepository;
@@ -105,11 +107,15 @@ class PersonaleCrudController extends AbstractCrudController
        
         $view_orelavorate = Action::new('ViewOreLavorate', 'Vedi Ore lavorate', 'fa fa-clock')
         ->linkToCrudAction('ViewOreLavorate');
-        
+        $view_pianoorecantieri = Action::new('ViewPianoOreCantieri', 'Piano Ore Cantieri', 'fa fa-clipboard-list')
+        ->linkToCrudAction('ViewPianoOreCantieri')->displayIf(fn ($entity) => !$entity->getCantiere()
+        ) ;
+
         return $actions
             // ...
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $view_orelavorate)->add(Crud::PAGE_EDIT, $view_orelavorate)
+            ->add(Crud::PAGE_INDEX, $view_pianoorecantieri)
            // ->add(Crud::PAGE_DETAIL,)
             ->add(Crud::PAGE_EDIT,  Action::INDEX )
             ->add(Crud::PAGE_NEW,   Action::INDEX )
@@ -127,14 +133,87 @@ class PersonaleCrudController extends AbstractCrudController
     {
         $personale = $context->getEntity()->getInstance();
 
+       /*  $ds = new \Datetime('-20 day');
+        $d1 = $ds->format('YmgHi');           HO PROVATO IN PIU' MODI MA LA COMPONENTE EA3 MI DICE CHE NON TROVA L?INDEX VALUE
+        $de = new \Datetime('-1 day');
+        $d2 = $de->format('YmgHi');
+        ->set('filters[giorno][comparison]', 'between')
+            ->set('filters[giorno][value]', $d1);
+            ->set('filters[giorno][value2]', $d2);
+            NEMMENO COSI' FUNZIONA
+         ->set('filters[giorno][comparison]', '>')
+            ->set('filters[giorno][value]', $personale->getBirthday()->format('Y-m-d'));
+ */
         $url = $this->adminUrlGenerator->unsetAll()
             ->setController(OreLavorateCrudController::class)
             ->setAction(Action::INDEX)
             ->set('filters[persona][comparison]', '=')
-            ->set('filters[persona][value]', $personale->getId());
-            return $this->redirect($url);
-
+            ->set('filters[persona][value]', $personale->getId())
+            ->set('filters[isTransfer][value]', 0);// 0 = false, 1= true
+            return $this->redirect($url);   
     }
+
+    public function ViewPianoOreCantieri(AdminContext $context)
+    {
+        $personale = $context->getEntity()->getInstance();
+        $pianoCantieri = []; 
+        $pianoCantieri = $personale->getPianoOreCantieri();
+        if (count($pianoCantieri) === 0) { 
+            $url = $this->adminUrlGenerator->unsetAll()
+            ->setController(PianoOreCantieriCrudController::class)
+            ->setAction(Action::NEW)
+            ->set('persona', $personale->getId());
+            return $this->redirect($url);  
+        } else { 
+            $url = $this->adminUrlGenerator->unsetAll()
+            ->setController(PianoOreCantieriCrudController::class)
+            ->setAction(Action::INDEX)
+            ->set('filters[persona][comparison]', '=')
+            ->set('filters[persona][value]', $personale->getId());
+            return $this->redirect($url);  
+        }
+        
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+          // key Piano ore cantieri
+        $fullName =  $entityInstance->getFullName();
+        $message = $this->verifyEntity($entityManager, $entityInstance);
+        if ($message === '') {
+            $entityManager->persist($entityInstance);
+            $entityManager->flush();
+        } else { $this->addFlash('danger', sprintf('%s Dati %s da correggere!!!', $message, $fullName )); }
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $message = $this->verifyEntity($entityManager, $entityInstance);
+        if ($message === '') {
+            $entityManager->persist($entityInstance);
+            $entityManager->flush();
+        } else { $this->addFlash('danger', sprintf('%s Dati scheda persona non confermati!!!', $message)); }
+    }
+
+    private function verifyEntity(EntityManagerInterface $entityManager, $entityInstance): string
+    {
+
+         // controlla che il nominativo appartenga alla stessa azienda del cantiere
+        $message = '';
+        if ($entityInstance->getCantiere() !== null) {
+            $recordcantiere = $entityManager->getRepository(Cantieri::class)->findOneBy(['id'=> $entityInstance->getCantiere()->getId()]);
+            if ( $recordcantiere !== null) {
+            $azienda_persona = $entityInstance->getAzienda()->getId();
+            $azienda_cantiere = $recordcantiere->getAzienda()->getId();
+            if ($azienda_persona === $azienda_cantiere ) {
+                $message = '';
+            } else { $message = 'L\'azienda del cantiere non corrisponde all\'azienda della persona.</br>'; }
+            }
+        }
+        return $message ;
+    }
+
+
 
     public function configureFields(string $pageName): iterable
     {
@@ -144,8 +223,9 @@ class PersonaleCrudController extends AbstractCrudController
             $surname = TextField::new('surname', 'Cognome');
             $fullName = TextField::new('fullName', 'Nominativo');
             $eta = TextField::new('eta', 'Età');
-            $totalHourWeek = IntegerField::new('totalHourWeek', 'Ore settimana')->setTextAlign('right');
-            $gender = ChoiceField::new('gender', 'Sesso M/F')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]);
+            $stringTotalHourWeek = TextField::new('stringTotalHourWeek', 'Totale Ore')->setTextAlign('right');
+            $pianoOreCantieri = AssociationField::new('pianoOreCantieri', 'Impegni');
+            $gender = ChoiceField::new('gender', 'Sesso')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]);
             $birthday = DateField::new('birthday', 'Data di nascita');
             $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale');
             $isEnforce = BooleanField::new('isEnforce', 'In forza/assunto');
@@ -178,12 +258,12 @@ class PersonaleCrudController extends AbstractCrudController
             $azienda = AssociationField::new('azienda', 'Azienda')
             ->setFormTypeOptions([
                 'query_builder' => function (AziendeRepository $az) {
-                    return $az->createQueryBuilder('p')
+                    return $az->createQueryBuilder('az')
                         ->orderBy('az.nickName', 'ASC');
                 },
                  ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
     
-            $cantiere = AssociationField::new('cantiere', 'Cantiere')->setHelp('Indicare se lavora per un solo Cantiere.');
+            $cantiere = AssociationField::new('cantiere', 'Cantiere')->setHelp('<mark><b>Indicare solo se lavora per un unico Cantiere. Per più cantieri una volta inserita la persona utilizzare la funzione [Piano Ore Cantieri]</b></mark>');
 
             // $linkPhoto = (function($entity) {
             // $link = $this->entityManager->getRepository(Personale::class)->find($entity->getPhotoAvatar());
@@ -207,23 +287,25 @@ class PersonaleCrudController extends AbstractCrudController
             // TRATTATO COME LINK ad una nuova  scheda del browser, definita proprietà cvPathPdf su entità personale
             $matricola = TextField::new('matricola', 'Codice Matricola')->setHelp('Inserire solo numeri - (verrà formattata con zeri a sinistra).');
             $fullCostHour = MoneyField::new('fullCostHour', 'Costo orario lordo')->setCurrency('EUR')->setHelp('Indicare il costo orario comprensivo di ferie/tfr ');
-            $planHourWeek = ArrayField::new('planHourWeek', 'Piano ore settimanali')->setHelp('<mark><b>Inserire 7 numeri intesi come ore intere dal lunedì alla domenica, se è necessario indicare la mezz\'ora inserire .5  (usare il punto, non la virgola)</b></mark>');
+            $costoStraordinario = MoneyField::new('costoStraordinario', 'Costo orario straordinario')->setCurrency('EUR')->setHelp('Indicare il costo orario straordinario');
+            $planHourWeek = ArrayField::new('planHourWeek', 'Ore settimanali')->setHelp('<mark><b>Inserire 7 numeri intesi come ore intere dal lunedì alla domenica, se è necessario indicare la mezz\'ora inserire .5  (usare il punto, non la virgola)</b></mark>');
             $dateHiring = DateField::new('dateHiring', 'Data di assunzione');
             $dateDismissal = DateField::new('dateDismissal', 'Data di licenziamento');
             $ibanConto = TextField::new('ibanConto', 'Conto Bancario (IBAN)')->setHelp('Per bonifici inserire le coordinate bancarie (senza spazi)');
             $intestatarioConto = TextField::new('intestatarioConto', 'Intestatario Conto')->setHelp('Inserire il nome intestatario se diverso dal nominativo della scheda personale');
             $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
             $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
+            $keyReference = TextField::new('keyReference', 'Chiave registrazione')->setFormTypeOptions(['disabled' => 'true']);
             $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
             if (Crud::PAGE_INDEX === $pageName) {
-                return [$fullName,  $gender, $photoFile, $isEnforce, $azienda, $eta, $cantiere, $planHourWeek, $totalHourWeek ];
+                return [$fullName,  $gender, $photoFile, $isEnforce, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panel2, $cvPdf, $isEnforce, $azienda, $matricola,  $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $planHourWeek, $panel_ID, $id, $createdAt ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panel2, $cvPdf, $isEnforce, $azienda, $matricola,  $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $panel2, $cvFile, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $planHourWeek ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $panel2, $cvFile, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek ];
             } elseif (Crud::PAGE_EDIT === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $imagePortrait, $panel2, $cvFile, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $planHourWeek, $panel_ID, $id, $createdAt];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $imagePortrait, $panel2, $cvFile, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt];
             }
     }
     

@@ -72,6 +72,8 @@ class OreLavorateCrudController extends AbstractCrudController
         $orelavorate->setGiorno($date);
         $orelavorate->setOrePianificate('0');
         $orelavorate->setOreRegistrate('0');
+        $orelavorate->setIsTransfer(false);
+        $orelavorate->setIsConfirmed(false);
 
         return  $orelavorate;
     }
@@ -128,9 +130,23 @@ class OreLavorateCrudController extends AbstractCrudController
                             if ($entityInstance->getPersona()->getAzienda() === $azienda_id ) {
                                   // controlla che il cantiere appartenga alla azienda impostata
                                     if ($entityInstance->getCantiere()->getAzienda() === $azienda_id ) {
-                                    // Tutto OK aggiona ore giornata
-                                    $retcode = 'OK';
-                                    } else { $this->addFlash('danger', 'L\'azienda non corrisponde al cantiere selezionato'); }
+                                        if($entityInstance->getCausale()->getCode() === 'STRA') { 
+                                            if ( $entityInstance->getPersona()->getCostoStraordinario() > 0) {
+                                                if($entityInstance->getCantiere()->getExtraRate() > 0  ) { 
+                                                    // Straordinaro quotato
+                                                    $retcode = 'OK';
+                                                } else {  
+                                                    // Accetta ma informa  - Prezzo ore straordinario non quotato sul cantiere
+                                                    $this->addFlash('warning', sprintf('Tariffa ora straordinaria NON contrattualizzata, lo straordinario è a costo sull\'azienda'));
+                                                    $retcode = 'OK';
+                                                }
+                                            } else {
+                                                $this->addFlash('danger', 'La persona non ha quotato il costo lavoro straordinario');
+                                            }
+                                        }
+                                        else {  // Tutto OK aggiona ore giornata
+                                            $retcode = 'OK'; } 
+                                      } else { $this->addFlash('danger', 'L\'azienda non corrisponde al cantiere selezionato'); }
                               }  else { $this->addFlash('danger', 'L\'azienda non corrisponde al nominativo selezionato'); }
                         } else  { $this->addFlash('danger', sprintf('La data deve essere relativa all\'anno %d e al mese %d ancora da consolidare', $annoopen , $meseopen)); }
                     break;
@@ -162,6 +178,7 @@ class OreLavorateCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
+            ->add(BooleanFilter::new('isTransfer', 'Orari trasferiti'))
             ->add(BooleanFilter::new('isConfirmed', 'Orari confermati'))
             ->add('giorno')
             ->add(EntityFilter::new('causale', 'Causale lavoro'))
@@ -182,12 +199,12 @@ class OreLavorateCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
           $add_orelavorate = Action::new('addOreLavorate', 'Aggiungi Ore lavorate', 'fa fa-calendar-plus')
-         ->linkToCrudAction('addOreLavorate');
+         ->linkToCrudAction('addOreLavorate')->displayIf(fn ($entity) => !$entity->getIsTransfer());
            
        
         return $actions
                 ->remove(Crud::PAGE_INDEX, Action::NEW)
-                ->remove(Crud::PAGE_INDEX, Action::DELETE)
+             //   ->remove(Crud::PAGE_INDEX, Action::DELETE)
                 ->remove(Crud::PAGE_DETAIL, Action::DELETE)
                 ->add(Crud::PAGE_INDEX, $add_orelavorate)->add(Crud::PAGE_EDIT, $add_orelavorate)
                 // ...
@@ -197,14 +214,14 @@ class OreLavorateCrudController extends AbstractCrudController
                 ->add(Crud::PAGE_NEW,   Action::INDEX )
     
                 ->update(Crud::PAGE_INDEX, Action::EDIT,
-                 fn (Action $action) => $action->setIcon('fa fa-edit')->displayIf(fn ($entity) => !$entity->getIsConfirmed()
+                 fn (Action $action) => $action->setIcon('fa fa-edit')->displayIf(fn ($entity) => !$entity->getIsConfirmed() 
                  ) )
-                /* ->update(Crud::PAGE_INDEX, Action::DELETE,
-                 fn (Action $action) => $action->setIcon('fa fa-trash')->displayIf(fn ($entity) => !$entity->getIsConfirmed()
-                 ) ) */
+                 ->update(Crud::PAGE_INDEX, Action::DELETE,
+                 fn (Action $action) => $action->setIcon('fa fa-trash')->displayIf(fn ($entity) => $entity->getOrePianificate() === '0' && !$entity->getIsTransfer() 
+                 ) ) 
                 ->update(Crud::PAGE_INDEX, Action::DETAIL,
                  fn (Action $action) => $action->setIcon('fa fa-eye') )
-            ;
+            ;  // fn ($entity) => !$entity->getIsTransfer() && 
     }
 
     public function addOreLavorate(AdminContext $context)
@@ -226,7 +243,8 @@ class OreLavorateCrudController extends AbstractCrudController
      public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('ORE LAVORATE')->setIcon('fas fa-clock');
-        $giorno = DateField::new('giorno', 'Giorno')->setFormTypeOptions(['disabled' => 'true']);;
+        $giorno = DateField::new('giorno', 'Data')->setFormTypeOptions(['disabled' => 'true']);;
+        $dayOfWeek = TextField::new('dayOfWeek', 'Giorno')->setFormTypeOptions(['disabled' => 'true']);;
         $isConfirmed= BooleanField::new('isConfirmed', 'Orario confermato');
         $orePianificate = TextField::new('orePianificate', 'Ore previste')->setFormTypeOptions(['disabled' => 'true']);
         $keyReference = TextField::new('keyReference', 'Chiave registrazione')->setFormTypeOptions(['disabled' => 'true']);
@@ -265,13 +283,13 @@ class OreLavorateCrudController extends AbstractCrudController
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
         
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $azienda, $persona, $cantiere, $giorno, $causale,  $orePianificate, $oreRegistrate, $isConfirmed];
+            return [$id, $azienda, $persona, $cantiere, $giorno, $dayOfWeek, $causale,  $orePianificate, $oreRegistrate, $isConfirmed];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $azienda, $persona, $cantiere, $giorno, $causale, $orePianificate, $oreRegistrate, $isConfirmed,  $panel_ID, $id, $keyReference, $createdAt];
+            return [$panel1, $azienda, $persona, $cantiere, $giorno, $dayOfWeek, $causale, $orePianificate, $oreRegistrate, $isConfirmed,  $panel_ID, $id, $keyReference, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $azienda, $persona, $cantiere, $giorno, $causale, $orePianificate, $oreRegistrate, $isConfirmed];
+            return [$panel1, $azienda, $persona, $cantiere, $giorno, $dayOfWeek, $causale, $orePianificate, $oreRegistrate, $isConfirmed];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1,  $azienda, $persona, $cantiere, $giorno, $causale, $orePianificate, $oreRegistrate,  $isConfirmed, $panel_ID, $id, $keyReference, $createdAt];
+            return [$panel1,  $azienda, $persona, $cantiere, $giorno, $dayOfWeek, $causale, $orePianificate, $oreRegistrate,  $isConfirmed, $panel_ID, $id, $keyReference, $createdAt];
         }
     }
 }

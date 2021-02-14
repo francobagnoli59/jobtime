@@ -40,5 +40,23 @@ class PersonaleValidator
                      }  
                 }    
              }
+        // Controlla piano ore settimanali
+        $hourdayarray = $personale->getPlanHourWeek();
+        $totday = 0;
+        $title = 'PIANO ORE SETTIMANALI:';
+        foreach ($hourdayarray as $d) {
+            $totday++ ;
+            if (is_numeric($d)) {
+                if ($d < 0 || $d > 8) {  $context->buildViolation(sprintf('%s le ore %s impostate al %d^item sono fuori dai limiti consentiti', $title,  $d, $totday))
+                                         ->addViolation() ; }
+            } else 
+            {  $context->buildViolation(sprintf('%s al %d^item inserire un numero compreso tra 0 e 8',$title, $totday))
+                ->addViolation() ; }
+        }
+        if ($totday != 7 ) {
+            $context->buildViolation(sprintf('%s inserire 7 item rispettivamente dal lunedì alla domenica',$title, $totday))
+            ->addViolation() ;
+        }  
+             
     }
 }

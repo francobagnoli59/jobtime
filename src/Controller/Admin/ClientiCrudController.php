@@ -47,8 +47,8 @@ class ClientiCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_NEW, 'Crea nuovo Cliente')
             ->setPageTitle(Crud::PAGE_DETAIL, fn (Clienti $name) => sprintf('Scheda di <b>%s</b>', $name->getName()))
             ->setPageTitle(Crud::PAGE_EDIT, fn (Clienti $name) => sprintf('Modifica Cliente <b>%s</b>', $name->getName()))
-            ->setDefaultSort(['nameResult' => 'ASC'])
-         //   ->setSearchFields([$nameResult, $partitaIva, $city, $provincia, $codeSdi ])
+            ->setDefaultSort(['name' => 'ASC'])
+            ->setSearchFields(['name', 'partitaIva' , 'city', 'provincia.name', 'codeSdi' ])
             ;
     }
 
@@ -122,7 +122,7 @@ class ClientiCrudController extends AbstractCrudController
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
         
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$nameResult, $typeCliente, $partitaIva, $city, $provincia, $codeSdi];
+            return [$name, $typeCliente, $partitaIva, $city, $provincia, $codeSdi];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $typeCliente, $name, $nickName, $address, $zipCode, $city, $provincia, $country, $partitaIva, $fiscalCode, $codeSdi, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

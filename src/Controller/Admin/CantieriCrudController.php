@@ -160,7 +160,8 @@ class CantieriCrudController extends AbstractCrudController
                                  ])
             ->setCustomOptions(array('widget' => 'native'))->setRequired(true);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
         $hourlyRate = MoneyField::new('hourlyRate', 'Tariffa Oraria')->setCurrency('EUR')->setHelp('Prezzo orario di vendita in alternativa alla tariffa a corpo');
-        $flatRate = MoneyField::new('flatRate', 'Prezzo a Corpo')->setCurrency('EUR')->setHelp('Prezzo di vendita secondo la regola del ciclo di fatturazione, in alternativa alla tariffa oraria');
+        $extraRate = MoneyField::new('extraRate', 'Tariffa Ora straordinaria')->setCurrency('EUR')->setHelp('Prezzo ora straordinario, indicare se ammesso dal contratto, se 0 le ore straordinarie non saranno aggiunte come ricavo extra commessa.');
+        $flatRate = MoneyField::new('flatRate', 'Prezzo a Corpo')->setCurrency('EUR')->setHelp('Prezzo di vendita secondo la regola del ciclo di fatturazione, è in alternativa alla tariffa oraria, se indicato prevale sulla tariffa oraria.');
         $regolaFatturazione = AssociationField::new('regolaFatturazione', 'Ciclo di fatturazione')
             ->setFormTypeOptions([
             'query_builder' => function (RegoleFatturazioneRepository $rf) {
@@ -194,11 +195,11 @@ class CantieriCrudController extends AbstractCrudController
         if (Crud::PAGE_INDEX === $pageName) {
             return [$nameJob, $city, $mapsGoogle, $azienda, $isPublic, $commentiPubblici, $cliente, $dateStartJob, $dateEndJob];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP,];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP,];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
         }
     }
 }

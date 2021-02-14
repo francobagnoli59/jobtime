@@ -32,6 +32,7 @@ class MesiAziendaliType extends AbstractType
                     ->orderBy('f.anno', 'ASC');   },
                 ])
             ->add('mese', ChoiceType::class, ['label' => 'Mese',  'choices'  => [
+                'scegli il mese' => '00',
                 'Gennaio' => '01',
                 'Febbraio' => '02',
                 'Marzo' => '03',

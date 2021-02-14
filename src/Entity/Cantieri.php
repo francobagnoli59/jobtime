@@ -73,6 +73,12 @@ class Cantieri
     private $hourlyRate;
 
     /**
+    * @ORM\Column(type="decimal", precision=7, scale=2, nullable=true, options={"default": 0})
+    * @MasotechAssert\Decimal7_2Requirements()
+     */
+    private $extraRate;
+
+    /**
      * @ORM\Column(type="decimal", precision=10, scale=2)
      * @MasotechAssert\Decimal10_2Requirements()
      */
@@ -184,12 +190,24 @@ class Cantieri
      */
     private $orelavorate;
 
-   
+    /**
+     * @ORM\OneToMany(targetEntity=PianoOreCantieri::class, mappedBy="cantiere")
+     */
+    private $pianoOreCantiere;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ConsolidatiCantieri::class, mappedBy="cantiere")
+     */
+    private $consolidatiCantieri;
+
+      
     public function __construct()
     {
         $this->commentiPubblici = new ArrayCollection();
         $this->personale = new ArrayCollection();
         $this->orelavorate = new ArrayCollection();
+        $this->pianoOreCantiere = new ArrayCollection();
+        $this->consolidatiCantieri = new ArrayCollection();
 
     }
 
@@ -601,6 +619,78 @@ class Cantieri
                 $orelavorate->setCantiere(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PianoOreCantieri[]
+     */
+    public function getPianoOreCantiere(): Collection
+    {
+        return $this->pianoOreCantiere;
+    }
+
+    public function addPianoOreCantiere(PianoOreCantieri $pianoOreCantiere): self
+    {
+        if (!$this->pianoOreCantiere->contains($pianoOreCantiere)) {
+            $this->pianoOreCantiere[] = $pianoOreCantiere;
+            $pianoOreCantiere->setCantiere($this);
+        }
+
+        return $this;
+    }
+
+    public function removePianoOreCantiere(PianoOreCantieri $pianoOreCantiere): self
+    {
+        if ($this->pianoOreCantiere->removeElement($pianoOreCantiere)) {
+            // set the owning side to null (unless already changed)
+            if ($pianoOreCantiere->getCantiere() === $this) {
+                $pianoOreCantiere->setCantiere(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ConsolidatiCantieri[]
+     */
+    public function getConsolidatiCantieri(): Collection
+    {
+        return $this->consolidatiCantieri;
+    }
+
+    public function addConsolidatiCantieri(ConsolidatiCantieri $consolidatiCantieri): self
+    {
+        if (!$this->consolidatiCantieri->contains($consolidatiCantieri)) {
+            $this->consolidatiCantieri[] = $consolidatiCantieri;
+            $consolidatiCantieri->setCantiere($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConsolidatiCantieri(ConsolidatiCantieri $consolidatiCantieri): self
+    {
+        if ($this->consolidatiCantieri->removeElement($consolidatiCantieri)) {
+            // set the owning side to null (unless already changed)
+            if ($consolidatiCantieri->getCantiere() === $this) {
+                $consolidatiCantieri->setCantiere(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getExtraRate(): ?string
+    {
+        return $this->extraRate;
+    }
+
+    public function setExtraRate(?string $extraRate): self
+    {
+        $this->extraRate = $extraRate;
 
         return $this;
     }

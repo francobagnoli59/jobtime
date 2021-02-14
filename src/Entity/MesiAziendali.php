@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\MesiAziendaliRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -23,13 +25,19 @@ class MesiAziendali
 
     /**
      * @ORM\Column(type="string", length=2)
-    * @Assert\Length( min=2,  max=2 )
-     * @Assert\Regex(
-     *     pattern="/^[0-9]{2,2}$/",
-     *     message="Mensilità non valida"
-     * ) 
+     * @Assert\Choice({"01","02","03","04", "05", "06", "07", "08", "09", "10", "11", "12"}) 
      */
     private $mese;
+
+     /**
+     * @ORM\Column(type="smallint", nullable=true)
+     */
+    private $numeroPersone;
+
+    /**
+     * @ORM\Column(type="smallint", nullable=true)
+     */
+    private $numeroCantieri;
 
     /**
      * @ORM\Column(type="decimal", precision=12, scale=2, nullable=true)
@@ -77,6 +85,22 @@ class MesiAziendali
      * @ORM\JoinColumn(nullable=false)
      */
     private $festivitaAnnuale;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ConsolidatiPersonale::class, mappedBy="meseAziendale")
+     */
+    private $consolidatiPersonale;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ConsolidatiCantieri::class, mappedBy="meseAziendale")
+     */
+    private $consolidatiCantieri;
+
+    public function __construct()
+    {
+        $this->consolidatiPersonale = new ArrayCollection();
+        $this->consolidatiCantieri = new ArrayCollection();
+    }
 
 
     public function __toString(): string
@@ -179,7 +203,7 @@ class MesiAziendali
     */
     public function setKeyReferenceValue()
     {
-        $this->keyReference = sprintf("%015d-%s-%s", $this->getAzienda()->getId(), $this->getFestivitaAnnuale(), $this->getMese());
+        $this->keyReference = sprintf("%010d-%s-%s", $this->getAzienda()->getId(), $this->getFestivitaAnnuale(), $this->getMese());
 
     }
 
@@ -224,6 +248,90 @@ class MesiAziendali
     public function setFestivitaAnnuale(?FestivitaAnnuali $festivitaAnnuale): self
     {
         $this->festivitaAnnuale = $festivitaAnnuale;
+
+        return $this;
+    }
+
+    public function getNumeroPersone(): ?int
+    {
+        return $this->numeroPersone;
+    }
+
+    public function setNumeroPersone(?int $numeroPersone): self
+    {
+        $this->numeroPersone = $numeroPersone;
+
+        return $this;
+    }
+
+    public function getNumeroCantieri(): ?int
+    {
+        return $this->numeroCantieri;
+    }
+
+    public function setNumeroCantieri(?int $numeroCantieri): self
+    {
+        $this->numeroCantieri = $numeroCantieri;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ConsolidatiPersonale[]
+     */
+    public function getConsolidatiPersonale(): Collection
+    {
+        return $this->consolidatiPersonale;
+    }
+
+    public function addConsolidatiPersonale(ConsolidatiPersonale $consolidatiPersonale): self
+    {
+        if (!$this->consolidatiPersonale->contains($consolidatiPersonale)) {
+            $this->consolidatiPersonale[] = $consolidatiPersonale;
+            $consolidatiPersonale->setMeseAziendale($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConsolidatiPersonale(ConsolidatiPersonale $consolidatiPersonale): self
+    {
+        if ($this->consolidatiPersonale->removeElement($consolidatiPersonale)) {
+            // set the owning side to null (unless already changed)
+            if ($consolidatiPersonale->getMeseAziendale() === $this) {
+                $consolidatiPersonale->setMeseAziendale(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ConsolidatiCantieri[]
+     */
+    public function getConsolidatiCantieri(): Collection
+    {
+        return $this->consolidatiCantieri;
+    }
+
+    public function addConsolidatiCantieri(ConsolidatiCantieri $consolidatiCantieri): self
+    {
+        if (!$this->consolidatiCantieri->contains($consolidatiCantieri)) {
+            $this->consolidatiCantieri[] = $consolidatiCantieri;
+            $consolidatiCantieri->setMeseAziendale($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConsolidatiCantieri(ConsolidatiCantieri $consolidatiCantieri): self
+    {
+        if ($this->consolidatiCantieri->removeElement($consolidatiCantieri)) {
+            // set the owning side to null (unless already changed)
+            if ($consolidatiCantieri->getMeseAziendale() === $this) {
+                $consolidatiCantieri->setMeseAziendale(null);
+            }
+        }
 
         return $this;
     }

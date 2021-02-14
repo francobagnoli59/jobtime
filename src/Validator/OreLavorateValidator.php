@@ -26,11 +26,11 @@ class OreLavorateValidator
         }
 
         
-        // controllo cantiere
+        /* // controllo cantiere
         if ($orelavorate->getCantiere()->getNameJob() === '- da assegnare '.$orelavorate->getAzienda()->getNickName()) {
             $context->buildViolation('Indicare un cantiere valido')
             ->addViolation() ;
-        }
+        } */
 
     }
 }

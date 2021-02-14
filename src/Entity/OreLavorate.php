@@ -7,10 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
+
 /**
  * @ORM\Entity(repositoryClass=OreLavorateRepository::class)
  * @ORM\HasLifecycleCallbacks()
- * @UniqueEntity("keyReference")
+ * @UniqueEntity("keyReference") 
  * @Assert\Callback({"App\Validator\OreLavorateValidator", "validate"}) 
  */
 class OreLavorate
@@ -47,7 +48,12 @@ class OreLavorate
     private $isConfirmed;
 
     /**
-     * @ORM\Column(type="string", length=60, unique=true)
+     * @ORM\Column(type="boolean", options={"default": false})
+     */
+    private $isTransfer;
+
+    /**
+     * @ORM\Column(type="string", length=50, unique=true)
      */
     private $keyReference;
 
@@ -83,6 +89,21 @@ class OreLavorate
     public function __toString(): string
     {
             return (string) $this->getCantiere().$this->getPersona().$this->getGiorno()->format('Y-m-d').$this->getCausale();
+    }
+
+    public function getDayOfWeek(): string
+    {
+           
+        $d = $this->getGiorno()->format('Y-m-d');
+        //attendo la data deve essere nel formato yyyy-mm-gg stringa
+        $d_ex=explode("-", $d); //separatore (-)
+        $d_ts=mktime(0,0,0,$d_ex[1],$d_ex[2],$d_ex[0]);
+        $num_gg=(int)date("N",$d_ts);//1 (for Monday) through 7 (for Sunday)
+        // return $num_gg ;
+        //  nomi in italiano
+        $giornodellasettimana=array('','lunedì','martedì','mercoledì','giovedì','venerdì','sabato','domenica');//0 vuoto
+        return $giornodellasettimana[$num_gg]; 
+     
     }
 
     public function getId(): ?int
@@ -138,6 +159,18 @@ class OreLavorate
         return $this;
     }
 
+    public function getIsTransfer(): ?bool
+    {
+        return $this->isTransfer;
+    }
+
+    public function setIsTransfer(bool $isTransfer): self
+    {
+        $this->isTransfer = $isTransfer;
+
+        return $this;
+    }
+
     public function getKeyReference(): ?string
     {
         return $this->keyReference;
@@ -156,7 +189,7 @@ class OreLavorate
     */
     public function setKeyReferenceValue()
     {
-        $this->keyReference = sprintf("%015d-%015d-%s-%s", $this->getCantiere()->getId(), $this->getPersona()->getId(), $this->getGiorno()->format('Y-m-d'), $this->getCausale()->getCode() );
+        $this->keyReference = sprintf("%010d-%010d-%s-%s", $this->getCantiere()->getId(), $this->getPersona()->getId(), $this->getGiorno()->format('Y-m-d'), $this->getCausale()->getCode() );
 
     }
 
