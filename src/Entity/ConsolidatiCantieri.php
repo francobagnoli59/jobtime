@@ -73,6 +73,8 @@ class ConsolidatiCantieri
      */
     private $meseAziendale;
 
+
+    
     public function getId(): ?int
     {
         return $this->id;

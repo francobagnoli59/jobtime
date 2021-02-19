@@ -216,6 +216,9 @@ class OreLavorateCrudController extends AbstractCrudController
                 ->update(Crud::PAGE_INDEX, Action::EDIT,
                  fn (Action $action) => $action->setIcon('fa fa-edit')->displayIf(fn ($entity) => !$entity->getIsConfirmed() 
                  ) )
+                 ->update(Crud::PAGE_DETAIL, Action::EDIT,
+                 fn (Action $action) => $action->displayIf(fn ($entity) => !$entity->getIsConfirmed() 
+                 ) )
                  ->update(Crud::PAGE_INDEX, Action::DELETE,
                  fn (Action $action) => $action->setIcon('fa fa-trash')->displayIf(fn ($entity) => $entity->getOrePianificate() === '0' && !$entity->getIsTransfer() 
                  ) ) 

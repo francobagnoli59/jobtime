@@ -159,9 +159,9 @@ class CantieriCrudController extends AbstractCrudController
                    ->orderBy('a.nickName', 'ASC');     },
                                  ])
             ->setCustomOptions(array('widget' => 'native'))->setRequired(true);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-        $hourlyRate = MoneyField::new('hourlyRate', 'Tariffa Oraria')->setCurrency('EUR')->setHelp('Prezzo orario di vendita in alternativa alla tariffa a corpo');
-        $extraRate = MoneyField::new('extraRate', 'Tariffa Ora straordinaria')->setCurrency('EUR')->setHelp('Prezzo ora straordinario, indicare se ammesso dal contratto, se 0 le ore straordinarie non saranno aggiunte come ricavo extra commessa.');
-        $flatRate = MoneyField::new('flatRate', 'Prezzo a Corpo')->setCurrency('EUR')->setHelp('Prezzo di vendita secondo la regola del ciclo di fatturazione, è in alternativa alla tariffa oraria, se indicato prevale sulla tariffa oraria.');
+        $hourlyRate = MoneyField::new('hourlyRate', 'Tariffa Oraria')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Prezzo orario di vendita in alternativa alla tariffa a corpo');
+        $extraRate = MoneyField::new('extraRate', 'Tariffa Ora straordinaria')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Prezzo ora straordinario, indicare se ammesso dal contratto, se 0 le ore straordinarie non saranno aggiunte come ricavo extra commessa.');
+        $flatRate = MoneyField::new('flatRate', 'Prezzo a Corpo')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Prezzo di vendita secondo la regola del ciclo di fatturazione, è in alternativa alla tariffa oraria, se indicato prevale sulla tariffa oraria.');
         $regolaFatturazione = AssociationField::new('regolaFatturazione', 'Ciclo di fatturazione')
             ->setFormTypeOptions([
             'query_builder' => function (RegoleFatturazioneRepository $rf) {
@@ -175,7 +175,7 @@ class CantieriCrudController extends AbstractCrudController
         // dump($regolaFatturazione) ;
         $planningHours = IntegerField::new('planningHours', 'Ore previste' )->setHelp('Indicare le ore pianificate per ciclo di fatturazione');
         $isPlanningMaterial = BooleanField::new('isPlanningMaterial', 'Pianificazione dei materiali')->setHelp('Se non attivato i materiali sono forniti dal cliente/committente');
-        $planningCostMaterial = MoneyField::new('planningCostMaterial', 'Costo materiali a budget')->setCurrency('EUR')->setHelp('Indicare il costo dei materiali previsti per la completa fornitura di tutto il periodo del progetto');
+        $planningCostMaterial = MoneyField::new('planningCostMaterial', 'Costo materiali a budget')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo dei materiali previsti per la completa fornitura di tutto il periodo del progetto');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);

@@ -71,6 +71,16 @@ class Aziende
      */
     private $fiscalCode;
 
+     /**
+     * @ORM\Column(type="string", length=4, nullable=true)
+     * @Assert\Length( min=4, max=4)
+     * @Assert\Regex(
+     *     pattern="/^[0-9]{4,4}$/",
+     *     message="Sono ammessi solo numeri."
+     * )  
+     */
+    private $codeTransferPaghe;
+
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
@@ -102,6 +112,7 @@ class Aziende
      */
     private $orelavorate;
 
+   
     public function __construct()
     {
         $this->personale = new ArrayCollection();
@@ -212,14 +223,24 @@ class Aziende
 
     public function setProvincia(Province $provincia): self
     {
-       /*      if ($this->getProvincia() === null) {
-                $this->provincia = 'XX';
-            } */
-       
         $this->provincia = $provincia;
 
         return $this;
     }
+
+    public function getCodeTransferPaghe(): ?string
+    {
+        return $this->codeTransferPaghe;
+    }
+
+    public function setCodeTransferPaghe(?string $codeTransferPaghe): self
+    {
+        $this->codeTransferPaghe = $codeTransferPaghe;
+
+        return $this;
+    }
+
+
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
@@ -362,5 +383,5 @@ class Aziende
         return $this;
     }
 
-
+   
 }

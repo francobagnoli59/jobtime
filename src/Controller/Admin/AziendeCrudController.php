@@ -92,6 +92,7 @@ class AziendeCrudController extends AbstractCrudController
                     ->orderBy('p.name', 'ASC');
             },
              ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
+        $codeTransferPaghe = TextField::new('codeTransferPaghe', 'Codice per RPS')->setRequired(true)->setHelp('Inserire il codice idendificativo azienda per l\'applicativo paghe Ranocchi System (Studio Filippeschi)');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
@@ -99,11 +100,11 @@ class AziendeCrudController extends AbstractCrudController
         if (Crud::PAGE_INDEX === $pageName) {
             return [$nickName, $partitaIva, $address, $city, $provincia, $createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $panel_ID, $id, $createdAt];
+            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode];
+            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $panel_ID, $id, $createdAt];
+            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $panel_ID, $id, $createdAt];
         }
     }
 }

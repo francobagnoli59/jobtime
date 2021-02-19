@@ -20,17 +20,17 @@ class OreLavorateRepository extends ServiceEntityRepository
         parent::__construct($registry, OreLavorate::class);
     }
 
-    public function countDeleted($azienda, $state, $datestart, $dateend): int
+    public function countConfirmed($azienda, $state, $datestart, $dateend): int
     {
-        return $this->getIfDeletedQueryBuilder($azienda, $state, $datestart, $dateend)->select('COUNT(ol.id)')->getQuery()->getSingleScalarResult();
+        return $this->getIfConfirmedQueryBuilder($azienda, $state, $datestart, $dateend)->select('COUNT(ol.id)')->getQuery()->getSingleScalarResult();
     }
     
     public function deleteOreLavorate($azienda, $state, $datestart, $dateend): int
     {
-        return $this->getIfDeletedQueryBuilder($azienda, $state, $datestart, $dateend)->delete()->getQuery()->execute();
+        return $this->getIfConfirmedQueryBuilder($azienda, $state, $datestart, $dateend)->delete()->getQuery()->execute();
     }
 
-    private function getIfDeletedQueryBuilder($azienda, $state, $datestart, $dateend): QueryBuilder
+    private function getIfConfirmedQueryBuilder($azienda, $state, $datestart, $dateend): QueryBuilder
     {
         return $this->createQueryBuilder('ol')
             ->andWhere('ol.isConfirmed = :state ')
@@ -46,7 +46,79 @@ class OreLavorateRepository extends ServiceEntityRepository
         ;
     }
 
+
+    public function countPersonaConfirmed($persona, $state, $datestart, $dateend): int
+    {
+        return $this->getIfConfirmedPersonaQueryBuilder($persona, $state, $datestart, $dateend)->select('COUNT(ol.id)')->getQuery()->getSingleScalarResult();
+    }
+
+    private function getIfConfirmedPersonaQueryBuilder($persona, $state, $datestart, $dateend): QueryBuilder
+    {
+        return $this->createQueryBuilder('ol')
+            ->andWhere('ol.isConfirmed = :state ')
+            ->andWhere('ol.giorno >= :datestart')
+            ->andWhere('ol.giorno <= :dateend')
+            ->andWhere('ol.persona = :persona')
+            ->setParameters([
+                'state' => $state,
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+                'persona' => $persona,
+            ])
+          
+        ;
+    }
   
+    public function collectionPersonaConfirmed($persona, $state, $datestart, $dateend): array
+    {
+        $query = $this->getMonthPersonaQueryBuilder($persona, $state, $datestart, $dateend)->select('ol')->getQuery();
+        $subSetOreLavPersona = $query->getResult();
+        return $subSetOreLavPersona;
+    }
+// 'ol.cantiere, ol.causale, ol.oreRegistrate, ol.orePianificate'
+
+    private function getMonthPersonaQueryBuilder($persona, $state, $datestart, $dateend): QueryBuilder
+    {
+        return $this->createQueryBuilder('ol')
+            ->andWhere('ol.isConfirmed = :state ')
+            ->andWhere('ol.giorno >= :datestart')
+            ->andWhere('ol.giorno <= :dateend')
+            ->andWhere('ol.persona = :persona')
+            ->orderBy('ol.giorno', 'ASC')
+            ->addOrderBy('ol.causale', 'ASC')
+            ->setParameters([
+                'state' => $state,
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+                'persona' => $persona,
+            ])
+          
+        ;
+    }
+
+    public function setMonthPersonaTransfer($persona, $state, $datestart, $dateend): int
+    {
+        return $this->setTransferMonthPersonaQueryBuilder($persona, $state, $datestart, $dateend)->update()->getQuery()->execute();
+        
+    }
+
+    private function setTransferMonthPersonaQueryBuilder($persona, $state, $datestart, $dateend): QueryBuilder
+    {
+        return $this->createQueryBuilder('ol')
+            ->andWhere('ol.isTransfer = :state ')
+            ->andWhere('ol.giorno >= :datestart')
+            ->andWhere('ol.giorno <= :dateend')
+            ->andWhere('ol.persona = :persona')
+            ->set('ol.isTransfer', ':setstate')
+            ->setParameters([
+                'setstate' => !$state,
+                'state' => $state,
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+                'persona' => $persona,
+            ])
+        ;
+    }
     // /**
     //  * @return OreLavorate[] Returns an array of OreLavorate objects
     //  */

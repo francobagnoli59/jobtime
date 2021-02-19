@@ -10,6 +10,8 @@ use App\Entity\Personale;
 use App\Entity\Causali;
 use App\Entity\Orelavorate;
 use App\Form\MesiAziendaliType;
+use App\ServicesRoutine\DateUtility;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,7 +56,8 @@ class PreparaMensilitaController extends AbstractController
         $mesiaziendali = new MesiAziendali();
         $mesiaziendali->setIsHoursCompleted(false);
         $mesiaziendali->setIsInvoicesCompleted(false);
-        $mesiaziendali->setCostMonthHuman('0')->setCostMonthMaterial('0')->setIncomeMonth('0')->setNumeroPersone(0)->setNumeroCantieri(0);
+        $mesiaziendali->setCostMonthHuman(0)->setCostMonthMaterial(0)->setIncomeMonth(0)->setNumeroPersone(0)->setNumeroCantieri(0)
+        ->setOreLavoro(0)->setOrePianificate(0)->setOreStraordinario(0)->setOreImproduttive(0)->setOreIninfluenti(0);
                      
         $form = $this->createForm(MesiAziendaliType::class, $mesiaziendali);
         $form->handleRequest($request);
@@ -88,28 +91,21 @@ class PreparaMensilitaController extends AbstractController
                 $dateFeste[] = $dateholiday;
             }
            
-            // valori iniziali per preparazione mese
-            $finemese = 31;
-            if ($mese === '04' || $mese === '06' || $mese === '09' || $mese === '11') {
-              $finemese = 30;
-            }
-            if ($mese === '02' ) {
-                $finemese = 28;
-                if ($anno === '2024' || $anno === '2028' || $anno === '2032' || $anno === '2036' || $anno === '2040' || $anno === '2044' || $anno === '2048') {
-                    $finemese = 29;
-                }
-            }
-           
+            // valori iniziali per preparazione fine mese
+            $dateutility = new DateUtility ;
+            $limitiMese = $dateutility->calculateLimitMonth($anno, $mese);
+            $finemese = $limitiMese[0] ;
+                     
             // per ogni dipendente dell'azienda richiesta inserisce le ore pianificate nel mese impostato
             $count = 0;   // contatore items
             $countPersone = 0; // contatore persone
             $arrayCantieri = []; // utilizzato per contare i cantieri
             $personaledataset = $entityManager->getRepository(Personale::class)->findBy(['azienda'=> $azienda]);
             foreach ($personaledataset as $personale) {
-                   $countPersone++ ;
                    // personale con flag assunto su true  
                   if ( $personale->getIsEnforce() === true ) {
                     // ciclo mese
+                    $countPersone++ ;
                     for ($i = 1; $i <= $finemese ; $i++) {   
                         $giorno = mktime(0,0,0,$mese,$i,$anno);
                         $num_gg=(int)date("N",$giorno);//1 (for Monday) through 7 (for Sunday)
@@ -220,17 +216,11 @@ class PreparaMensilitaController extends AbstractController
     }
 
 
-    private function addCantieri($id): int 
+    /* private function addCantieri($id): int 
     {
-
-
-
     }
 
     private function contaCantieri($id): int {
-
-
-
     }
-
+    */
 }

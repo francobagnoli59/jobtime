@@ -40,17 +40,42 @@ class MesiAziendali
     private $numeroCantieri;
 
     /**
-     * @ORM\Column(type="decimal", precision=12, scale=2, nullable=true)
+     * @ORM\Column(type="decimal", precision=7, scale=2, nullable=true)
+     */
+    private $oreLavoro;
+
+    /**
+     * @ORM\Column(type="decimal", precision=7, scale=2, nullable=true)
+     */
+    private $oreStraordinario;
+
+    /**
+     * @ORM\Column(type="decimal", precision=7, scale=2, nullable=true)
+     */
+    private $oreImproduttive;
+
+    /**
+     * @ORM\Column(type="decimal", precision=7, scale=2, nullable=true)
+     */
+    private $oreIninfluenti;
+
+    /**
+     * @ORM\Column(type="decimal", precision=7, scale=2, nullable=true)
+     */
+    private $orePianificate;
+
+    /**
+     * @ORM\Column(type="decimal", precision=10, scale=2, nullable=true)
      */
     private $costMonthHuman;
 
     /**
-     * @ORM\Column(type="decimal", precision=12, scale=2, nullable=true)
+     * @ORM\Column(type="decimal", precision=10, scale=2, nullable=true)
      */
     private $costMonthMaterial;
 
     /**
-     * @ORM\Column(type="decimal", precision=12, scale=2, nullable=true)
+     * @ORM\Column(type="decimal", precision=10, scale=2, nullable=true)
      */
     private $incomeMonth;
 
@@ -121,6 +146,66 @@ class MesiAziendali
     public function setMese(string $mese): self
     {
         $this->mese = $mese;
+
+        return $this;
+    }
+
+    public function getOreLavoro(): ?string
+    {
+        return $this->oreLavoro;
+    }
+
+    public function setOreLavoro(?string $oreLavoro): self
+    {
+        $this->oreLavoro = $oreLavoro;
+
+        return $this;
+    }
+
+    public function getOreStraordinario(): ?string
+    {
+        return $this->oreStraordinario;
+    }
+
+    public function setOreStraordinario(?string $oreStraordinario): self
+    {
+        $this->oreStraordinario = $oreStraordinario;
+
+        return $this;
+    }
+
+    public function getOreImproduttive(): ?string
+    {
+        return $this->oreImproduttive;
+    }
+
+    public function setOreImproduttive(?string $oreImproduttive): self
+    {
+        $this->oreImproduttive = $oreImproduttive;
+
+        return $this;
+    }
+
+    public function getOreIninfluenti(): ?string
+    {
+        return $this->oreIninfluenti;
+    }
+
+    public function setOreIninfluenti(?string $oreIninfluenti): self
+    {
+        $this->oreIninfluenti = $oreIninfluenti;
+
+        return $this;
+    }
+
+    public function getOrePianificate(): ?string
+    {
+        return $this->orePianificate;
+    }
+
+    public function setOrePianificate(?string $orePianificate): self
+    {
+        $this->orePianificate = $orePianificate;
 
         return $this;
     }

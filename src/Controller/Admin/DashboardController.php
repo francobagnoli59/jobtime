@@ -13,6 +13,9 @@ use App\Entity\Causali;
 use App\Entity\FestivitaAnnuali;
 use App\Entity\MesiAziendali;
 use App\Entity\OreLavorate;
+use App\Entity\ConsolidatiPersonale;
+use App\Entity\ConsolidatiCantieri;
+use App\Entity\ImportPersonale;
 
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -69,20 +72,23 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Inserimento orari di lavoro');
         yield MenuItem::linkToRoute('Prepara mensilità', 'fas fa-calendar', 'planning_month');
         yield MenuItem::linkToCrud('Ore lavorate', 'fas fa-clock',  OreLavorate::class);
-        yield MenuItem::linkToCrud('Consolida mensilità', 'fas fa-cogs', MesiAziendali::class);
+        yield MenuItem::linkToCrud('Elabora mensilità', 'fas fa-cogs', MesiAziendali::class);
 
         yield MenuItem::section('Anagrafiche');
         yield MenuItem::linkToCrud('Cantieri', 'fas fa-building', Cantieri::class);
         yield MenuItem::linkToCrud('Personale', 'fas fa-address-card', Personale::class);
         yield MenuItem::linkToCrud('Clienti', 'fas fa-users', Clienti::class);
+        yield MenuItem::subMenu('Import anagrafiche', 'fas fa-upload')->setSubItems([
+            MenuItem::linkToCrud('Import personale', 'fas fa-file-excel', ImportPersonale::class),
+            ]) ;
 
         yield MenuItem::section('Report');
-      //  yield MenuItem::linkToCrud('Consolidati personale', 'fas fa-calendar-alt', ConsolidatiPersonale::class);
-      //  yield MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class);
-
+        
         yield MenuItem::section('Manutenzioni');
         yield MenuItem::linkToCrud('Feedback e segnalazioni', 'fas fa-comments', CommentiPubblici::class);
-
+        yield MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class);
+        yield MenuItem::linkToCrud('Consolidati personale', 'fas fa-calendar-alt', ConsolidatiPersonale::class);
+     
         yield MenuItem::section('Configurazioni');
         yield MenuItem::linkToCrud('Aziende', 'fas fa-boxes', Aziende::class);
         yield MenuItem::linkToCrud('Province', 'fas fa-map-marker-alt', Province::class);
