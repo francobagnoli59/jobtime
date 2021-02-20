@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass=ImportPersonaleRepository::class)
  * @ORM\HasLifecycleCallbacks()
+ * @Assert\Callback({"App\Validator\ImportPersonaleValidator", "validate"})  
  */
 class ImportPersonale
 {
@@ -26,7 +27,7 @@ class ImportPersonale
     private $nota;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $pathImport;
 
@@ -35,7 +36,7 @@ class ImportPersonale
      *  @Assert\File( 
      *     maxSize="1024k", 
      *     mimeTypes = {"application/xlsx"},
-     *     mimeTypesMessage = "Per favore carica un file Excel (xlsx)"
+     *     mimeTypesMessage = "Per favore carica un file Excel (xlsx) com la dimensione massima di 1MB"
      *  )
      *  
      */
