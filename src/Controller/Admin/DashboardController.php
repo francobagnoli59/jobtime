@@ -83,7 +83,8 @@ class DashboardController extends AbstractDashboardController
             ]) ;
 
         yield MenuItem::section('Report');
-        
+        yield MenuItem::linkToRoute('Cantieri', 'fas fa-chart-line', 'cantieri_chart');
+
         yield MenuItem::section('Manutenzioni');
         yield MenuItem::linkToCrud('Feedback e segnalazioni', 'fas fa-comments', CommentiPubblici::class);
         yield MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class);
