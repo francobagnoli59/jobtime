@@ -24,12 +24,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use EasyCorp\Bundle\EasyAdminBundle\Config\UserMenu;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 
 class DashboardController extends AbstractDashboardController
 {
     /**
-     * @Route("/admin")
+     * @Route("/admin",  name="admin" )
      */
     public function index(): Response
     {
@@ -49,7 +51,38 @@ class DashboardController extends AbstractDashboardController
         // return $this->render('some/path/my-dashboard.html.twig');
     }
 
-    // ...
+  /*
+    public function configureUserMenu(UserInterface $user): UserMenu
+    {
+        // Usually it's better to call the parent method because that gives you a
+        // user menu with some menu items already created ("sign out", "exit impersonation", etc.)
+        // if you prefer to create the user menu from scratch, use: return UserMenu::new()->...
+        return parent::configureUserMenu($user)
+            // use the given $user object to get the user name
+            //->setName($user->getFullName())
+            // use this method if you don't want to display the name of the user
+            //->displayUserName(false)
+
+            // you can return an URL with the avatar image
+            // ->setAvatarUrl('https://127.0.0.1:8000/uploads/photos/54751afda29c0fe97c2132b7298f8da2da6e58b4.png');
+            //->setAvatarUrl($user->getProfileImageUrl())
+            // use this method if you don't want to display the user image
+            //->displayUserAvatar(false)
+            // you can also pass an email address to use gravatar's service
+            //->setGravatarEmail($user->getEmail())
+
+            // you can use any type of menu item, except submenus
+            ->addMenuItems([
+                MenuItem::linkToRoute('My Profile', 'fa fa-id-card', 'cantieri_chart'),
+                MenuItem::linkToRoute('Settings', 'fa fa-user-cog', 'output_chart'),  // '...', ['...' => '...']),
+                MenuItem::section(),
+                MenuItem::linkToLogout('Logout', 'fa fa-sign-out'),
+            ]);
+    }  */
+
+
+
+
 
 
     public function configureDashboard(): Dashboard
@@ -85,11 +118,6 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Report');
         yield MenuItem::linkToRoute('Cantieri', 'fas fa-chart-line', 'cantieri_chart');
 
-        yield MenuItem::section('Manutenzioni');
-        yield MenuItem::linkToCrud('Feedback e segnalazioni', 'fas fa-comments', CommentiPubblici::class);
-        yield MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class);
-        yield MenuItem::linkToCrud('Consolidati personale', 'fas fa-calendar-alt', ConsolidatiPersonale::class);
-     
         yield MenuItem::section('Configurazioni');
         yield MenuItem::linkToCrud('Aziende', 'fas fa-boxes', Aziende::class);
         yield MenuItem::linkToCrud('Province', 'fas fa-map-marker-alt', Province::class);
@@ -97,17 +125,23 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Festività annuali', 'fas fa-plane-departure', FestivitaAnnuali::class);
         yield MenuItem::linkToCrud('Regole di fatturazione', 'fas fa-wave-square', RegoleFatturazione::class);
        
+        yield MenuItem::section();
+        yield MenuItem::subMenu('Manutenzioni', 'fas fa-tools')->setSubItems([
+             MenuItem::linkToCrud('Feedback e segnalazioni', 'fas fa-comments', CommentiPubblici::class),
+             MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class),
+             MenuItem::linkToCrud('Consolidati personale', 'fas fa-calendar-alt', ConsolidatiPersonale::class),
+            ]) ;
         // yield MenuItem::section();
         // yield MenuItem::linkToLogout('Logout', 'fa fa-exit');
 
-        yield MenuItem::subMenu('Prove', 'fas fa-question')->setSubItems([
+      /*   yield MenuItem::subMenu('Prove', 'fas fa-question')->setSubItems([
               MenuItem::linkToRoute('Export province', 'fas fa-file-excel', 'export')->setLinkTarget("_blank"),
               MenuItem::linkToRoute('Commenti no CRUD', 'fas fa-comments',  'admin_commenti_edit'),
-             //->setController(CommentiNoCrudController::class);
+              //->setController(CommentiNoCrudController::class);
               MenuItem::linkToRoute('Province no CRUD', 'fas fa-table', 'admin_province_edit'),
               MenuItem::linkToRoute('Lista output province', 'fas fa-stream', 'output_province'),
               MenuItem::linkToRoute('Esempio chart', 'fas fa-chart-line', 'output_chart'),
-             ]) ;
+             ]) ;  */
        
        //  yield MenuItem::linkToUrl('Link URL Export province', 'fas fa-file-excel', '/admin/excel')->setLinkTarget("_blank");
     }
