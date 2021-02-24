@@ -231,8 +231,8 @@ class PersonaleCrudController extends AbstractCrudController
             $isEnforce = BooleanField::new('isEnforce', 'In forza/assunto');
             //  $photoFile = ImageField::new('photoAvatar', 'Foto')
             $photoFile = ImageField::new('photoAvatar', 'Upload Foto')
-            ->setBasePath('uploads\photos')
-            ->setUploadDir('public\uploads\photos')
+            ->setBasePath('uploads/photos')
+            ->setUploadDir('public/uploads/photos')
             ->setUploadedFileNamePattern('[contenthash].[extension]');
 
             // $slider = TextField::new('xxxxxxxxx', 'slide')->setFormType(RangeType::class);
@@ -277,8 +277,8 @@ class PersonaleCrudController extends AbstractCrudController
 
             $panel2 = FormField::addPanel('DATI RETRIBUTIVI')->setIcon('fas fa-clock');
             $cvFile = ImageField::new('curriculumVitae', 'Upload Curriculum')
-            ->setBasePath('uploads\files\personale\cv')
-            ->setUploadDir('public\uploads\files\personale\cv')
+            ->setBasePath('uploads/files/personale/cv')
+            ->setUploadDir('public/uploads/files/personale/cv')
             ->setUploadedFileNamePattern('[year]-[month]-[day]-[contenthash].[extension]')
             ->setHelp('Inserire file tipo pdf');
             // ->setFormTypeOptions(['constraints' => [ new File(['maxSize' => '1024k']) ] ])
