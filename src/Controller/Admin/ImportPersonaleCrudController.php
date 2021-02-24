@@ -585,8 +585,8 @@ class ImportPersonaleCrudController extends AbstractCrudController
             ->setCustomOptions(array('widget' => 'native'))->setRequired(true);
         $nota = TextField::new('nota', 'Commento all\'import')->setHelp('Descrivere il contenuto del file di import. Esempi: Tutto il personale, Nuovi assunti al gg/mm/aaaa, Assunti per il Cantiere...');
         $pathImport = ImageField::new('pathImport', 'File di Import')
-        ->setBasePath('uploads\files\personale\import')
-        ->setUploadDir('public\uploads\files\personale\import')
+        ->setBasePath('uploads/files/personale/import')
+        ->setUploadDir('public/uploads/files/personale/import')
         ->setUploadedFileNamePattern('[year]-[month]-[day]-[contenthash].[extension]')
         ->setHelp('Inserire file tipo Excel (xlsx) come da modello fornito nella documentazione di JobTime');
         $importExcel = TextField::new('pathImport', 'File di Import')->setTemplatePath('admin/personale/import.html.twig');
