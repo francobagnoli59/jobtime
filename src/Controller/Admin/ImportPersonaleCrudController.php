@@ -37,6 +37,8 @@ class ImportPersonaleCrudController extends AbstractCrudController
     {
     $this->entityManager = $entityManager;
     $this->adminUrlGenerator = $adminUrlGenerator;
+
+  
     }
 
 
@@ -45,7 +47,21 @@ class ImportPersonaleCrudController extends AbstractCrudController
         return ImportPersonale::class;
     }
 
-   
+   // 
+  /*  public function createEntity(string $entityFqcn)
+    {
+        $filesystem = new Filesystem();
+        if ($filesystem->exists('/public/uploads/file/personale/import') === false) {
+            // la crea 
+            $filesystem->mkdir('/public/uploads/file/personale/import');
+
+        }
+
+        $importPersonale = new ImportPersonale();
+        $importPersonale->setNota('...motivo ?');
+        return $importPersonale;
+    }
+ */
     public function importFromExcel(AdminContext $context)
     {
 

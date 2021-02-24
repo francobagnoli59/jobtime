@@ -34,8 +34,11 @@ web:
 
 mounts:
     "/var": { source: local, source_path: var }
-    "/public/uploads": { source: local, source_path: uploads }
-    "/public/downloads": { source: local, source_path: downloads }
+    "/public/uploads/photos": { source: local, source_path: photos }
+    "/public/uploads/files/personale/import": { source: local, source_path: import }
+    "/public/uploads/files/personale/cv": { source: local, source_path: cv }
+    "/public/downloads/flowsalary": { source: local, source_path: flowsalary }
+    "/public/downloads/errorImport": { source: local, source_path: errorImport } 
 
 hooks:
     build: |

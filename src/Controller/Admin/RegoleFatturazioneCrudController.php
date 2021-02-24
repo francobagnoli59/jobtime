@@ -65,7 +65,7 @@ class RegoleFatturazioneCrudController extends AbstractCrudController
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $billingCadence, $daysRange, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $billingCadence, $daysRange, $createdAt];
+            return [$panel1, $billingCadence, $daysRange];
         } elseif (Crud::PAGE_EDIT === $pageName) {
             return [$panel1, $billingCadence, $daysRange, $panel_ID, $id, $createdAt];
         }
