@@ -10,7 +10,6 @@ use App\Repository\AziendeRepository;
 use App\Repository\ClientiRepository;
 use App\Repository\RegoleFatturazioneRepository;
 use App\Repository\CategorieServiziRepository;
-use App\Repository\DocumentiCantieriRepository;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -39,7 +38,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 
 class CantieriCrudController extends AbstractCrudController
 {
-     
+    
+    
     public static function getEntityFqcn(): string
     {
         return Cantieri::class;
