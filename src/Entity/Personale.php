@@ -6,18 +6,19 @@ use App\Repository\PersonaleRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use App\Validator\Constraints as MasotechAssert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
 
 /**
  * @ORM\Entity(repositoryClass=PersonaleRepository::class)
  * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("keyReference")
  * @Assert\Callback({"App\Validator\PersonaleValidator", "validate"}) 
- * @Vich\Uploadable
+ * @Vich\Uploadable()
  */
 class Personale
 {
@@ -240,12 +241,18 @@ class Personale
      */
     private $consolidatiPersonale;
 
+    /**
+     * @ORM\OneToMany(targetEntity=DocumentiPersonale::class, mappedBy="persona", cascade={"persist"})
+     */
+    private $documentiPersonale;
+
       
     public function __construct()
     {
         $this->orelavorate = new ArrayCollection();
         $this->pianoOreCantieri = new ArrayCollection();
         $this->consolidatiPersonale = new ArrayCollection();
+        $this->documentiPersonale = new ArrayCollection();
     }
 
 
@@ -801,6 +808,36 @@ class Personale
     public function setCostoStraordinario(?string $costoStraordinario): self
     {
         $this->costoStraordinario = $costoStraordinario;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|DocumentiPersonale[]
+     */
+    public function getDocumentiPersonale(): Collection
+    {
+        return $this->documentiPersonale;
+    }
+
+    public function addDocumentiPersonale(DocumentiPersonale $documentiPersonale): self
+    {
+        if (!$this->documentiPersonale->contains($documentiPersonale)) {
+            $this->documentiPersonale[] = $documentiPersonale;
+            $documentiPersonale->setPersona($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDocumentiPersonale(DocumentiPersonale $documentiPersonale): self
+    {
+        if ($this->documentiPersonale->removeElement($documentiPersonale)) {
+            // set the owning side to null (unless already changed)
+            if ($documentiPersonale->getPersona() === $this) {
+                $documentiPersonale->setPersona(null);
+            }
+        }
 
         return $this;
     }

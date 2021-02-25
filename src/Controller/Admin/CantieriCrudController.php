@@ -4,10 +4,13 @@ namespace App\Controller\Admin;
 
 use App\Entity\Cantieri;
 use App\Admin\Field\MapField;
+use App\Form\DocumentiCantieriType;
 use App\Repository\ProvinceRepository;
 use App\Repository\AziendeRepository;
 use App\Repository\ClientiRepository;
 use App\Repository\RegoleFatturazioneRepository;
+use App\Repository\CategorieServiziRepository;
+use App\Repository\DocumentiCantieriRepository;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -32,6 +35,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 
 class CantieriCrudController extends AbstractCrudController
 {
@@ -61,18 +65,18 @@ class CantieriCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
            //   
-        $viewInvoice = Action::new('viewinvoice', 'View Invoice', 'fas fa-file-invoice')
+     /*    $viewInvoice = Action::new('viewinvoice', 'View Invoice', 'fas fa-file-invoice')
         ->linktoRoute('homepage')
         ->setHtmlAttributes(['title' => 'Vedi Fattura'])
         ->displayIf(fn ($entity) => $entity->getIsPublic()
-        );
+        ); */
     
           
         return $actions
                 // ...
               
                 ->add(Crud::PAGE_INDEX, Action::DETAIL)
-                ->add(Crud::PAGE_INDEX, $viewInvoice)
+                // ->add(Crud::PAGE_INDEX, $viewInvoice)
                // ->add(Crud::PAGE_DETAIL,)
                 ->add(Crud::PAGE_EDIT,  Action::DELETE )
                 ->add(Crud::PAGE_NEW,   Action::INDEX )
@@ -151,6 +155,17 @@ class CantieriCrudController extends AbstractCrudController
                ->orderBy('c.name', 'ASC');     },
                              ])
         ->setCustomOptions(array('widget' => 'native'))->setRequired(true);
+        $categoria = AssociationField::new('categoria', 'Categoria Servizi forniti')->setHelp('Classifica il cantiere nell\'ambito dei servizi prevalenti')
+        ->setFormTypeOptions([
+        'query_builder' => function (CategorieServiziRepository $cs) {
+            return $cs->createQueryBuilder('c')
+               ->orderBy('c.categoria', 'ASC');     },
+                             ]);
+        $collectionDoc = CollectionField::new('documentiCantieri', 'Contratti/Documenti')
+        ->setEntryType(DocumentiCantieriType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 3MB ciascuno)</mark>');
+        $collectionDocView = CollectionField::new('documentiCantieri', 'Contratti/Documenti')
+        ->setTemplatePath('admin/cantieri/documenti.html.twig');
+
         $panel2 = FormField::addPanel('PIANIFICAZIONE CANTIERE')->setIcon('fas fa-wallet')->setHelp('Inserire i dati per una corretta pianificazione');
         $azienda = AssociationField::new('azienda', 'Azienda del gruppo')->setHelp('Scegliere l\'azienda del gruppo che eroga i servizi')
             ->setFormTypeOptions([
@@ -186,6 +201,7 @@ class CantieriCrudController extends AbstractCrudController
         $dateDocumento = DateField::new('dateDocumento', 'Data Documento')->setHelp('Si riferisce alla tipologia di appalto');
         $codiceCIG = TextField::new('codiceCIG', 'Codice C.I.G.')->setHelp('Codice Identificativo Gara');
         $codiceCUP = TextField::new('codiceCUP', 'Codice C.U.P.')->setHelp('Codice Unitario Progetto (CIPE)');
+        $codiceIPA = TextField::new('codiceIPA', 'Identificativo univoco Ufficio')->setHelp('<mark>Se inserito prevale sul codice PA impostato nella scheda cliente Pubblica Amministrazione</mark>');
         $typeOrder = Field::new('typeOrderPA');
         // $cantiere = Cantieri::class ;
         // $collapsePA =  $cantiere::getIsNotPA('N') ; DEPRECATO
@@ -195,11 +211,11 @@ class CantieriCrudController extends AbstractCrudController
         if (Crud::PAGE_INDEX === $pageName) {
             return [$nameJob, $city, $mapsGoogle, $azienda, $isPublic, $commentiPubblici, $cliente, $dateStartJob, $dateEndJob];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $categoria, $descriptionJob, $collectionDocView, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $codiceIPA, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP,];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $categoria, $descriptionJob, $collectionDoc, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP,];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $descriptionJob, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $panel_ID, $id, $createdAt];
+            return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $categoria, $descriptionJob, $collectionDoc, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $codiceIPA, $panel_ID, $id, $createdAt];
         }
     }
 }

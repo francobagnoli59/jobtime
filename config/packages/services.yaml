@@ -1,5 +1,7 @@
 parameters:
     app.path.personale_images: /uploads/photos
+    app.path.personale_documenti: /uploads/files/personale/documenti
+    app.path.cantieri_documenti: /uploads/files/cantieri/documenti
     app.path.prodotti_images: /uploads/images
          # ...
 

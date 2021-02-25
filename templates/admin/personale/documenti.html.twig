@@ -1,0 +1,9 @@
+
+{% if field.value.count is null or field.value.count == 0 %}  
+   <a>Nessun documento caricato</a>  
+{% endif %} 
+{% if field.value  is not null  %}  
+      {% for documento in field.value %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ documento.titolo }}   -  </a>  
+      {% endfor %} 
+{% endif %} 

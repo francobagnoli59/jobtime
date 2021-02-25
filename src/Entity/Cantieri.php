@@ -6,8 +6,8 @@ use App\Repository\CantieriRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use App\Validator\Constraints as MasotechAssert;
 
 /**
@@ -61,7 +61,7 @@ class Cantieri
     private $descriptionJob;
 
      /**
-     * @ORM\Column(type="smallint")
+     * @ORM\Column(type="smallint", nullable=true)
      * @MasotechAssert\SmallIntRequirements()
      */
     private $distance;
@@ -146,6 +146,16 @@ class Cantieri
      */
     private $codiceCUP;
 
+    /**
+     * @ORM\Column(type="string", length=6, nullable=true)
+     * @Assert\Length( max = 6  )
+     * @Assert\Regex(
+     *     pattern="/^[0-9A-Z]*$/",
+     *     message="Caratteri non validi nel codice univoco Ufficio P.A. "
+     * )
+     */
+    private $codiceIPA;
+
     
     /**
      * @ORM\Column(type="datetime", nullable=true)
@@ -200,15 +210,26 @@ class Cantieri
      */
     private $consolidatiCantieri;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=CategorieServizi::class, inversedBy="cantieri")
+     */
+    private $categoria;
+
+     /**
+     * @ORM\OneToMany(targetEntity=DocumentiCantieri::class, mappedBy="cantiere", cascade={"persist"})
+     */
+    private $documentiCantieri;
+
       
     public function __construct()
     {
+        $this->documentiCantieri = new ArrayCollection();
         $this->commentiPubblici = new ArrayCollection();
         $this->personale = new ArrayCollection();
         $this->orelavorate = new ArrayCollection();
         $this->pianoOreCantiere = new ArrayCollection();
         $this->consolidatiCantieri = new ArrayCollection();
-
+        
     }
 
     public function __toString(): string
@@ -527,6 +548,18 @@ class Cantieri
         return $this;
     }
 
+    public function getcodiceIPA(): ?string
+    {
+        return $this->codiceIPA;
+    }
+
+    public function setcodiceIPA(string $codiceIPA): self
+    {
+        $this->codiceIPA = $codiceIPA;
+
+        return $this;
+    }
+
     public function getTypeOrderPA(): ?string
     {
         return $this->typeOrderPA;
@@ -692,6 +725,46 @@ class Cantieri
     {
         $this->extraRate = $extraRate;
 
+        return $this;
+    }
+
+    public function getCategoria(): ?CategorieServizi
+    {
+        return $this->categoria;
+    }
+
+    public function setCategoria(?CategorieServizi $categoria): self
+    {
+        $this->categoria = $categoria;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|DocumentiCantieri[]
+     */
+    public function getDocumentiCantieri(): Collection
+    {
+        return $this->documentiCantieri;
+    }
+
+    public function addDocumentiCantieri(DocumentiCantieri $documentiCantieri): self
+    {
+        if (!$this->documentiCantieri->contains($documentiCantieri)) {
+            $this->documentiCantieri[] = $documentiCantieri;
+            $documentiCantieri->setCantiere($this);
+        }
+        return $this;
+    }
+
+    public function removeDocumentiCantieri(DocumentiCantieri $documentiCantieri): self
+    {
+        if ($this->documentiCantieri->removeElement($documentiCantieri)) {
+            // set the owning side to null (unless already changed)
+            if ($documentiCantieri->getCantiere() === $this) {
+                $documentiCantieri->setCantiere(null);
+            }
+        }
         return $this;
     }
 

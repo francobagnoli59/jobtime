@@ -2,12 +2,24 @@ vich_uploader:
     db_driver: orm
     #
     mappings:
-      personale_images:
+        personale_images:
           uri_prefix:         '%app.path.personale_images%'
           upload_destination: '%kernel.project_dir%/public%app.path.personale_images%'
           namer:
               service: Vich\UploaderBundle\Naming\HashNamer
               options: { algorithm: 'sha256', length: 40 }
+        personale_documenti:
+          uri_prefix:         '%app.path.personale_documenti%'
+          upload_destination: '%kernel.project_dir%/public%app.path.personale_documenti%'
+          namer:
+              service: Vich\UploaderBundle\Naming\HashNamer
+              options: { algorithm: 'sha256', length: 40 }   
+        cantieri_documenti:
+          uri_prefix:         '%app.path.cantieri_documenti%'
+          upload_destination: '%kernel.project_dir%/public%app.path.cantieri_documenti%'
+          namer:
+              service: Vich\UploaderBundle\Naming\HashNamer
+              options: { algorithm: 'sha256', length: 40 }   
         #  inject_on_load: false
         #  delete_on_update: true
         #  delete_on_remove: true

@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Personale;
 use App\Entity\Cantieri;
 use App\Entity\PianoOreCantieri;
+use App\Form\DocumentiPersonaleType;
 use App\Repository\ProvinceRepository;
 use App\Repository\CantieriRepository;
 use App\Repository\AziendeRepository;
@@ -36,10 +37,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 use Symfony\Component\Validator\Constraints\Image;
 use Doctrine\ORM\EntityManagerInterface;
-// use Symfony\Component\Validator\Constraints\File;
+
 // use Symfony\Component\Form\Extension\Core\Type\RangeType;
 
     
@@ -275,7 +277,7 @@ class PersonaleCrudController extends AbstractCrudController
             $imagePortrait = TextField::new('imageVichFile', 'Ritratto')->setFormType(VichImageType::class)
             ->setFormTypeOptions(['constraints' => [ new Image(['maxSize' => '2048k']) ] , 'allow_delete' => false] );
 
-            $panel2 = FormField::addPanel('DATI RETRIBUTIVI')->setIcon('fas fa-clock');
+            $panel2 = FormField::addPanel('DATI PERSONALI')->setIcon('fas fa-heart');
             $cvFile = ImageField::new('curriculumVitae', 'Upload Curriculum')
             ->setBasePath('uploads/files/personale/cv')
             ->setUploadDir('public/uploads/files/personale/cv')
@@ -285,6 +287,10 @@ class PersonaleCrudController extends AbstractCrudController
             $cvPdf = TextField::new('curriculumVitae')->setTemplatePath('admin/personale/cv.html.twig');
             // $cvPdf = UrlField::new('cvPathPdf', 'Curriculum Vitae');  
             // TRATTATO COME LINK ad una nuova  scheda del browser, definita proprietà cvPathPdf su entità personale
+            $collectionDoc = CollectionField::new('documentiPersonale', 'Documenti/Certificazioni')
+            ->setEntryType(DocumentiPersonaleType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 3MB)</mark>');
+            $collectionDocView = CollectionField::new('documentiPersonale', 'Documenti/Certificazioni')
+            ->setTemplatePath('admin/personale/documenti.html.twig');
             $matricola = TextField::new('matricola', 'Codice Matricola')->setHelp('Inserire solo numeri - (verrà formattata con zeri a sinistra).');
             $fullCostHour = MoneyField::new('fullCostHour', 'Costo orario lordo')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario comprensivo di ferie/tfr ');
             $costoStraordinario = MoneyField::new('costoStraordinario', 'Costo orario straordinario')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario straordinario');
@@ -301,11 +307,11 @@ class PersonaleCrudController extends AbstractCrudController
             if (Crud::PAGE_INDEX === $pageName) {
                 return [$fullName,  $gender, $photoFile, $isEnforce, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panel2, $cvPdf, $isEnforce, $azienda, $matricola,  $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panel2, $cvPdf, $collectionDocView, $isEnforce, $azienda, $matricola,  $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $panel2, $cvFile, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $panel2, $cvFile, $collectionDoc, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek ];
             } elseif (Crud::PAGE_EDIT === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $imagePortrait, $panel2, $cvFile, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $imagePortrait, $panel2, $cvFile, $collectionDoc, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt];
             }
     }
     
