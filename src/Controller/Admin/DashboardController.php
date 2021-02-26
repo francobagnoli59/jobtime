@@ -17,6 +17,7 @@ use App\Entity\ConsolidatiPersonale;
 use App\Entity\ConsolidatiCantieri;
 use App\Entity\ImportPersonale;
 use App\Entity\DocumentiCantieri;
+use App\Entity\DocumentiPersonale;
 
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -132,6 +133,7 @@ class DashboardController extends AbstractDashboardController
              MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class),
              MenuItem::linkToCrud('Consolidati personale', 'fas fa-calendar-alt', ConsolidatiPersonale::class),
              MenuItem::linkToCrud('Documenti Cantieri', 'fas fa-file-alt', DocumentiCantieri::class),
+             MenuItem::linkToCrud('Documenti Personale', 'fas fa-file-alt', DocumentiPersonale::class),
             ]) ;
         // yield MenuItem::section();
         // yield MenuItem::linkToLogout('Logout', 'fa fa-exit');

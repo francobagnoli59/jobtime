@@ -5,11 +5,12 @@ namespace App\Entity;
 use App\Repository\DocumentiCantieriRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * @ORM\Entity(repositoryClass=DocumentiCantieriRepository::class)
  * @ORM\HasLifecycleCallbacks()
- * @Vich\Uploadable()
+ * @Vich\Uploadable() 
  */
 class DocumentiCantieri
 {
@@ -26,12 +27,16 @@ class DocumentiCantieri
     private $titolo;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * 
+     * @var string
      */
-    private $documentoPath;
+    private $documentoName;
 
     /**
-     * @Vich\UploadableField(mapping="cantieri_documenti", fileNameProperty="documentoPath")
+     * @Vich\UploadableField(mapping="cantieri_documenti", fileNameProperty="documentoName")
+     * 
+     * @var File
      */
     private $documentoFile;
 
@@ -41,17 +46,15 @@ class DocumentiCantieri
     private $createdAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Cantieri::class, inversedBy="documentiCantieri" )
-     * @ORM\JoinColumn(name="cantiere_id", referencedColumnName="id", onDelete="CASCADE") 
+     * @ORM\ManyToOne(targetEntity=Cantieri::class, inversedBy="documentiCantiere")
      */
     private $cantiere;
-
 
     public function __toString(): string
     {
             return $this->titolo;
     }
-
+    
     public function getId(): ?int
     {
         return $this->id;
@@ -69,14 +72,14 @@ class DocumentiCantieri
         return $this;
     }
 
-    public function getDocumentoPath(): ?string
+    public function getDocumentoName(): ?string
     {
-        return $this->documentoPath;
+        return $this->documentoName;
     }
 
-    public function setDocumentoPath(string $documentoPath): self
+    public function setDocumentoName(?string $documentoName): self
     {
-        $this->documentoPath = $documentoPath;
+        $this->documentoName = $documentoName;
 
         return $this;
     }
@@ -97,13 +100,12 @@ class DocumentiCantieri
     *    @ORM\PrePersist
     *    @ORM\PreUpdate
     */
-
     public function setCreatedAtValue()
     {
          $this->createdAt = new \DateTime();
     }
 
-    
+
     public function getCantiere(): ?Cantieri
     {
         return $this->cantiere;
@@ -116,26 +118,18 @@ class DocumentiCantieri
         return $this;
     }
 
-    /**
-    *    @return mixed 
-    */
+    
     public function getDocumentoFile()
     {
         return $this->documentoFile;
     }
 
-    /**
-    *    @param mixed $documentoFile
-    *    @throws \Exception
-    */
-    public function setDocumentoFile($documentoFile): void
+    
+    public function setDocumentoFile(File $documentoName = null)
     {
-        $this->documentoFile = $documentoFile;
-        if ($documentoFile) {
+        $this->documentoFile = $documentoName;
+        if ($documentoName) {
             $this->createdAt = new \DateTime('now');
         }
     }
-
-   
-
 }

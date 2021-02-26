@@ -46,6 +46,11 @@ class DocumentiPersonale
     private $persona;
 
 
+    public function __toString(): string
+    {
+            return $this->titolo;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -68,7 +73,7 @@ class DocumentiPersonale
         return $this->documentoPath;
     }
 
-    public function setDocumentoPath(string $documentoPath): self
+    public function setDocumentoPath(?string $documentoPath): self
     {
         $this->documentoPath = $documentoPath;
 
@@ -91,7 +96,6 @@ class DocumentiPersonale
     *    @ORM\PrePersist
     *    @ORM\PreUpdate
     */
-
     public function setCreatedAtValue()
     {
          $this->createdAt = new \DateTime();

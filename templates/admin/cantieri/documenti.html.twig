@@ -4,6 +4,6 @@
 {% endif %} 
 {% if field.value  is not null  %}  
       {% for documento in field.value %}
-      <a href="{{ '/uploads/files/cantieri/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ documento.titolo }}   -  </a>  
+      <a href="{{ '/uploads/files/cantieri/documenti/' ~ documento.documentoName }}" target = '_blank'>{{ documento.titolo }}   -  </a>  
       {% endfor %} 
 {% endif %} 

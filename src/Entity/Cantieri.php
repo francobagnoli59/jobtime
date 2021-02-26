@@ -215,20 +215,21 @@ class Cantieri
      */
     private $categoria;
 
-     /**
+    /**
      * @ORM\OneToMany(targetEntity=DocumentiCantieri::class, mappedBy="cantiere", cascade={"persist"})
      */
-    private $documentiCantieri;
+    private $documentiCantiere;
 
-      
+          
     public function __construct()
     {
-        $this->documentiCantieri = new ArrayCollection();
+       
         $this->commentiPubblici = new ArrayCollection();
         $this->personale = new ArrayCollection();
         $this->orelavorate = new ArrayCollection();
         $this->pianoOreCantiere = new ArrayCollection();
         $this->consolidatiCantieri = new ArrayCollection();
+        $this->documentiCantiere = new ArrayCollection();
         
     }
 
@@ -740,32 +741,35 @@ class Cantieri
         return $this;
     }
 
-    /**
-     * @return Collection|DocumentiCantieri[]
-     */
-    public function getDocumentiCantieri(): Collection
-    {
-        return $this->documentiCantieri;
-    }
+  
+   /**
+    * @return Collection|DocumentiCantieri[]
+    */
+   public function getDocumentiCantiere(): Collection
+   {
+       return $this->documentiCantiere;
+   }
 
-    public function addDocumentiCantieri(DocumentiCantieri $documentiCantieri): self
-    {
-        if (!$this->documentiCantieri->contains($documentiCantieri)) {
-            $this->documentiCantieri[] = $documentiCantieri;
-            $documentiCantieri->setCantiere($this);
-        }
-        return $this;
-    }
+   public function addDocumentiCantiere(DocumentiCantieri $documentiCantiere): self
+   {
+       if (!$this->documentiCantiere->contains($documentiCantiere)) {
+           $this->documentiCantiere[] = $documentiCantiere;
+           $documentiCantiere->setCantiere($this);
+       }
 
-    public function removeDocumentiCantieri(DocumentiCantieri $documentiCantieri): self
-    {
-        if ($this->documentiCantieri->removeElement($documentiCantieri)) {
-            // set the owning side to null (unless already changed)
-            if ($documentiCantieri->getCantiere() === $this) {
-                $documentiCantieri->setCantiere(null);
-            }
-        }
-        return $this;
-    }
+       return $this;
+   }
+
+   public function removeDocumentiCantiere(DocumentiCantieri $documentiCantiere): self
+   {
+       if ($this->documentiCantiere->removeElement($documentiCantiere)) {
+           // set the owning side to null (unless already changed)
+           if ($documentiCantiere->getCantiere() === $this) {
+               $documentiCantiere->setCantiere(null);
+           }
+       }
+
+       return $this;
+   }
 
 }

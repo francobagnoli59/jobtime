@@ -161,10 +161,11 @@ class CantieriCrudController extends AbstractCrudController
             return $cs->createQueryBuilder('c')
                ->orderBy('c.categoria', 'ASC');     },
                              ]);
-        $collectionDoc = CollectionField::new('documentiCantieri', 'Contratti/Documenti')
+        $collectionDoc = CollectionField::new('documentiCantiere', 'Contratti/Documenti')
         ->setEntryType(DocumentiCantieriType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 3MB ciascuno)</mark>');
-        $collectionDocView = CollectionField::new('documentiCantieri', 'Contratti/Documenti')
+        $collectionDocView = CollectionField::new('documentiCantiere', 'Contratti/Documenti')
         ->setTemplatePath('admin/cantieri/documenti.html.twig');
+     
 
         $panel2 = FormField::addPanel('PIANIFICAZIONE CANTIERE')->setIcon('fas fa-wallet')->setHelp('Inserire i dati per una corretta pianificazione');
         $azienda = AssociationField::new('azienda', 'Azienda del gruppo')->setHelp('Scegliere l\'azienda del gruppo che eroga i servizi')

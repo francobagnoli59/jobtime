@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\DocumentiCantieri;
+use App\Entity\DocumentiPersonale;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -15,22 +15,22 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 
 
 
-class DocumentiCantieriCrudController extends AbstractCrudController
+class DocumentiPersonaleCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return DocumentiCantieri::class;
+        return DocumentiPersonale::class;
     }
 
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setEntityLabelInSingular('Documento Cantiere')
-            ->setEntityLabelInPlural('Documenti Cantieri')
-            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Documenti Cantieri')
-            ->setPageTitle(Crud::PAGE_NEW, 'Crea nuovo Documento Cantiere')
-            ->setPageTitle(Crud::PAGE_DETAIL, fn (DocumentiCantieri $titolo) => (string) $titolo)
-            ->setPageTitle(Crud::PAGE_EDIT, fn (DocumentiCantieri $titolo) => sprintf('Modifica documento <b>%s</b>', $titolo->getTitolo()))
+            ->setEntityLabelInSingular('Documento Personale')
+            ->setEntityLabelInPlural('Documenti Personale')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Documenti Personale')
+            ->setPageTitle(Crud::PAGE_NEW, 'Crea nuovo Documento Personale')
+            ->setPageTitle(Crud::PAGE_DETAIL, fn (DocumentiPersonale $titolo) => (string) $titolo)
+            ->setPageTitle(Crud::PAGE_EDIT, fn (DocumentiPersonale $titolo) => sprintf('Modifica documento <b>%s</b>', $titolo->getTitolo()))
             ;
     }
 
@@ -59,22 +59,22 @@ class DocumentiCantieriCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $panel1 = FormField::addPanel('DOCUMENTO CANTIERE');
+        $panel1 = FormField::addPanel('DOCUMENTO PERSONALE');
         $titolo = TextField::new('titolo', 'Titolo documento');  
-        $documentoName = TextField::new('documentoName' , 'Path documento' )->setTemplatePath('admin/cantieri/doc_view.html.twig');
-        $cantiere = AssociationField::new('cantiere', 'Cantiere');
+        $documentoPath = TextField::new('documentoPath' , 'Path documento' )->setTemplatePath('admin/personale/doc_view.html.twig');
+        $persona = AssociationField::new('persona', 'Persona');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $titolo, $cantiere, $documentoName, $createdAt];
+            return [$id, $titolo, $persona, $documentoPath, $createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1,  $cantiere,  $panel_ID, $id, $createdAt];
+            return [$panel1,  $persona,  $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1,  $cantiere];
+            return [$panel1,  $persona, ];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1,  $cantiere, $panel_ID, $id, $createdAt];
+            return [$panel1,  $persona,  $documentoPath, $panel_ID, $id, $createdAt];
         }
     }
 }
