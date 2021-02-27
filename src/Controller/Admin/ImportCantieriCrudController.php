@@ -231,11 +231,11 @@ class ImportCantieriCrudController extends AbstractCrudController
                                 break;
                             case "MonteOrePreviste":
                                 $cantiere->setPlanningHours($cellValue);
-                                if ($cantiere->setPlanningHours() === 0) { $cantiere->setIsPlanningPerson(false);}
+                                if ($cantiere->getPlanningHours() === 0) { $cantiere->setIsPlanningPerson(false);}
                                 break;                              
                             case "CostoMateriali":
                                 $cantiere->setPlanningCostMaterial($cellValue*100);
-                                if ($cantiere->setPlanningCostMaterial() === 0) { $cantiere->setIsPlanningMaterial(false);}
+                                if ($cantiere->getPlanningCostMaterial() === 0) { $cantiere->setIsPlanningMaterial(false);}
                                 break;
                             case "CategoriaServizi":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
