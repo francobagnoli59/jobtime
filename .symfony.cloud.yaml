@@ -39,6 +39,7 @@ mounts:
     "/public/uploads/files/personale/cv": { source: local, source_path: cv }
     "/public/uploads/files/personale/documenti": { source: local, source_path: documenti }
     "/public/uploads/files/cantieri/documenti": { source: local, source_path: documenti }
+    "/public/uploads/files/cantieri/import": { source: local, source_path: import }
     "/public/downloads/flowsalary": { source: local, source_path: flowsalary }
     "/public/downloads/errorImport": { source: local, source_path: errorImport } 
 

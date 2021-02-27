@@ -17,48 +17,49 @@ class CantieriValidator
         }
 
         // Controllo coerenza dati amministrazione pubblica
+        if ($cantieri->getCliente() !== null) {
+            if ($cantieri->getCliente()->getTypeCliente() === 'PA') {
 
-        if ($cantieri->getCliente()->getTypeCliente() === 'PA') {
+                if ($cantieri->getTypeOrderPA() != 'C' && $cantieri->getTypeOrderPA() != 'E'  && $cantieri->getTypeOrderPA() != 'O') {
 
-            if ($cantieri->getTypeOrderPA() != 'C' && $cantieri->getTypeOrderPA() != 'E'  && $cantieri->getTypeOrderPA() != 'O') {
-
-                $context->buildViolation('Cliente Pubblica Amministrazione, ma tipologia Appanto non indicata.')
-                ->addViolation() ;
-            }
-           
-            if ($cantieri->getTypeOrderPA() === 'C' || $cantieri->getTypeOrderPA() ==='E' ||  $cantieri->getTypeOrderPA() === 'O') {
-
-                if (strlen($cantieri->getNumDocumento()) === 0 ) {
-                    $context->buildViolation('Appalto Pubblica Amministrazione, inserire numero documento.')
+                    $context->buildViolation('Cliente Pubblica Amministrazione, ma tipologia Appanto non indicata.')
                     ->addViolation() ;
                 }
-                if ( $cantieri->getDateDocumento() === null) {
-                    $context->buildViolation('Appalto Pubblica Amministrazione, inserire una data documento.')
-                    ->addViolation() ;
-                } 
-                if (strlen($cantieri->getCodiceCIG()) === 0 &&  strlen($cantieri->getCodiceCUP()) === 0) {
-                    $context->buildViolation('Appalto Pubblica Amministrazione, inserire un codice CIG o un codice CUP.')
+            
+                if ($cantieri->getTypeOrderPA() === 'C' || $cantieri->getTypeOrderPA() ==='E' ||  $cantieri->getTypeOrderPA() === 'O') {
+
+                    if (strlen($cantieri->getNumDocumento()) === 0 ) {
+                        $context->buildViolation('Appalto Pubblica Amministrazione, inserire numero documento.')
+                        ->addViolation() ;
+                    }
+                    if ( $cantieri->getDateDocumento() === null) {
+                        $context->buildViolation('Appalto Pubblica Amministrazione, inserire una data documento.')
+                        ->addViolation() ;
+                    } 
+                    if (strlen($cantieri->getCodiceCIG()) === 0 &&  strlen($cantieri->getCodiceCUP()) === 0) {
+                        $context->buildViolation('Appalto Pubblica Amministrazione, inserire un codice CIG o un codice CUP.')
+                        ->addViolation() ;
+                    }
+                }
+            } 
+
+            // Cliente non amministrazione pubblica
+            else {  
+
+                if ($cantieri->getTypeOrderPA() === 'C' || $cantieri->getTypeOrderPA() ==='E' ) {
+                    $context->buildViolation('Appalto per Pubblica Amministrazione, ma cliente non Pubblica Amministrazione')
+                        ->addViolation() ;
+                }
+
+                if (strlen($cantieri->getCodiceCIG()) > 0 ) {
+                    $context->buildViolation('Il codice CIG è riservato agli Appalti Pubblica Amministrazione.')
                     ->addViolation() ;
                 }
-            }
-        } 
 
-        // Cliente non amministrazione pubblica
-        else {  
-
-            if ($cantieri->getTypeOrderPA() === 'C' || $cantieri->getTypeOrderPA() ==='E' ) {
-                $context->buildViolation('Appalto per Pubblica Amministrazione, ma cliente non Pubblica Amministrazione')
+                if (strlen($cantieri->getCodiceCUP()) > 0) {
+                    $context->buildViolation('Il codice CUP è riservato agli Appalti Pubblica Amministrazione.')
                     ->addViolation() ;
-            }
-
-            if (strlen($cantieri->getCodiceCIG()) > 0 ) {
-                $context->buildViolation('Il codice CIG è riservato agli Appalti Pubblica Amministrazione.')
-                ->addViolation() ;
-            }
-
-            if (strlen($cantieri->getCodiceCUP()) > 0) {
-                $context->buildViolation('Il codice CUP è riservato agli Appalti Pubblica Amministrazione.')
-                ->addViolation() ;
+                }
             }
         }
     }

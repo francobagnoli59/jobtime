@@ -38,8 +38,8 @@
             data.addRows([arrayData]);
            };
 
+// height: 300,
       var options = {
-        height: 300,
         gantt: {
           criticalPathEnabled: false,
           trackHeight: 30,
@@ -99,13 +99,13 @@
     <body>
       <input type="hidden" id="gant" value="{{ gant_chart|json_encode }}">
       <input type="hidden" id="bar" value="{{ bar_chart|json_encode }}">
-      <div id="gantt_div" style="width: 800px" > </div>
+      <div id="gantt_div" style="width: 800px; height: 500px;" > </div>
       <div id="bar_div" style="width: 800px; height: 500px;" > </div>
     </body>
 
 {% endblock %}
 
- {#  
+ {#      <div id="bar_div" style="width: 800px; height: 500px;" > </div>
  
  // series: {0:{color: 'black', visibleInLegend: false}, 3:{color: 'red', visibleInLegend: false}}
 

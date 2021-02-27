@@ -1,0 +1,9 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% if field.value  is null or field.value == '' %}
+   <a>Modulo excel non impostato</a>
+{% endif %}
+{% if field.value  is not null and field.value != '' %}
+<a href="{{ '/uploads/files/cantieri/import/' ~ field.value }}" target = '_blank'>Vedi Excel di Import</a>
+{% endif %}

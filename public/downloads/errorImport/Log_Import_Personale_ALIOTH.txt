@@ -1,1 +1,17 @@
-Riga: 4 , Colonna: Provincia - Sigla non presente nella tabella Province
+Riga: 44 , Colonna: Nome - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: CodiceFiscale - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: Indirizzo - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: CAP - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: Città - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: Provincia - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: Matricola - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: DataAssunzione - non contiene una data: 
+Riga: 44 , Colonna: Contratto - valore non valido, deve contenere soloun carattere=  I / D / T
+Riga: 44 , Colonna: CostoOrario - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: CostoStraordinario - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: PlanningSettimanale - dato nullo o inisistente, invece è obbligatorio
+Riga: 44 , Colonna: Socio - valore non valido, deve contenere: 1 / 0 oppure Si / No  oppure true / false
+Riga: 44 , Colonna: DivAb - valore non valido, deve contenere: 1 / 0 oppure Si / No  oppure true / false
+Riga: 44 , Colonna: Mansione - Valore  non presente nella tabella di configurazione Mansioni
+Riga: 45 , Colonna: Cantiere - Valore non presente nell'anagrafica Cantieri
+Riga: 46 , Colonna: Cantiere - Valore non presente nell'anagrafica Cantieri

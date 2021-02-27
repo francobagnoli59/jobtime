@@ -142,7 +142,8 @@ class ImportPersonaleCrudController extends AbstractCrudController
                      // determina cella colonna A per capire se uscire dal ciclo
                      $cellValue = $workSheet->getCell('A'.sprintf('%d',$row) )->getValue();
                      $cellValue = trim($cellValue);  
-                     if (strtoupper(substr($cellValue,1,3)) !== 'ZZZ' ) {
+                     if ($cellValue === "ZZZ" ) { $row = 501 ; }  // fine ciclo, cella A(n) ===  ZZZ }
+                      else {  // riga da leggere
                        if ($cellValue !== null && $cellValue !== "" ) {  
                         $rowFound ++;
                         // Ciclo sulle colonne
@@ -254,7 +255,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                         }  // end switch
                         } //  ciclo sulle colonne
                      } // ennesima riga della colonna A non vuota ( altrimenti scarta tutta la riga)
-                    } else { break; }
+                    } // fine ciclo cella A(n) = ZZZ
                 } // ciclo di 500 righe dati
 
                 // Se non ci sono errori ripete il ciclo ed importa i dati nella entity personale
@@ -264,7 +265,8 @@ class ImportPersonaleCrudController extends AbstractCrudController
                 for ($row = 2; $row < 501; $row++) {
                      // determina cella colonna A per capire se uscire dal ciclo
                      $cellValue = $workSheet->getCell('A'.sprintf('%d',$row) )->getValue();  
-                     if (strtoupper(substr($cellValue,1,3)) !== 'ZZZ' ) {
+                     if ($cellValue === "ZZZ" ) { $row = 501 ; }  // fine ciclo, cella A(n) ===  ZZZ }
+                      else {  // riga da leggere
                        if ($cellValue !== null && $cellValue !== "" ) {  
 
                         // ASSEGNA specifici valori per tipo di colonna
@@ -346,24 +348,26 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 } else {  $personale->setIsInvalid(false); }
                                 break;
                             case "Mansione":
-                                $mansioni = explode ("|", $cellValue );
-                                if (count($mansioni) > 0 ) { 
-                                    // caso più mansioni
-                                    $mansioniColl = [];
-                                    foreach ($mansioni as $mansione) {
-                                        $mansioniColl[] =  $this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($mansione)])  ;
+                                if ($cellValue !== null && $cellValue !== '' ) { 
+                                    $mansioni = explode ("|", $cellValue );
+                                    if (count($mansioni) > 0 ) { 
+                                        // caso più mansioni
+                                        foreach ($mansioni as $mansione) {
+                                            $personale->addMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($mansione)]) ) ;    
+                                          }
+                                        }        
+                                    else { 
+                                        // caso solo una mansione
+                                        if (strlen($cellValue) > 0 ) {
+                                            $personale->addMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($cellValue)]) ) ;
                                         }
-                                        $personale->setMansione($mansioniColl[]);
-                                     } 
-                                else { 
-                                    // caso solo una mansione
-                                    if (strlen($cellValue) > 0 ) {
-                                        $personale->setMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($cellValue)]) ) ;
-                                       }
-                                } 
+                                    }
+                                }
                                 break;
                             case "Cantiere":
+                                if ($cellValue !== null && $cellValue !== '' ) { 
                                 $personale->setCantiere($this->entityManager->getRepository(Cantieri::class)->findOneBy(['nameJob'=> strtoupper($cellValue)]));
+                                }
                                 break;
                             case "E-mail":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
@@ -390,7 +394,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                     $personale->setScadenzaVisitaMedica($date);  }
                                     else {
                                         if ($personale->getUltimaVisitaMedica() !== null) {
-                                            $date = new \DateTime();
+                                            $date =$personale->getUltimaVisitaMedica();
                                             $date->add(new DateInterval('+364 days'));
                                             $personale->setScadenzaVisitaMedica($date);
                                         } 
@@ -413,10 +417,10 @@ class ImportPersonaleCrudController extends AbstractCrudController
                         $rowInsert ++;
                         }
                      } // ennesima riga della colonna A non vuota ( altrimenti scarta tutta la riga)
-                    } else { break; }  // fine ciclo  ZZZ
+                    } // fine ciclo cella A(n) = ZZZ
                 } // ciclo di 500 righe dati
 
-                    if ($rowExist > 0) {   $this->addflash('warning', sprintf('Il file excel %s contiene %d persone che già esistevano in JobTime, che di conseguenza non sono state inserite, pertanto %d persone state importate senza errori.', $pathfile, $rowExist, $rowInsert));
+                    if ($rowExist > 0) {   $this->addflash('warning', sprintf('Il file excel %s contiene %d persone che già esistevano in JobTime, che di conseguenza non sono state inserite, pertanto %d persone sono state importate senza errori.', $pathfile, $rowExist, $rowInsert));
                     }
                      else { 
                     $this->addflash('success', sprintf('Il file excel %s contiene %d persone che sono state importate senza errori', $pathfile, $rowInsert));

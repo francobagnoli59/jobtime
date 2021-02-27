@@ -16,6 +16,7 @@ use App\Entity\OreLavorate;
 use App\Entity\ConsolidatiPersonale;
 use App\Entity\ConsolidatiCantieri;
 use App\Entity\ImportPersonale;
+use App\Entity\ImportCantieri;
 use App\Entity\DocumentiCantieri;
 use App\Entity\DocumentiPersonale;
 use App\Entity\CategorieServizi;
@@ -117,6 +118,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Personale', 'fas fa-address-card', Personale::class);
         yield MenuItem::linkToCrud('Clienti', 'fas fa-users', Clienti::class);
         yield MenuItem::subMenu('Import anagrafiche', 'fas fa-upload')->setSubItems([
+            MenuItem::linkToCrud('Import cantieri', 'fas fa-file-excel', ImportCantieri::class),
             MenuItem::linkToCrud('Import personale', 'fas fa-file-excel', ImportPersonale::class),
             ]) ;
 
@@ -125,7 +127,7 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section();
         yield MenuItem::subMenu('Configurazioni', 'fas fa-cogs ')->setSubItems([
-             MenuItem::linkToCrud('Aziende', 'fas fa-boxes', Aziende::class),
+             MenuItem::linkToCrud('Aziende', 'fas fa-industry', Aziende::class),
              MenuItem::linkToCrud('Province', 'fas fa-map-marker-alt', Province::class),
              MenuItem::linkToCrud('Aree e zone geografiche', 'fas fa-map-marked-alt', AreeGeografiche::class),
              MenuItem::linkToCrud('Mansioni personale', 'fas fa-id-card-alt', Mansioni::class),

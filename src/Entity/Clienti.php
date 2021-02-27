@@ -140,7 +140,7 @@ class Clienti
 
     public function setName(string $name): self
     {
-        $this->name = $name;
+        $this->name = strtoupper($name);
 
         return $this;
     }

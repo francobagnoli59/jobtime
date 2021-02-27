@@ -49,14 +49,18 @@ class CantieriChartController extends AbstractController
             if ($cantiere->getPlanningHours() === 0 ) {
                 $ricavo = 0 ; $ore = 0;
             } else {
-                $ore = $cantiere->getPlanningHours();
+                $interval = $cantiere->getDateEndJob()->diff($cantiere->getDateStartJob());
+                $giorni = $interval->format('%a');
+                if ($giorni < 1 ) { $giorni = 1 ;}
+                $oremediegiorno = $cantiere->getPlanningHours() / $giorni;  // ore medie giorno (base 365)
+                $ore = $oremediegiorno * 30 ;  // ore medie mese (base 360)
                 if ($cantiere->getFlatRate() > 0 ) {
-                    $ricavo = ($cantiere->getFlatRate()/100) / $ore;
+                    $ricavo = (($cantiere->getFlatRate()/100)/$cantiere->getPlanningHours()) ; 
                 } else {
                     $ricavo = $cantiere->getHourlyRate()/100;
                 }
             }
-            // chart Bar  Consolidato mesi colcola l media sui mesi consolidati
+            // chart Bar  Consolidato mesi colcola la media sui mesi consolidati
             $olav = 0; $oimp = 0; $clav = 0; $oreLav = 0; $costo = 0;
             $consolidatiCantieri = [];
             $consolidatiCantieri = $cantiere->getConsolidatiCantieri();
@@ -66,7 +70,8 @@ class CantieriChartController extends AbstractController
                     $oimp += floatval($consolidato->getOreStraordinario());
                     $clav += floatval($consolidato->getCostoOreLavoro()/100);
                 }
-                $oreLav = $olav; $costo = $clav/($olav + $oimp);
+                if (($olav + $oimp) <= 0 ) { $costo = $clav; } else { $costo = $clav/($olav + $oimp);}
+                $oreLav = $olav;
                 
             $arrayBar = [
                 'Cantiere' => $cantiere->getNameJob(),

@@ -76,7 +76,7 @@ class AziendeCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $panel1 = FormField::addPanel('INFORMAZIONI DI BASE')->setIcon('fas fa-boxes');
+        $panel1 = FormField::addPanel('INFORMAZIONI DI BASE')->setIcon('fas fa-industry');
         $companyName = TextField::new('companyName', 'Nome Azienda');
         $nickName = TextField::new('nickName', 'Nick Name');
         $partitaIva = TextField::new('partitaIva', 'Partita Iva')->setRequired(true);

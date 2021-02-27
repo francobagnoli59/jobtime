@@ -198,7 +198,7 @@ class CantieriCrudController extends AbstractCrudController
       
         $isPlanningPerson = BooleanField::new('isPlanningPerson', 'Pianificazione del personale')->setHelp('Se non attivato il lavoro si intende a consuntivo');
         // dump($regolaFatturazione) ;
-        $planningHours = IntegerField::new('planningHours', 'Ore previste' )->setHelp('Indicare le ore pianificate per ciclo di fatturazione');
+        $planningHours = IntegerField::new('planningHours', 'Ore previste' )->setHelp('Indicare le ore lavoro pianificate per tutto il periodo contrattuale');
         $isPlanningMaterial = BooleanField::new('isPlanningMaterial', 'Pianificazione dei materiali')->setHelp('Se non attivato i materiali sono forniti dal cliente/committente');
         $planningCostMaterial = MoneyField::new('planningCostMaterial', 'Costo materiali a budget')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo dei materiali previsti per la completa fornitura di tutto il periodo del progetto');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
