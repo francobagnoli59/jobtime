@@ -18,6 +18,9 @@ use App\Entity\ConsolidatiCantieri;
 use App\Entity\ImportPersonale;
 use App\Entity\DocumentiCantieri;
 use App\Entity\DocumentiPersonale;
+use App\Entity\CategorieServizi;
+use App\Entity\AreeGeografiche;
+use App\Entity\Mansioni;
 
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -107,7 +110,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Inserimento orari di lavoro');
         yield MenuItem::linkToRoute('Prepara mensilità', 'fas fa-calendar', 'planning_month');
         yield MenuItem::linkToCrud('Ore lavorate', 'fas fa-clock',  OreLavorate::class);
-        yield MenuItem::linkToCrud('Elabora mensilità', 'fas fa-cogs', MesiAziendali::class);
+        yield MenuItem::linkToCrud('Elabora mensilità', 'fas fa-calendar-day', MesiAziendali::class);
 
         yield MenuItem::section('Anagrafiche');
         yield MenuItem::linkToCrud('Cantieri', 'fas fa-building', Cantieri::class);
@@ -120,14 +123,19 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Report');
         yield MenuItem::linkToRoute('Cantieri', 'fas fa-chart-line', 'cantieri_chart');
 
-        yield MenuItem::section('Configurazioni');
-        yield MenuItem::linkToCrud('Aziende', 'fas fa-boxes', Aziende::class);
-        yield MenuItem::linkToCrud('Province', 'fas fa-map-marker-alt', Province::class);
-        yield MenuItem::linkToCrud('Causali Paghe', 'fas fa-pencil-ruler', Causali::class);
-        yield MenuItem::linkToCrud('Festività annuali', 'fas fa-plane-departure', FestivitaAnnuali::class);
-        yield MenuItem::linkToCrud('Regole di fatturazione', 'fas fa-wave-square', RegoleFatturazione::class);
-       
         yield MenuItem::section();
+        yield MenuItem::subMenu('Configurazioni', 'fas fa-cogs ')->setSubItems([
+             MenuItem::linkToCrud('Aziende', 'fas fa-boxes', Aziende::class),
+             MenuItem::linkToCrud('Province', 'fas fa-map-marker-alt', Province::class),
+             MenuItem::linkToCrud('Aree e zone geografiche', 'fas fa-map-marked-alt', AreeGeografiche::class),
+             MenuItem::linkToCrud('Mansioni personale', 'fas fa-id-card-alt', Mansioni::class),
+             MenuItem::linkToCrud('Categorie servizi', 'fas fa-dolly', CategorieServizi::class),
+             MenuItem::linkToCrud('Causali Paghe', 'fas fa-pencil-ruler', Causali::class),
+             MenuItem::linkToCrud('Festività annuali', 'fas fa-plane-departure', FestivitaAnnuali::class),
+             MenuItem::linkToCrud('Regole di fatturazione', 'fas fa-wave-square', RegoleFatturazione::class),
+            ]) ;
+       
+        // yield MenuItem::section();
         yield MenuItem::subMenu('Manutenzioni', 'fas fa-tools')->setSubItems([
              MenuItem::linkToCrud('Feedback e segnalazioni', 'fas fa-comments', CommentiPubblici::class),
              MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class),

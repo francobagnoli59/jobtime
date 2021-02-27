@@ -5,6 +5,8 @@ namespace App\Controller\Admin;
 use App\Entity\ImportPersonale;
 use App\Entity\Personale;
 use App\Entity\Province;
+use App\Entity\Cantieri;
+use App\Entity\Mansioni;
 use App\Repository\AziendeRepository;
 use App\Validator\Routine\CodiceFiscaleValidation;
 
@@ -81,17 +83,21 @@ class ImportPersonaleCrudController extends AbstractCrudController
             if ($spreadsheet->getSheetByName('Dati')) {
                 // Array di controllo
                 $colExcel = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-                $colDatiObbl = ['Cognome' => 'N' ,'Nome' => 'N' , 'CodiceFiscale' => 'N' , 'Indirizzo' => 'N' , 'CAP' => 'N' , 'Città' => 'N' , 'Provincia' => 'N' , 'Matricola' => 'N' , 'CostoOrario' => 'N' , 'CostoStraordinario' => 'N' , 'PlanningSettimanale' => 'N' ];
-                $colDatiFacol = ['E-mail', 'Cellulare', 'Telefono','DataAssunzione','ContoIban'];
+                $colDatiObbl = ['Cognome' => 'N' ,'Nome' => 'N' , 'CodiceFiscale' => 'N' , 'Indirizzo' => 'N' , 'CAP' => 'N' , 'Città' => 'N',
+                 'Provincia' => 'N' , 'Matricola' => 'N' , 'DataAssunzione' => 'N', 'Contratto' => 'N', 'DataScadenzaContratto' => 'N',
+                 'CostoOrario' => 'N' , 'CostoStraordinario' => 'N' , 'PlanningSettimanale' => 'N', 'Socio' => 'N', 'DivAb' => 'N', 'Mansione' => 'N' ];
+                $colDatiFacol = ['Livello', 'Cantiere', 'E-mail', 'Cellulare', 'Telefono','ContoIban',  'DataUltimaVisitaMedica', 'DataScadenzaVisitaMedica'];
                 $colDatiAssoc = ['Cognome' => '@' ,'Nome' => '@' , 'CodiceFiscale' => '@' , 'Indirizzo' => '@' , 'CAP' => '@' , 
-                'Città' => '@' , 'Provincia' => '@' , 'Matricola' => '@' , 'CostoOrario' => '@' , 'CostoStraordinario' => '@' , 
-                'PlanningSettimanale' => '@', 'E-mail' => '@' , 'Cellulare' => '@' , 'Telefono' => '@' , 'DataAssunzione' => '@' , 'ContoIban' => '@' ];
+                 'Città' => '@' , 'Provincia' => '@' , 'Matricola' => '@' ,  'DataAssunzione' => '@', 'Contratto' => '@', 'DataScadenzaContratto' => '@',
+                 'CostoOrario' => '@' , 'CostoStraordinario' => '@' , 'PlanningSettimanale' => '@', 'Socio' => '@', 'DivAb' => '@', 'Mansione' => '@',
+                 'Livello' => '@' , 'Cantiere' => '@' , 'E-mail' => '@' , 'Cellulare' => '@' , 'Telefono' => '@' ,  'ContoIban' => '@', 'DataUltimaVisitaMedica' => '@' , 'DataScadenzaVisitaMedica' => '@'  ];
                 $commentiImport = []; // commenti/messaggi di errore relativi all'import
                 // cerca sulla prima riga le colonne progettate e crea Array $colDatiAssoc con posizione colonna
                 $workSheet = $spreadsheet->getActiveSheet();
                 // ciclo colonne obbligatorie
                 foreach ($colExcel as $col) {
                     $cellValue = $workSheet->getCell($col.'1')->getValue();  // contenuto cella
+                    $cellValue = trim($cellValue);
                     $arrayDatiObbl = array_keys($colDatiObbl);
                     foreach ($arrayDatiObbl as $key) {
                         if ( $cellValue === $key) {
@@ -105,6 +111,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                 // ciclo colonne facoltative
                 foreach ($colExcel as $col) {
                     $cellValue = $workSheet->getCell($col.'1')->getValue();  // contenuto cella
+                    $cellValue = trim($cellValue);
                     foreach ($colDatiFacol as $key) {
                         if ( $cellValue === $key) {
                             // assegna colonna al dato facoltativo
@@ -133,7 +140,8 @@ class ImportPersonaleCrudController extends AbstractCrudController
                 // ciclo di CONTROLLO comunque limitato a 500 righe 
                 for ($row = 2; $row < 501; $row++) {
                      // determina cella colonna A per capire se uscire dal ciclo
-                     $cellValue = $workSheet->getCell('A'.sprintf('%d',$row) )->getValue();  
+                     $cellValue = $workSheet->getCell('A'.sprintf('%d',$row) )->getValue();
+                     $cellValue = trim($cellValue);  
                      if (strtoupper(substr($cellValue,1,3)) !== 'ZZZ' ) {
                        if ($cellValue !== null && $cellValue !== "" ) {  
                         $rowFound ++;
@@ -165,6 +173,32 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 $testMatricola = $this->controlMatricola($cellValue, $row);
                                 if ($testMatricola[0] !== 'OK') { $commentiImport[] = $testMatricola[1] ;}
                                 break;
+                            case "DataAssunzione":
+                                $testAssunzione = $this->controlDataAssunzione($cellValue, $row);
+                                if ($testAssunzione[0] !== 'OK') { $commentiImport[] = $testAssunzione[1] ;}
+                                break;
+                            case "Contratto":
+                                $testContratto = $this->controlContratto($cellValue, $row);
+                                if ($testContratto[0] !== 'OK') { $commentiImport[] = $testContratto[1] ;}
+                                break;
+                            case "DataScadenzaContratto":
+                                if ($testContratto[0] === 'OK' && ($testContratto[1] === 'D' || $testContratto[0] === 'I')) {
+                                    $testScadenzaContratto = $this->controlDataScadenzaContratto($cellValue, $row);
+                                    if ($testScadenzaContratto[0] !== 'OK') { $commentiImport[] = $testScadenzaContratto[1] ;}
+                                }
+                                break;
+                            case "Socio":
+                                $testSocio = $this->controlSocio($cellValue, $row);
+                                if ($testSocio[0] !== 'OK') { $commentiImport[] = $testSocio[1] ;}
+                                break;
+                            case "DivAb":
+                                $testDivAb = $this->controlDivAb($cellValue, $row);
+                                if ($testDivAb[0] !== 'OK') { $commentiImport[] = $testDivAb[1] ;}
+                                break;
+                            case "Mansione":
+                                $testMansione = $this->controlMansione($cellValue, $row, $testDivAb[1]);
+                                if ($testMansione[0] !== 'OK') { $commentiImport[] = $testMansione[1] ;}
+                                break;                               
                             case "CostoOrario":
                             case "CostoStraordinario":
                                 $testCostoOra = $this->controlCostoOrario($cellValue, $row, $key);
@@ -174,6 +208,12 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 $testPlanning = $this->controlPlanningSettimanale($cellValue, $row);
                                 if ($testPlanning[0] !== 'OK') { $commentiImport[] = $testPlanning[1] ;}
                                 break;
+                            case "Cantiere":
+                                if ($cellValue !== null && $cellValue !== '' ) { 
+                                    $testCantiere = $this->controlCantiere($cellValue, $row);
+                                    if ($testCantiere[0] !== 'OK') { $commentiImport[] = $testCantiere[1] ;}
+                                    }
+                                break;                                                             
                             case "E-mail":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
                                 $testEmail = $this->controlEmail($cellValue, $row);
@@ -187,18 +227,30 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 if ($testPhone[0] !== 'OK') { $commentiImport[] = $testPhone[1] ;}
                                 }
                                 break;
-                            case "DataAssunzione":
+                            case "Livello" :
                                 if ($cellValue !== null && $cellValue !== '' ) { 
-                                $testAssunzione = $this->controlDataAssunzione($cellValue, $row);
-                                if ($testAssunzione[0] !== 'OK') { $commentiImport[] = $testAssunzione[1] ;}
+                                $testLivello = $this->controlLivello($cellValue, $row);
+                                if ($testLivello[0] !== 'OK') { $commentiImport[] = $testLivello[1] ;}
                                 }
-                                break;
+                                break;                           
                             case "ContoIban":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
                                 $testConto = $this->controlContoIban($cellValue, $row);
                                 if ($testConto[0] !== 'OK') { $commentiImport[] = $testConto[1] ;}
                                 }
                                 break;
+                            case "DataUltimaVisitaMedica":
+                                if ($cellValue !== null && $cellValue !== '' ) { 
+                                    $testUltimaVisita = $this->controlDataUltimaVisitaMedica($cellValue, $row);
+                                    if ($testUltimaVisita[0] !== 'OK') { $commentiImport[] = $testUltimaVisita[1] ;}
+                                    }
+                            break;
+                            case "DataScadenzaVisitaMedica":
+                                if ($cellValue !== null && $cellValue !== '' && $testUltimaVisita[0] !== 'OK' ) { 
+                                        $testScadenzaVisita = $this->controlDataScadenzaVisitaMedica($cellValue, $row, $testUltimaVisita[1],$testUltimaVisita[2] );
+                                        if ($testScadenzaVisita[0] !== 'OK') { $commentiImport[] = $testScadenzaVisita[1] ;}
+                                    }
+                                break;                                
                         }  // end switch
                         } //  ciclo sulle colonne
                      } // ennesima riga della colonna A non vuota ( altrimenti scarta tutta la riga)
@@ -219,40 +271,60 @@ class ImportPersonaleCrudController extends AbstractCrudController
                         $personale = new Personale();
                         $personale->setAzienda($azienda);
                         $personale->setIsEnforce(true);
+                        $personale->setIsReservedVisita(false);
 
                         // Ciclo sulle colonne
                         foreach ($keyDatiAssoc as $key) {
                         // determina cella secondo la key
                         $cellValue = $workSheet->getCell($colDatiAssoc[$key].sprintf('%d',$row) )->getValue();  
-    
+                        $cellValue = trim($cellValue);    
                         switch ($key){
                             case "Cognome":
-                                $personale->setSurname(trim($cellValue));
+                                $personale->setSurname($cellValue);
                                 break;
                             case "Nome":
-                                $personale->setName(trim($cellValue));
+                                $personale->setName($cellValue);
                                 break;
                             case "Indirizzo":
-                                $personale->setAddress(trim($cellValue));
+                                $personale->setAddress($cellValue);
                                 break;
                             case "Città":
-                                $personale->setCity(trim($cellValue));
+                                $personale->setCity($cellValue);
                                 break;
                             case "CAP":
-                                $personale->setZipCode(trim($cellValue));
+                                $personale->setZipCode($cellValue);
                                 break;
                             case "CodiceFiscale":
-                                $personale->setFiscalCode(trim($cellValue));
+                                $personale->setFiscalCode($cellValue);
                                 $codicefiscale = new CodiceFiscaleValidation;
-                                $codiceFiscaleVerify = $codicefiscale->verifyFiscalCode($cellValue);
+                                $codiceFiscaleVerify = $codicefiscale->verifyFiscalCode(strtoupper($cellValue));
                                 $personale->setGender($codiceFiscaleVerify['Gender']);
                                 $personale->setBirthday($codiceFiscaleVerify['Birthday']);
                                 break;
                             case "Provincia":
-                                $personale->setProvincia($this->entityManager->getRepository(Province::class)->findOneBy(['code'=> $cellValue]));
+                                $personale->setProvincia($this->entityManager->getRepository(Province::class)->findOneBy(['code'=> strtoupper($cellValue)]));
                                 break;
                             case "Matricola":
                                 $personale->setMatricola($cellValue);
+                                break;
+                            case "DataAssunzione":
+                                $date = new \DateTime();
+                                $date->setTimestamp(($cellValue-25569)*86400);
+                                $personale->setDateHiring($date);  
+                                break;
+                            case "Contratto":
+                                $personale->setTipoContratto($cellValue);
+                                break;
+                            case "DataScadenzaContratto":
+                                if ($personale->getTipoContratto() === 'D' || $personale->getTipoContratto() === 'T' ) {
+                                    $date = new \DateTime();
+                                    $date->setTimestamp(($cellValue-25569)*86400);
+                                    $personale->setScadenzaContratto($date);  
+                                }
+                                break;
+                            case "Livello":
+                                if ($cellValue !== null && $cellValue !== '' ) { 
+                                    $personale->setLivello($cellValue); }
                                 break;
                             case "CostoOrario":
                                 $personale->setFullCostHour($cellValue*100);
@@ -262,6 +334,36 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 break;
                             case "PlanningSettimanale":
                                 $personale->setPlanHourWeek( explode ("-", $cellValue ));
+                                break;
+                            case "Socio":
+                                if ($cellValue === 1 || $cellValue === '1' || strtoupper($cellValue) === 'TRUE' || strtoupper($cellValue) === 'SI' ) { 
+                                $personale->setIsPartner(true);
+                                } else {  $personale->setIsPartner(false); }
+                                break;
+                            case "DivAb":
+                                if ($cellValue === 1 || $cellValue === '1' || strtoupper($cellValue) === 'TRUE' || strtoupper($cellValue) === 'SI' ) { 
+                                $personale->setIsInvalid(true);
+                                } else {  $personale->setIsInvalid(false); }
+                                break;
+                            case "Mansione":
+                                $mansioni = explode ("|", $cellValue );
+                                if (count($mansioni) > 0 ) { 
+                                    // caso più mansioni
+                                    $mansioniColl = [];
+                                    foreach ($mansioni as $mansione) {
+                                        $mansioniColl[] =  $this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($mansione)])  ;
+                                        }
+                                        $personale->setMansione($mansioniColl[]);
+                                     } 
+                                else { 
+                                    // caso solo una mansione
+                                    if (strlen($cellValue) > 0 ) {
+                                        $personale->setMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($cellValue)]) ) ;
+                                       }
+                                } 
+                                break;
+                            case "Cantiere":
+                                $personale->setCantiere($this->entityManager->getRepository(Cantieri::class)->findOneBy(['nameJob'=> strtoupper($cellValue)]));
                                 break;
                             case "E-mail":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
@@ -275,11 +377,24 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 if ($cellValue !== null && $cellValue !== '' ) { 
                                     $personale->setPhone(trim($cellValue)); }
                                 break;
-                            case "DataAssunzione":
+                            case "DataUltimaVisitaMedica":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
                                     $date = new \DateTime();
                                     $date->setTimestamp(($cellValue-25569)*86400);
-                                    $personale->setDateHiring($date);  }
+                                    $personale->setUltimaVisitaMedica($date);  }
+                                break;
+                            case "DataScadenzaVisitaMedica":
+                                if ($cellValue !== null && $cellValue !== '' ) { 
+                                    $date = new \DateTime();
+                                    $date->setTimestamp(($cellValue-25569)*86400);
+                                    $personale->setScadenzaVisitaMedica($date);  }
+                                    else {
+                                        if ($personale->getUltimaVisitaMedica() !== null) {
+                                            $date = new \DateTime();
+                                            $date->add(new DateInterval('+364 days'));
+                                            $personale->setScadenzaVisitaMedica($date);
+                                        } 
+                                    }
                                 break;
                             case "ContoIban":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
@@ -373,6 +488,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
             $comment[1] = sprintf('Riga: %d , Colonna: CodiceFiscale - dato nullo o inisistente, invece è obbligatorio', $row) ;}
              else
              {  $codicefiscale = new CodiceFiscaleValidation;
+                $value = strtoupper($value); 
                 $codiceFiscaleVerify = $codicefiscale->verifyFiscalCode($value);
                 if ($codiceFiscaleVerify['Retcode'] === 'ER') {
                     $comment[1] = sprintf('Riga: %d , Colonna: CodiceFiscale - %s ', $row, $codiceFiscaleVerify['Message']) ;}
@@ -387,6 +503,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
     {
         $comment = [];
         $comment[0] = 'ER';
+        $value = strtoupper($value); 
         if ($value === null || $value === '' ) { 
             $comment[1] = sprintf('Riga: %d , Colonna: Provincia - dato nullo o inisistente, invece è obbligatorio', $row) ;}
              else
@@ -398,7 +515,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                     if ( $this->entityManager->getRepository(Province::class)->findOneBy(['code'=> $value]) ) {
                         $comment[0] = 'OK';
                     }
-                    else {  $comment[1] = sprintf('Riga: %d , Colonna: Provincia - Sigla non presente nella tabella Province', $row) ;}
+                    else {  $comment[1] = sprintf('Riga: %d , Colonna: Provincia - Sigla non presente nella tabella di configurazione Province', $row) ;}
                 }
              }
         return $comment ;
@@ -518,14 +635,62 @@ class ImportPersonaleCrudController extends AbstractCrudController
         {  $comment[1] = sprintf('Riga: %d , Colonna: DataAssunzione - non contiene una data: %s', $row, $value) ; }
         return $comment ;
     }
+  
     
+    private function controlDataUltimaVisitaMedica($value, $row ): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        if (is_int($value)) {
+        $date = new \DateTime();
+        $date->setTimestamp(($value-25569)*86400);
+        $dateformat = $date->format('d/m/Y');
+        $dataUltimaVisita = explode ("/", $dateformat ); // divide la data in item di array
+        if ( count($dataUltimaVisita) === 3 )  { 
+            if ( checkdate($dataUltimaVisita[1], $dataUltimaVisita[0], $dataUltimaVisita[2], ) === true) {
+               $comment[0] = 'OK';
+               $comment[1] = $dateformat ; $comment[2] = $date ;
+            } else {
+               $comment[1] = sprintf('Riga: %d , Colonna: DataUltimaVisitaMedica - data non valida %d - %s ', $row, $value, $dateformat) ;
+            }
+            } else
+            {  $comment[1] = sprintf('Riga: %d , Colonna: DataUltimaVisitaMedica - non è nel formato dd/mm/aaaa %d - %s', $row, $value, $dateformat) ; }
+        } else
+        {  $comment[1] = sprintf('Riga: %d , Colonna: DataUltimaVisitaMedica - non contiene una data: %s', $row, $value) ; }
+        return $comment ;
+    }
+
+    private function controlDataScadenzaVisitaMedica($value, $row, $datePrevForm, $datePrevius ): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        if (is_int($value)) {
+        $date = new \DateTime();
+        $date->setTimestamp(($value-25569)*86400);
+        $dateformat = $date->format('d/m/Y');
+        $dataScadenzaVisita = explode ("/", $dateformat ); // divide la data in item di array
+        if ( count($dataScadenzaVisita) === 3 )  { 
+            if ( checkdate($dataScadenzaVisita[1], $dataScadenzaVisita[0], $dataScadenzaVisita[2], ) === true) {
+               if ($date < $datePrevius ) {
+                 $comment[1] = sprintf('Riga: %d , Colonna: DataScadenzaVisitaMedica  %s - inferiore a data ultima visita %s ', $row, $dateformat, $datePrevForm) ;
+               } else {$comment[0] = 'OK'; }
+            } else {
+               $comment[1] = sprintf('Riga: %d , Colonna: DataScadenzaVisitaMedica - data non valida %d - %s ', $row, $value, $dateformat) ;
+            }
+            } else
+            {  $comment[1] = sprintf('Riga: %d , Colonna: DataScadenzaVisitaMedica - non è nel formato dd/mm/aaaa %d - %s', $row, $value, $dateformat) ; }
+        } else
+        {  $comment[1] = sprintf('Riga: %d , Colonna: DataScadenzaVisitaMedica - non contiene una data: %s', $row, $value) ; }
+        return $comment ;
+    }
+
     private function controlContoIban($value, $row ): array
     {
         $comment = [];
         $comment[0] = 'ER';
         $value = str_replace(" ", "", $value); // toglie gli spazi 
         if (strlen($value) > 27 ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: ContoIban - numero non valido, maggiore di 27 caratteri', $row) ;
+            $comment[1] = sprintf('Riga: %d , Colonna: ContoIban - Codice non valido, maggiore di 27 caratteri', $row) ;
         } else
         { 
             $comment[0] = 'OK';
@@ -533,7 +698,126 @@ class ImportPersonaleCrudController extends AbstractCrudController
         return $comment ;
     }
     
-    
+    private function controlContratto($value, $row ): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        $value = strtoupper($value); 
+        if ($value !== 'I' && $value !== 'D' && $value !== 'T' ) { 
+            $comment[1] = sprintf('Riga: %d , Colonna: Contratto - valore non valido, deve contenere soloun carattere=  I / D / T', $row) ;
+        } else
+        { 
+            $comment[0] = 'OK'; $comment[1] = $value;
+        }
+        return $comment ;
+    }
+  
+    private function controlDataScadenzaContratto($value, $row ): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        if (is_int($value)) {
+        $date = new \DateTime();
+        $date->setTimestamp(($value-25569)*86400);
+        $dateformat = $date->format('d/m/Y');
+        $dataScadContratto = explode ("/", $dateformat ); // divide la data in item di array
+        if ( count($dataScadContratto) === 3 )  { 
+            if ( checkdate($dataScadContratto[1], $dataScadContratto[0], $dataScadContratto[2], ) === true) {
+               $comment[0] = 'OK';
+               } else {
+                $comment[1] = sprintf('Riga: %d , Colonna: DataScadenzaContratto - data non valida %d - %s ', $row, $value, $dateformat) ;
+            }
+            } else
+            {  $comment[1] = sprintf('Riga: %d , Colonna: DataScadenzaContratto - non è nel formato dd/mm/aaaa %d - %s', $row, $value, $dateformat) ; }
+        } else
+        {  $comment[1] = sprintf('Riga: %d , Colonna: DataScadenzaContratto - non contiene una data: %s', $row, $value) ; }
+        return $comment ;
+    }
+
+    private function controlLivello($value, $row ): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        if (strlen($value) > 5 ) { 
+            $comment[1] = sprintf('Riga: %d , Colonna: Livello - valore non valido, maggiore di 5 caratteri', $row) ;
+        } else
+        { 
+            $comment[0] = 'OK';
+        }
+        return $comment ;
+    }
+
+    private function controlSocio($value, $row ): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        if ($value !== 1 && $value !== 0 && $value !== '1' && $value !== '0' && strtoupper($value) !== 'TRUE' && strtoupper($value) !== 'FALSE' && strtoupper($value) !== 'SI' && strtoupper($value) !== 'NO' ) { 
+            $comment[1] = sprintf('Riga: %d , Colonna: Socio - valore non valido, deve contenere: 1 / 0 oppure Si / No  oppure true / false', $row) ;
+        } else
+        { 
+            $comment[0] = 'OK';
+        }
+        return $comment ;
+    }
+
+    private function controlDivAb($value, $row ): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        if ($value !== 1 && $value !== 0 && $value !== '1' && $value !== '0' && strtoupper($value) !== 'TRUE' && strtoupper($value) !== 'FALSE' && strtoupper($value) !== 'SI' && strtoupper($value) !== 'NO' ) { 
+            $comment[1] = sprintf('Riga: %d , Colonna: DivAb - valore non valido, deve contenere: 1 / 0 oppure Si / No  oppure true / false', $row) ;
+        } else
+        { 
+            $comment[0] = 'OK';  $comment[1] = $value; 
+        }
+        return $comment ;
+    }
+
+    private function controlMansione($value, $row, $DivAb): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        if (($value === null || $value === '' ) && ($DivAb === 1 || $DivAb === '1' || strtoupper($DivAb) === 'SI' || strtoupper($DivAb) === 'TRUE' ) ) { 
+            $comment[1] = sprintf('Riga: %d , Colonna: Mansione - dato nullo o inisistente, invece è obbligatorio nel caso di Invalidità segnalata', $row ) ;}
+             else
+             {
+                $mansioni = explode ("|", $value );
+                if (count($mansioni) > 0 ) { 
+                    // caso più mansioni
+                    foreach ($mansioni as $mansione) {
+                        if ( $this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($mansione)]) ) {
+                            $comment[0] = 'OK';
+                        }
+                        else {$comment[1] = sprintf('Riga: %d , Colonna: Mansione - Valore %s non presente nella tabella di configurazione Mansioni', $row, $mansione);
+                        break;
+                        }
+                    }
+                } else { 
+                    // caso solo una mansione
+                    if (strlen($value) > 0 ) {
+                        if ( $this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($value)]) ) {
+                            $comment[0] = 'OK';
+                        }
+                        else {$comment[1] = sprintf('Riga: %d , Colonna: Mansione - Valore %s non presente nella tabella di configurazione Mansioni', $row, $value);
+                           }
+                    }
+                }
+             }
+        return $comment ;
+    }
+
+    private function controlCantiere($value, $row): array
+    {
+        $comment = [];
+        $comment[0] = 'ER';
+        $value = strtoupper($value); 
+            if ( $this->entityManager->getRepository(Cantieri::class)->findOneBy(['nameJob'=> $value]) ) {
+                 $comment[0] = 'OK';
+                 }
+             else {  $comment[1] = sprintf('Riga: %d , Colonna: Cantiere - Valore non presente nell\'anagrafica Cantieri', $row) ;}
+        return $comment ;
+    }
+
     public function configureCrud(Crud $crud): Crud
     {
         

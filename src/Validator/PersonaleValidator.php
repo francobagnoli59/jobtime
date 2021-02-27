@@ -56,7 +56,28 @@ class PersonaleValidator
         if ($totday != 7 ) {
             $context->buildViolation(sprintf('%s inserire 7 item rispettivamente dal lunedì alla domenica',$title, $totday))
             ->addViolation() ;
-        }  
-             
+        }
+        
+        // Controlla data scadenza contratto se tipo contratto D / T
+        if ($personale->getTipoContratto() === 'D' || $personale->getTipoContratto() === 'T'  ) {
+            if ($personale->getScadenzaContratto() === null) {
+                $context->buildViolation('Per tipo contratti a tempo Determinato o Stagionali occorre indicare la data di scadenza contratto di lavoro')
+                ->addViolation() ;
+            }
+        }
+
+        // Controlla presenza mansione se invalido
+        $mansioni = [];
+        $mansioni = $personale->getMansione();
+        if ($personale->getIsInvalid() === true &&  count($mansioni) === 0 ) {
+            $context->buildViolation('Per le persone diversamente abili è obbligatorio indicare la mansione lavorativa.')
+            ->addViolation() ;
+        } 
+
+        // Controlla data scadenza visita medica
+        if ($personale->getUltimaVisitaMedica() !== null && $personale->getScadenzaVisitaMedica() === null ){
+            $context->buildViolation('Se già eseguita la visita medica, occorre indicare anche la scadenza della prossima visita.')
+            ->addViolation() ;
+        } 
     }
 }

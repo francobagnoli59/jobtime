@@ -31,9 +31,8 @@ class Cantieri
     private $nameJob;
 
     /**
-     * @ORM\Column(type="string", length=60)
+     * @ORM\Column(type="string", length=60, nullable=true)
      * @Assert\Length(
-     *      min = 4,
      *      max = 60,
      *  )
      */
@@ -235,7 +234,7 @@ class Cantieri
 
     public function __toString(): string
     {
-            return $this->nameJob.' - '.$this->city;
+            return $this->nameJob;
     }
 
     public function getId(): ?int
@@ -250,7 +249,7 @@ class Cantieri
 
     public function setNameJob(string $nameJob): self
     {
-        $this->nameJob = $nameJob;
+        $this->nameJob = strtoupper($nameJob);
 
         return $this;
     }

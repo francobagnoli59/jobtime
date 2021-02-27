@@ -100,10 +100,19 @@ class CantieriCrudController extends AbstractCrudController
             ->add(DateTimeFilter::new('dateEndJob', 'Data fine lavoro'))
             ->add('city')
             ->add(EntityFilter::new('provincia') 
-            ->setFormTypeOption('value_type_options.query_builder', 
+                ->setFormTypeOption('value_type_options.query_builder', 
                 static fn(ProvinceRepository $pr) => $pr->createQueryBuilder('provincia')
-                        ->orderBy('provincia.name', 'ASC') )
-            );
+                        ->orderBy('provincia.name', 'ASC') ) )
+            ->add(EntityFilter::new('categoria') 
+                ->setFormTypeOption('value_type_options.query_builder', 
+                static fn(CategorieServiziRepository $cs) => $cs->createQueryBuilder('categoria')
+                        ->orderBy('categoria.categoria', 'ASC') ) )
+            ->add(EntityFilter::new('cliente') 
+                ->setFormTypeOption('value_type_options.query_builder', 
+                static fn(ClientiRepository $cl) => $cl->createQueryBuilder('cliente')
+                        ->orderBy('cliente.name', 'ASC') ) )
+            ;
+                        
     }
 
   
@@ -127,7 +136,7 @@ class CantieriCrudController extends AbstractCrudController
                             ->orderBy('p.name', 'ASC');
                     },
                 ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
-       /*          
+               /*          
                // disable sort option because of this issue
                 // https://github.com/EasyCorp/EasyAdminBundle/issues/3379
                 //->setSortable(false)
@@ -148,13 +157,13 @@ class CantieriCrudController extends AbstractCrudController
         // $mapsGoogle = UrlField::new('mapsGoogle');  FUNZIONA MA IL CAMPO E' GRANDE E LA FORM SI ALLARGA DI CONSEGUENZA
         $mapsGoogle = MapField::new('mapsGoogle', 'Localizzazione');
         $distance = IntegerField::new('distance', 'Distanza')->setHelp('Indicare la distanza A/R dalla sede in Km');
-        $cliente = AssociationField::new('cliente', 'Cliente')->setHelp('Scegliere il committente del cantiere')
+        $cliente = AssociationField::new('cliente', 'Cliente')->setHelp('Scegliere il committente del cantiere. (Necessario per il processo di fatturazione)')
         ->setFormTypeOptions([
         'query_builder' => function (ClientiRepository $cl) {
             return $cl->createQueryBuilder('c')
                ->orderBy('c.name', 'ASC');     },
-                             ])
-        ->setCustomOptions(array('widget' => 'native'))->setRequired(true);
+                             ]);
+        //->setCustomOptions(array('widget' => 'native'))->setRequired(true);
         $categoria = AssociationField::new('categoria', 'Categoria Servizi forniti')->setHelp('Classifica il cantiere nell\'ambito dei servizi prevalenti')
         ->setFormTypeOptions([
         'query_builder' => function (CategorieServiziRepository $cs) {
@@ -210,7 +219,7 @@ class CantieriCrudController extends AbstractCrudController
         $panelPA = FormField::addPanel('CANTIERE PUBBLICA AMMINISTRAZIONE')->setIcon('fas fa-landmark')->setHelp('Inserire i dati se il committente è una pubblica amministrazione')->renderCollapsed($collapsePA);
         // dump($panelPA) ;
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$nameJob, $city, $mapsGoogle, $azienda, $isPublic, $commentiPubblici, $cliente, $dateStartJob, $dateEndJob];
+            return [$nameJob, $provincia, $categoria, $azienda, $isPublic, $commentiPubblici, $dateStartJob, $dateEndJob];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $categoria, $descriptionJob, $collectionDocView, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $codiceIPA, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

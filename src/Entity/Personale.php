@@ -204,7 +204,59 @@ class Personale
      */
     private $pdfCvFile;
 
-    
+    /**
+     * @ORM\Column(type="string", length=1, options={"default": "I"})
+     
+     */
+    private $tipoContratto;
+
+    /**
+     * @ORM\Column(type="string", length=5, nullable=true)
+     * @Assert\Length( max=5  )
+     */
+    private $livello;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default": false})
+     */
+    private $isInvalid;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default": true})
+     */
+    private $isPartner;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $scadenzaContratto;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $ultimaVisitaMedica;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     * @Assert\GreaterThanOrEqual(propertyPath="ultimaVisitaMedica")
+     */
+    private $scadenzaVisitaMedica;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $isReservedVisita;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $dataPrevistaVisita;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $noteVisita;
+
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
@@ -246,6 +298,17 @@ class Personale
      */
     private $documentiPersonale;
 
+  
+    /**
+     * @ORM\ManyToOne(targetEntity=AreeGeografiche::class, inversedBy="persone")
+     */
+    private $areaGeografica;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Mansioni::class, mappedBy="persone", orphanRemoval=true)
+     */
+    private $mansione;
+
       
     public function __construct()
     {
@@ -253,6 +316,7 @@ class Personale
         $this->pianoOreCantieri = new ArrayCollection();
         $this->consolidatiPersonale = new ArrayCollection();
         $this->documentiPersonale = new ArrayCollection();
+        $this->mansione = new ArrayCollection();
     }
 
 
@@ -836,6 +900,168 @@ class Personale
             // set the owning side to null (unless already changed)
             if ($documentiPersonale->getPersona() === $this) {
                 $documentiPersonale->setPersona(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getTipoContratto(): ?string
+    {
+        return $this->tipoContratto;
+    }
+
+    public function setTipoContratto(string $tipoContratto): self
+    {
+        $this->tipoContratto = $tipoContratto;
+
+        return $this;
+    }
+
+    public function getLivello(): ?string
+    {
+        return $this->livello;
+    }
+
+    public function setLivello(?string $livello): self
+    {
+        $this->livello = $livello;
+
+        return $this;
+    }
+
+    public function getIsInvalid(): ?bool
+    {
+        return $this->isInvalid;
+    }
+
+    public function setIsInvalid(bool $isInvalid): self
+    {
+        $this->isInvalid = $isInvalid;
+
+        return $this;
+    }
+
+    public function getIsPartner(): ?bool
+    {
+        return $this->isPartner;
+    }
+
+    public function setIsPartner(bool $isPartner): self
+    {
+        $this->isPartner = $isPartner;
+
+        return $this;
+    }
+
+    public function getScadenzaContratto(): ?\DateTimeInterface
+    {
+        return $this->scadenzaContratto;
+    }
+
+    public function setScadenzaContratto(?\DateTimeInterface $scadenzaContratto): self
+    {
+        $this->scadenzaContratto = $scadenzaContratto;
+
+        return $this;
+    }
+
+    public function getUltimaVisitaMedica(): ?\DateTimeInterface
+    {
+        return $this->ultimaVisitaMedica;
+    }
+
+    public function setUltimaVisitaMedica(?\DateTimeInterface $ultimaVisitaMedica): self
+    {
+        $this->ultimaVisitaMedica = $ultimaVisitaMedica;
+
+        return $this;
+    }
+
+    public function getScadenzaVisitaMedica(): ?\DateTimeInterface
+    {
+        return $this->scadenzaVisitaMedica;
+    }
+
+    public function setScadenzaVisitaMedica(?\DateTimeInterface $scadenzaVisitaMedica): self
+    {
+        $this->scadenzaVisitaMedica = $scadenzaVisitaMedica;
+
+        return $this;
+    }
+
+    public function getIsReservedVisita(): ?bool
+    {
+        return $this->isReservedVisita;
+    }
+
+    public function setIsReservedVisita(?bool $isReservedVisita): self
+    {
+        $this->isReservedVisita = $isReservedVisita;
+
+        return $this;
+    }
+
+    public function getDataPrevistaVisita(): ?\DateTimeInterface
+    {
+        return $this->dataPrevistaVisita;
+    }
+
+    public function setDataPrevistaVisita(?\DateTimeInterface $dataPrevistaVisita): self
+    {
+        $this->dataPrevistaVisita = $dataPrevistaVisita;
+
+        return $this;
+    }
+
+    public function getNoteVisita(): ?string
+    {
+        return $this->noteVisita;
+    }
+
+    public function setNoteVisita(?string $noteVisita): self
+    {
+        $this->noteVisita = $noteVisita;
+
+        return $this;
+    }
+
+    public function getAreaGeografica(): ?AreeGeografiche
+    {
+        return $this->areaGeografica;
+    }
+
+    public function setAreaGeografica(?AreeGeografiche $areaGeografica): self
+    {
+        $this->areaGeografica = $areaGeografica;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Mansioni[]
+     */
+    public function getMansione(): Collection
+    {
+        return $this->mansione;
+    }
+
+    public function addMansione(Mansioni $mansione): self
+    {
+        if (!$this->mansione->contains($mansione)) {
+            $this->mansione[] = $mansione;
+            $mansione->setPersone($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMansione(Mansioni $mansione): self
+    {
+        if ($this->mansione->removeElement($mansione)) {
+            // set the owning side to null (unless already changed)
+            if ($mansione->getPersone() === $this) {
+                $mansione->setPersone(null);
             }
         }
 

@@ -28,6 +28,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -93,8 +94,13 @@ class PersonaleCrudController extends AbstractCrudController
                  ->orderBy('azienda.nickName', 'ASC') ) )
             ->add(ChoiceFilter::new('gender', 'Sesso')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]) )
             ->add(BooleanFilter::new('isEnforce', 'In forza/assunto'))
+            ->add(BooleanFilter::new('isPartner', 'Socio'))
+            ->add(BooleanFilter::new('isInvalid', 'Diversamente abile'))
             ->add(DateTimeFilter::new('birthday', 'Data di nascita'))
             ->add(DateTimeFilter::new('dateHiring', 'Data di assunzione'))
+            ->add(ChoiceFilter::new('tipoContratto', 'Tipo Contratto')->setChoices(['Indeterminato' => 'I', 'Determinato' => 'D', 'Stagionale' => 'T' ]) )
+            ->add(DateTimeFilter::new('scadenzaContratto', 'Scadenza contratto'))
+            ->add(DateTimeFilter::new('scadenzaVisitaMedica', 'Scadenza visita medica'))
             ->add(TextFilter::new('fiscalCode', 'Codice Fiscale'))
             ->add(EntityFilter::new('provincia') 
             ->setFormTypeOption('value_type_options.query_builder', 
@@ -243,7 +249,7 @@ class PersonaleCrudController extends AbstractCrudController
             // ->setFormTypeOptions(['constraints' => [ new Image(['maxSize' => '2048k']) ] ]);
             // ->setUploadedFileNamePattern('[year]-[month]-[day]-[contenthash].[extension]')
             // ->setFormTypeOption('multiple', true);
-            $panelContact = FormField::addPanel('DATI CONTATTO')->setIcon('fas fa-id-card');
+            $panelContact = FormField::addPanel('DATI CONTATTO')->setIcon('fas fa-address-book');
             $phone = TelephoneField::new('phone', 'Tel. abitazione');
             $mobile = TelephoneField::new('mobile', 'Cellulare');
             $email = EmailField::new('email', 'E-mail');
@@ -277,7 +283,24 @@ class PersonaleCrudController extends AbstractCrudController
             $imagePortrait = TextField::new('imageVichFile', 'Ritratto')->setFormType(VichImageType::class)
             ->setFormTypeOptions(['constraints' => [ new Image(['maxSize' => '2048k']) ] , 'allow_delete' => false] );
 
-            $panel2 = FormField::addPanel('DATI PERSONALI')->setIcon('fas fa-heart');
+            $panel2 = FormField::addPanel('DATI LAVORATIVI')->setIcon('fas fa-sitemap');
+            $isPartner = BooleanField::new('isPartner', 'Socio');
+            $isInvalid = BooleanField::new('isInvalid', 'Diversamente abile');
+            $areaGeografica = AssociationField::new('areaGeografica', 'Area/Zona geografica');
+            $tipoContratto = ChoiceField::new('tipoContratto', 'Tipo Contratto')->setChoices(['Indeterminato' => 'I', 'Determinato' => 'D', 'Stagionale' => 'T' ]) ;
+            $scadenzaContratto = DateField::new('scadenzaContratto', 'Data scadenza Contratto')->setHelp('Indicare solo se tipo contratto a tempo Determinato o Stagionale');
+            $livello = TextField::new('livello', 'Livello retributivo') ;   
+            $mansione = AssociationField::new('mansione', 'Mansione');
+
+            $panel4 = FormField::addPanel('VISITE MEDICHE')->setIcon('fas fa-user-md');
+            $ultimaVisitaMedica = DateField::new('ultimaVisitaMedica', 'Data ultima visita medica');
+            $scadenzaVisitaMedica = DateField::new('scadenzaVisitaMedica', 'Data scadenza visita medica');
+            $isReservedVisita = BooleanField::new('isReservedVisita', 'Visita medica prenotata');
+            $dataPrevistaVisita = DateField::new('dataPrevistaVisita', 'Data pianificata visita medica');
+            $noteVisita = TextareaField::new('noteVisita', 'Annotazioni visite mediche') ;  
+           
+//  
+            $panel3 = FormField::addPanel('DATI/DOCUMENTI PERSONALI')->setIcon('fas fa-file-pdf');
             $cvFile = ImageField::new('curriculumVitae', 'Upload Curriculum')
             ->setBasePath('uploads/files/personale/cv')
             ->setUploadDir('public/uploads/files/personale/cv')
@@ -305,13 +328,13 @@ class PersonaleCrudController extends AbstractCrudController
             $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
             if (Crud::PAGE_INDEX === $pageName) {
-                return [$fullName,  $gender, $photoFile, $isEnforce, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
+                return [$fullName,  $gender, $photoFile, $isEnforce, $isPartner, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panel2, $cvPdf, $collectionDocView, $isEnforce, $azienda, $matricola,  $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $panel2, $cvFile, $collectionDoc, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panelPortrait, $photoFile, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal,  $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvFile, $collectionDoc, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita ];
             } elseif (Crud::PAGE_EDIT === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $panelPortrait, $photoFile, $imagePortrait, $panel2, $cvFile, $collectionDoc, $isEnforce, $azienda, $matricola, $dateHiring, $dateDismissal, $ibanConto, $intestatarioConto, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel_ID, $id, $keyReference, $createdAt];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panelPortrait, $photoFile, $imagePortrait, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvFile, $collectionDoc, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt];
             }
     }
     
