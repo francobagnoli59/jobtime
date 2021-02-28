@@ -1,0 +1,97 @@
+{% extends '@!EasyAdmin/page/content.html.twig' %}
+
+{% block page_content %}
+    <h4>{{ page_title }}</h4>
+    <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+    google.charts.load('current', {'packages':['corechart']});
+
+    google.charts.setOnLoadCallback(drawInvChart);
+    google.charts.setOnLoadCallback(drawManChart);  
+
+    function drawInvChart() {
+
+      var array = document.getElementById('pieInv').value;
+      var datavalue = JSON.parse(array);
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Forza Lavoro');
+      data.addColumn('number', 'Persone');
+      for (i = 0; i < datavalue.length; i++) {
+             var arrayData = [datavalue[i].Tipo, datavalue[i].Numero];
+            data.addRows([arrayData]);
+           };
+
+       var options = {title:'Rapporto persone diversamente abili',
+                       width:400,
+                       height:300};
+
+      var chart = new google.visualization.PieChart(document.getElementById('pieInv_div'));
+      chart.draw(data, options);
+
+    }
+
+    function drawManChart() {
+
+      var array = document.getElementById('pieMan').value;
+      var datavalue = JSON.parse(array);
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Mansioni');
+      data.addColumn('number', 'Persone');
+      for (i = 0; i < datavalue.length; i++) {
+             var arrayData = [datavalue[i].Tipo, datavalue[i].Numero];
+            data.addRows([arrayData]);
+           };
+
+       var options = {title:'Rapporto persone tra mansioni',
+                       width:400,
+                       height:300};
+
+      var chart = new google.visualization.PieChart(document.getElementById('pieMan_div'));
+      chart.draw(data, options);
+
+    }
+
+  </script>
+
+    </head>
+
+    <body>
+      <input type="hidden" id="pieInv" value="{{ pieInv_chart|json_encode }}">
+      <input type="hidden" id="pieMan" value="{{ pieMan_chart|json_encode }}">
+
+    <table class="columns">
+      <tr>
+        <td><div id="pieInv_div" style="border: 1px solid #ccc"></div></td>
+        <td><div id="pieMan_div" style="border: 1px solid #ccc"></div></td>
+      </tr>
+    </table>
+
+    </body>
+
+{% endblock %}
+
+ {#      <div id="bar_div" style="width: 800px; height: 500px;" > </div>
+ 
+ // series: {0:{color: 'black', visibleInLegend: false}, 3:{color: 'red', visibleInLegend: false}}
+
+  function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Year', 'Sales', 'Expenses', 'Profit'],
+          ['2014', 1000, 400, 200],
+          ['2015', 1170, 460, 250],
+          ['2016', 660, 1120, 300],
+          ['2017', 1030, 540, 350]
+        ]);
+
+  var d_end_y = parseInt(datavalue[i].EndDate.substring(0, 4));
+  var d_end_m = parseInt(datavalue[i].EndDate.substring(4, 6));
+  var d_end_d = parseInt(datavalue[i].EndDate.substring(6, 8));
+ <div>   <h6> {{ bar_chart|json_encode }} </h6>   </div>
+ <div>   <h6> {{ gant_chart|json_encode }} </h6>   </div>
+ new Date(d_end_y, d_end_m, d_end_d)
+
+  #}

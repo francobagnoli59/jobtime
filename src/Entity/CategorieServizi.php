@@ -48,7 +48,7 @@ class CategorieServizi
 
     public function __toString(): string
     {
-            return (string) $this->getCategoria();
+            return (string) $this->categoria;
     }
 
     public function getId(): ?int

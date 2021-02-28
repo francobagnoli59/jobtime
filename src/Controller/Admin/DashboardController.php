@@ -108,6 +108,7 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linktoRoute('Vai ai Feedback', 'fas fa-home', 'homepage');
+        yield MenuItem::linkToRoute('Dashboard Personale', 'fas fa-chart-pie', 'main_personale_chart');
         yield MenuItem::section('Inserimento orari di lavoro');
         yield MenuItem::linkToRoute('Prepara mensilità', 'fas fa-calendar', 'planning_month');
         yield MenuItem::linkToCrud('Ore lavorate', 'fas fa-clock',  OreLavorate::class);
