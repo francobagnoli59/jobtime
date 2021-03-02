@@ -9,7 +9,8 @@ use App\Form\DocumentiPersonaleType;
 use App\Repository\ProvinceRepository;
 use App\Repository\CantieriRepository;
 use App\Repository\AziendeRepository;
- 
+use App\Repository\MansioniRepository;
+
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -105,8 +106,10 @@ class PersonaleCrudController extends AbstractCrudController
             ->add(EntityFilter::new('provincia') 
             ->setFormTypeOption('value_type_options.query_builder', 
                 static fn(ProvinceRepository $pr) => $pr->createQueryBuilder('provincia')
-                        ->orderBy('provincia.name', 'ASC') )
-             );
+                        ->orderBy('provincia.name', 'ASC') ) )
+            ->add(EntityFilter::new('mansione')->setFormTypeOption('value_type_options.query_builder', 
+                static fn(MansioniRepository $ma) => $ma->createQueryBuilder('mansione')
+                 ->orderBy('mansione.mansioneName', 'ASC') ) );
           
     }
  
@@ -271,12 +274,16 @@ class PersonaleCrudController extends AbstractCrudController
                 },
                  ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
     
-            $cantiere = AssociationField::new('cantiere', 'Cantiere')->setHelp('<mark><b>Indicare solo se lavora per un unico Cantiere. Per più cantieri una volta inserita la persona utilizzare la funzione [Piano Ore Cantieri]</b></mark>');
+            $cantiere = AssociationField::new('cantiere', 'Cantiere')
+            ->setFormTypeOptions([
+                'query_builder' => function (CantiereRepository $ca) {
+                    return $ca->createQueryBuilder('c')
+                        ->orderBy('c.nameJob', 'ASC');
+                },
+                 ])
+            ->setHelp('<mark><b>Indicare solo nel caso la persona lavori prevalentemente per un unico Cantiere. Per più cantieri una volta inserita la persona utilizzare la funzione [Piano Ore Cantieri]</b></mark>');
 
-            // $linkPhoto = (function($entity) {
-            // $link = $this->entityManager->getRepository(Personale::class)->find($entity->getPhotoAvatar());
-            //return $link;
-            // });
+
             $collapse = false ;
          
             $panelPortrait = FormField::addPanel('FOTO RITRATTO')->setIcon('fas fa-id-badge')->renderCollapsed($collapse);
@@ -290,7 +297,13 @@ class PersonaleCrudController extends AbstractCrudController
             $tipoContratto = ChoiceField::new('tipoContratto', 'Tipo Contratto')->setChoices(['Indeterminato' => 'I', 'Determinato' => 'D', 'Stagionale' => 'T' ]) ;
             $scadenzaContratto = DateField::new('scadenzaContratto', 'Data scadenza Contratto')->setHelp('Indicare solo se tipo contratto a tempo Determinato o Stagionale');
             $livello = TextField::new('livello', 'Livello retributivo') ;   
-            $mansione = AssociationField::new('mansione', 'Mansione');
+            $mansione = AssociationField::new('mansione', 'Mansione')
+            ->setFormTypeOptions([
+                'query_builder' => function (MansioniRepository $ma) {
+                    return $ma->createQueryBuilder('m')
+                        ->orderBy('m.mansioneName', 'ASC');
+                },
+                 ]);
 
             $panel4 = FormField::addPanel('VISITE MEDICHE')->setIcon('fas fa-user-md');
             $ultimaVisitaMedica = DateField::new('ultimaVisitaMedica', 'Data ultima visita medica');
@@ -328,7 +341,7 @@ class PersonaleCrudController extends AbstractCrudController
             $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
             if (Crud::PAGE_INDEX === $pageName) {
-                return [$fullName,  $gender, $photoFile, $isEnforce, $isPartner, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
+                return [$id, $fullName,  $gender, $photoFile, $isEnforce, $isPartner, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
                 return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {

@@ -55,7 +55,7 @@ class MansioniCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('MANSIONI DEL PERSONALE')->setIcon('fas fa-id-card-alt');
-        $mansione = TextField::new('mansione', 'Mansione'); 
+        $mansione = TextField::new('mansioneName', 'Mansione'); 
         $isValidDA = BooleanField::new('isValidDA', 'Valida per diversamente abili')->setHelp('<mark>Selezionare se la mansione è valida per il calcolo del rapporto percentuale forza lavoro diversamente abile</mark>');  //->addCssClass('row col-12 col-lg-6')
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);

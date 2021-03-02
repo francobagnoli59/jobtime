@@ -305,7 +305,7 @@ class Personale
     private $areaGeografica;
 
     /**
-     * @ORM\OneToMany(targetEntity=Mansioni::class, mappedBy="persone", orphanRemoval=true)
+     * @ORM\ManyToOne(targetEntity=Mansioni::class, inversedBy="persone")
      */
     private $mansione;
 
@@ -316,7 +316,7 @@ class Personale
         $this->pianoOreCantieri = new ArrayCollection();
         $this->consolidatiPersonale = new ArrayCollection();
         $this->documentiPersonale = new ArrayCollection();
-        $this->mansione = new ArrayCollection();
+
     }
 
 
@@ -350,7 +350,7 @@ class Personale
 
     public function setName(string $name): self
     {
-        $this->name = $name;
+        $this->name = strtoupper($name);
 
         return $this;
     }
@@ -362,7 +362,7 @@ class Personale
 
     public function setSurname(string $surname): self
     {
-        $this->surname = $surname;
+        $this->surname = strtoupper($surname);
 
         return $this;
     }
@@ -1038,35 +1038,18 @@ class Personale
         return $this;
     }
 
-    /**
-     * @return Collection|Mansioni[]
-     */
-    public function getMansione(): Collection
+    public function getMansione(): ?Mansioni
     {
         return $this->mansione;
     }
 
-    public function addMansione(Mansioni $mansione): self
+    public function setMansione(?Mansioni $mansione): self
     {
-        if (!$this->mansione->contains($mansione)) {
-            $this->mansione[] = $mansione;
-            $mansione->setPersone($this);
-        }
+        $this->mansione = $mansione;
 
         return $this;
     }
 
-    public function removeMansione(Mansioni $mansione): self
-    {
-        if ($this->mansione->removeElement($mansione)) {
-            // set the owning side to null (unless already changed)
-            if ($mansione->getPersone() === $this) {
-                $mansione->setPersone(null);
-            }
-        }
-
-        return $this;
-    }
-
+    
    
 }

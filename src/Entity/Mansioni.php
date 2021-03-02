@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\MansioniRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -23,7 +25,7 @@ class Mansioni
      * @ORM\Column(type="string", length=40)
      * @Assert\Length( max=60  ) 
      */
-    private $mansione;
+    private $mansioneName;
 
     /**
      * @ORM\Column(type="boolean")
@@ -36,29 +38,34 @@ class Mansioni
     private $createdAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Personale::class, inversedBy="mansione")
+     * @ORM\OneToMany(targetEntity=Personale::class, mappedBy="mansione")
      */
     private $persone;
 
 
     public function __toString(): string
     {
-            return (string) $this->getMansione();
+            return (string) $this->mansioneName;
     } 
+
+    public function __construct()
+    {
+        $this->persone = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getMansione(): ?string
+    public function getMansioneName(): ?string
     {
-        return $this->mansione;
+        return $this->mansioneName;
     }
 
-    public function setMansione(string $mansione): self
+    public function setMansioneName(string $mansioneName): self
     {
-        $this->mansione = $mansione;
+        $this->mansioneName = $mansioneName;
 
         return $this;
     }
@@ -97,14 +104,32 @@ class Mansioni
     }
 
 
-    public function getPersone(): ?Personale
+   /**
+     * @return Collection|Personale[]
+     */
+    public function getPersone(): Collection
     {
         return $this->persone;
     }
 
-    public function setPersone(?Personale $persone): self
+    public function addPersone(Personale $persone): self
     {
-        $this->persone = $persone;
+        if (!$this->persone->contains($persone)) {
+            $this->persone[] = $persone;
+            $persone->setMansione($this);
+        }
+
+        return $this;
+    }
+
+    public function removePersone(Personale $persone): self
+    {
+        if ($this->persone->removeElement($persone)) {
+            // set the owning side to null (unless already changed)
+            if ($persone->getMansione() === $this) {
+                $persone->setMansione(null);
+            }
+        }
 
         return $this;
     }

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Personale;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method Personale|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,6 +20,55 @@ class PersonaleRepository extends ServiceEntityRepository
         parent::__construct($registry, Personale::class);
     }
 
+    public function collectionPersScadDeterminato($azienda, $datestart, $dateend): array
+    {
+        $query = $this->getPersScadDeterminatoQueryBuilder($azienda, $datestart, $dateend)->select('pe')->getQuery();
+        $subSetPersone = $query->getResult();
+        return $subSetPersone;
+    }
+
+    private function getPersScadDeterminatoQueryBuilder($azienda, $datestart, $dateend): QueryBuilder
+    {
+        return $this->createQueryBuilder('pe')
+            ->andWhere('pe.isEnforce = true ')
+            ->andWhere('pe.azienda = :azienda')
+            ->andWhere('pe.scadenzaContratto >= :datestart')
+            ->andWhere('pe.scadenzaContratto <= :dateend')
+            ->orderBy('pe.scadenzaContratto', 'DESC')
+            ->addOrderBy('pe.surname', 'ASC')
+            ->setParameters([
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+                'azienda' => $azienda,
+            ])
+          
+        ;
+    }
+
+    public function collectionPersScadVisita($azienda, $datestart, $dateend): array
+    {
+        $query = $this->getPersScadVisitaQueryBuilder($azienda, $datestart, $dateend)->select('pe')->getQuery();
+        $subSetPersone = $query->getResult();
+        return $subSetPersone;
+    }
+
+    private function getPersScadVisitaQueryBuilder($azienda, $datestart, $dateend): QueryBuilder
+    {
+        return $this->createQueryBuilder('pe')
+            ->andWhere('pe.isEnforce = true ')
+            ->andWhere('pe.azienda = :azienda')
+            ->andWhere('pe.scadenzaVisitaMedica >= :datestart')
+            ->andWhere('pe.scadenzaVisitaMedica <= :dateend')
+            ->orderBy('pe.scadenzaVisitaMedica', 'DESC')
+            ->addOrderBy('pe.surname', 'ASC')
+            ->setParameters([
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+                'azienda' => $azienda,
+            ])
+          
+        ;
+    }
     // /**
     //  * @return Personale[] Returns an array of Personale objects
     //  */

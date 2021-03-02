@@ -3,13 +3,69 @@
 {% block page_content %}
     <h4>{{ page_title }}</h4>
     <head>
+    <style>
+  .bold-green-font {
+    font-weight: bold;
+    color: green;
+  }
+
+  .bold-font {
+    font-weight: bold;
+  }
+
+  .right-text {
+    text-align: right;
+  }
+
+  .large-font {
+    font-size: 15px;
+  }
+
+  .italic-darkblue-font {
+    font-style: italic;
+    color: darkblue;
+  }
+
+  .italic-purple-font {
+    font-style: italic;
+    color: purple;
+  }
+
+  .underline-blue-font {
+    text-decoration: underline;
+    color: blue;
+  }
+
+  .gold-border {
+    border: 3px solid gold;
+  }
+
+  .deeppink-border {
+    border: 3px solid deeppink;
+  }
+
+  .orange-background {
+    background-color: orange;
+  }
+
+  .orchid-background {
+    background-color: orchid;
+  }
+
+  .beige-background {
+    background-color: beige;
+  }
+
+</style>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
 
-    google.charts.load('current', {'packages':['corechart']});
+    google.charts.load('current', {'packages':['corechart', 'table'] });
 
     google.charts.setOnLoadCallback(drawInvChart);
     google.charts.setOnLoadCallback(drawManChart);  
+    google.charts.setOnLoadCallback(drawDetChart);  
+    google.charts.setOnLoadCallback(drawMedChart); 
 
     function drawInvChart() {
 
@@ -17,14 +73,14 @@
       var datavalue = JSON.parse(array);
 
       var data = new google.visualization.DataTable();
-      data.addColumn('string', 'Forza Lavoro');
+      data.addColumn('string', 'StatoFisico');
       data.addColumn('number', 'Persone');
       for (i = 0; i < datavalue.length; i++) {
              var arrayData = [datavalue[i].Tipo, datavalue[i].Numero];
             data.addRows([arrayData]);
            };
 
-       var options = {title:'Rapporto persone diversamente abili',
+       var options = {title:'(%) PERSONALE DIVERSAMENTE ABILE',
                        width:400,
                        height:300};
 
@@ -46,7 +102,7 @@
             data.addRows([arrayData]);
            };
 
-       var options = {title:'Rapporto persone tra mansioni',
+       var options = {title:'MANSIONI DEL PERSONALE',
                        width:400,
                        height:300};
 
@@ -55,18 +111,82 @@
 
     }
 
+    function drawDetChart() {
+    var cssClassNames = {
+    'headerRow': 'italic-darkblue-font large-font bold-font',
+    'tableRow': '',
+    'oddTableRow': 'beige-background',
+    'selectedTableRow': 'orange-background large-font',
+    'hoverTableRow': '',
+    'headerCell': 'gold-border',
+    'tableCell': '',
+    'rowNumberCell': 'underline-blue-font'};
+
+       var array = document.getElementById('tabDet').value;
+       var datavalue = JSON.parse(array);
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Nome');
+        data.addColumn('string', 'Cantiere');
+        data.addColumn('string', 'Scadenza');
+        data.addRows(datavalue.length);
+         for (i = 0; i < datavalue.length; i++) {
+           data.setCell(i, 0, datavalue[i].Nome);
+           data.setCell(i, 1, datavalue[i].Cantiere);
+           data.setCell(i, 2, datavalue[i].Scadenza);
+           data.setRowProperty(i, 'className', 'orange-background');
+           };
+     
+
+        var table = new google.visualization.Table(document.getElementById('tabDet_div'));
+        var options = {'showRowNumber': false, 'page': 'enable', 'width': 400, 'height': 300, 'allowHtml': true, 'cssClassNames': cssClassNames};
+      table.draw(data, options);
+      }
+
+
+
+    function drawMedChart() {
+
+          var array = document.getElementById('tabMed').value;
+          var datavalue = JSON.parse(array);
+
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Nome');
+            data.addColumn('string', 'Cantiere');
+            data.addColumn('string', 'Scadenza');
+            for (i = 0; i < datavalue.length; i++) {
+                var arrayData = [datavalue[i].Nome, datavalue[i].Cantiere, datavalue[i].Scadenza,];
+                data.addRows([arrayData]);
+              };
+        
+
+            var table = new google.visualization.Table(document.getElementById('tabMed_div'));
+
+            table.draw(data, {showRowNumber: false, page: 'enable', width: 400 , height: 300});
+          }
+
   </script>
+
 
     </head>
 
     <body>
       <input type="hidden" id="pieInv" value="{{ pieInv_chart|json_encode }}">
       <input type="hidden" id="pieMan" value="{{ pieMan_chart|json_encode }}">
-
+      <input type="hidden" id="tabDet" value="{{ tabDet_chart|json_encode }}">
+      <input type="hidden" id="tabMed" value="{{ tabMed_chart|json_encode }}">
     <table class="columns">
       <tr>
         <td><div id="pieInv_div" style="border: 1px solid #ccc"></div></td>
         <td><div id="pieMan_div" style="border: 1px solid #ccc"></div></td>
+      </tr>
+      <tr>
+        <td><div id="DescDet_div" style="border: 1px solid #ccc" align="center"><b>CONTRATTI A TERMINE</b></div></td>
+        <td><div id="DescMed_div" style="border: 1px solid #ccc" align="center"><b>VISITE MEDICHE</b></div></td>
+      </tr>
+      <tr>
+        <td><div id="tabDet_div" style="border: 1px solid #ccc"></div></td>
+        <td><div id="tabMed_div" style="border: 1px solid #ccc"></div></td>
       </tr>
     </table>
 
@@ -94,4 +214,11 @@
  <div>   <h6> {{ gant_chart|json_encode }} </h6>   </div>
  new Date(d_end_y, d_end_m, d_end_d)
 
-  #}
+    data.addRows([
+          ['Mike',  {v: 10000, f: '$10,000'}, true],
+          ['Jim',   {v:8000,   f: '$8,000'},  false],
+          ['Alice', {v: 12500, f: '$12,500'}, true],
+          ['Bob',   {v: 7000,  f: '$7,000'},  true]
+        ]); #}
+
+  

@@ -349,19 +349,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 break;
                             case "Mansione":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
-                                    $mansioni = explode ("|", $cellValue );
-                                    if (count($mansioni) > 0 ) { 
-                                        // caso più mansioni
-                                        foreach ($mansioni as $mansione) {
-                                            $personale->addMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($mansione)]) ) ;    
-                                          }
-                                        }        
-                                    else { 
-                                        // caso solo una mansione
-                                        if (strlen($cellValue) > 0 ) {
-                                            $personale->addMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($cellValue)]) ) ;
-                                        }
-                                    }
+                                    $personale->addMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansioneName'=> trim($cellValue)]) ) ;
                                 }
                                 break;
                             case "Cantiere":
@@ -785,28 +773,13 @@ class ImportPersonaleCrudController extends AbstractCrudController
             $comment[1] = sprintf('Riga: %d , Colonna: Mansione - dato nullo o inisistente, invece è obbligatorio nel caso di Invalidità segnalata', $row ) ;}
              else
              {
-                $mansioni = explode ("|", $value );
-                if (count($mansioni) > 0 ) { 
-                    // caso più mansioni
-                    foreach ($mansioni as $mansione) {
-                        if ( $this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($mansione)]) ) {
-                            $comment[0] = 'OK';
-                        }
-                        else {$comment[1] = sprintf('Riga: %d , Colonna: Mansione - Valore %s non presente nella tabella di configurazione Mansioni', $row, $mansione);
-                        break;
-                        }
+      
+                if ( $this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansioneName'=> trim($value)]) ) {
+                    $comment[0] = 'OK';
                     }
-                } else { 
-                    // caso solo una mansione
-                    if (strlen($value) > 0 ) {
-                        if ( $this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansione'=> trim($value)]) ) {
-                            $comment[0] = 'OK';
-                        }
-                        else {$comment[1] = sprintf('Riga: %d , Colonna: Mansione - Valore %s non presente nella tabella di configurazione Mansioni', $row, $value);
-                           }
+                else {$comment[1] = sprintf('Riga: %d , Colonna: Mansione - Valore %s non presente nella tabella di configurazione Mansioni', $row, $value);
                     }
-                }
-             }
+            }
         return $comment ;
     }
 

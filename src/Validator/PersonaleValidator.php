@@ -67,9 +67,7 @@ class PersonaleValidator
         }
 
         // Controlla presenza mansione se invalido
-        $mansioni = [];
-        $mansioni = $personale->getMansione();
-        if ($personale->getIsInvalid() === true &&  count($mansioni) === 0 ) {
+        if ($personale->getIsInvalid() === true &&  $personale->getMansione() === null ) {
             $context->buildViolation('Per le persone diversamente abili è obbligatorio indicare la mansione lavorativa.')
             ->addViolation() ;
         } 
