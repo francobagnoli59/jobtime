@@ -276,7 +276,7 @@ class PersonaleCrudController extends AbstractCrudController
     
             $cantiere = AssociationField::new('cantiere', 'Cantiere')
             ->setFormTypeOptions([
-                'query_builder' => function (CantiereRepository $ca) {
+                'query_builder' => function (CantieriRepository $ca) {
                     return $ca->createQueryBuilder('c')
                         ->orderBy('c.nameJob', 'ASC');
                 },
@@ -331,7 +331,7 @@ class PersonaleCrudController extends AbstractCrudController
             $fullCostHour = MoneyField::new('fullCostHour', 'Costo orario lordo')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario comprensivo di ferie/tfr ');
             $costoStraordinario = MoneyField::new('costoStraordinario', 'Costo orario straordinario')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario straordinario');
             $planHourWeek = ArrayField::new('planHourWeek', 'Ore settimanali')->setHelp('<mark><b>Inserire 7 numeri intesi come ore intere dal lunedì alla domenica, se è necessario indicare la mezz\'ora inserire .5  (usare il punto, non la virgola)</b></mark>');
-            $dateHiring = DateField::new('dateHiring', 'Data di assunzione');
+            $dateHiring = DateField::new('dateHiring', 'Data di assunzione')->setRequired(true);
             $dateDismissal = DateField::new('dateDismissal', 'Data di licenziamento');
             $ibanConto = TextField::new('ibanConto', 'Conto Bancario (IBAN)')->setHelp('Per bonifici inserire le coordinate bancarie (senza spazi)');
             $intestatarioConto = TextField::new('intestatarioConto', 'Intestatario Conto')->setHelp('Inserire il nome intestatario se diverso dal nominativo della scheda personale');

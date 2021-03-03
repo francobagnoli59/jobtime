@@ -34,7 +34,7 @@ class PersonaleRepository extends ServiceEntityRepository
             ->andWhere('pe.azienda = :azienda')
             ->andWhere('pe.scadenzaContratto >= :datestart')
             ->andWhere('pe.scadenzaContratto <= :dateend')
-            ->orderBy('pe.scadenzaContratto', 'DESC')
+            ->orderBy('pe.scadenzaContratto', 'ASC')
             ->addOrderBy('pe.surname', 'ASC')
             ->setParameters([
                 'datestart' => $datestart,
@@ -59,7 +59,7 @@ class PersonaleRepository extends ServiceEntityRepository
             ->andWhere('pe.azienda = :azienda')
             ->andWhere('pe.scadenzaVisitaMedica >= :datestart')
             ->andWhere('pe.scadenzaVisitaMedica <= :dateend')
-            ->orderBy('pe.scadenzaVisitaMedica', 'DESC')
+            ->orderBy('pe.scadenzaVisitaMedica', 'ASC')
             ->addOrderBy('pe.surname', 'ASC')
             ->setParameters([
                 'datestart' => $datestart,
