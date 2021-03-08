@@ -541,6 +541,11 @@ class Personale
         return $this;
     }
 
+    public function getCombineAddress()
+    {
+        return $this->getZipCode().' '.$this->getCity().', '.$this->getProvincia().', Italy, '.$this->getAddress();
+    }
+
     public function getFiscalCode(): ?string
     {
         return $this->fiscalCode;

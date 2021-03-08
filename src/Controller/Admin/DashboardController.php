@@ -117,6 +117,8 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Anagrafiche');
         yield MenuItem::linkToCrud('Cantieri', 'fas fa-building', Cantieri::class);
         yield MenuItem::linkToCrud('Personale', 'fas fa-address-card', Personale::class);
+        // ->setQueryParameter('filters[gender][comparison]', '=')
+        // ->setQueryParameter('filters[gender][value]', 'M');
         yield MenuItem::linkToCrud('Clienti', 'fas fa-users', Clienti::class);
         yield MenuItem::subMenu('Import anagrafiche', 'fas fa-upload')->setSubItems([
             MenuItem::linkToCrud('Import cantieri', 'fas fa-file-excel', ImportCantieri::class),

@@ -304,6 +304,17 @@ class PersonaleCrudController extends AbstractCrudController
                         ->orderBy('m.mansioneName', 'ASC');
                 },
                  ]);
+            $comboAddr = TextField::new('combineAddress')
+            ->formatValue(
+                function ($value) {
+                    return sprintf(
+                        '<a href="https://www.google.com/maps/place/%s" target="_blank">%s</a>',
+                        $value,
+                        $value
+                    );
+                }
+            )
+            ->renderAsHtml(true)->setLabel('google Maps');
 
             $panel4 = FormField::addPanel('VISITE MEDICHE')->setIcon('fas fa-user-md');
             $ultimaVisitaMedica = DateField::new('ultimaVisitaMedica', 'Data ultima visita medica');
@@ -343,7 +354,7 @@ class PersonaleCrudController extends AbstractCrudController
             if (Crud::PAGE_INDEX === $pageName) {
                 return [$id, $fullName,  $gender, $photoFile, $isEnforce, $isPartner, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $comboAddr, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {
                 return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panelPortrait, $photoFile, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal,  $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvFile, $collectionDoc, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita ];
             } elseif (Crud::PAGE_EDIT === $pageName) {

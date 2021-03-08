@@ -28,7 +28,7 @@ class MansioniCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Mansioni')
             ->setPageTitle(Crud::PAGE_NEW, 'Crea nuova Mansione')
             ->setPageTitle(Crud::PAGE_DETAIL, fn (Mansioni $mansione) => (string) $mansione)
-            ->setPageTitle(Crud::PAGE_EDIT, fn (Mansioni $mansione) => sprintf('Modifica Mansione <b>%s</b>', $mansione->getMansione()))
+            ->setPageTitle(Crud::PAGE_EDIT, fn (Mansioni $mansione) => sprintf('Modifica Mansione <b>%s</b>', $mansione->getMansioneName()))
             ->setSearchFields(['id', 'mansione', 'isValidDA']);
     }
 
