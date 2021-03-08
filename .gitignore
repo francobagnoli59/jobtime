@@ -6,11 +6,7 @@
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
-!vendor/
-vendor/*
-!vendor/easycorp/easyadmin-bundle/src/Resources/translations/
-vendor/easycorp/easyadmin-bundle/src/Resources/translations/*
-!vendor/easycorp/easyadmin-bundle/src/Resources/translations/EasyAdminBundle.it.php
+/vendor/
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
