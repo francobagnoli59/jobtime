@@ -199,8 +199,9 @@ class OreLavorateCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
           $add_orelavorate = Action::new('addOreLavorate', 'Aggiungi Ore lavorate', 'fa fa-calendar-plus')
-         ->linkToCrudAction('addOreLavorate')->displayIf(fn ($entity) => !$entity->getIsTransfer());
-           
+         ->linkToCrudAction('addOreLavorate')->setCssClass('btn')->displayIf(fn ($entity) => !$entity->getIsTransfer());
+         
+         //->createAsGlobalAction();  
        
         return $actions
                 ->remove(Crud::PAGE_INDEX, Action::NEW)

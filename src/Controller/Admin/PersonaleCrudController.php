@@ -11,11 +11,16 @@ use App\Repository\CantieriRepository;
 use App\Repository\AziendeRepository;
 use App\Repository\MansioniRepository;
 
+use App\Service\CsvService;
+
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
@@ -41,6 +46,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use Vich\UploaderBundle\Form\Type\VichImageType;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints\Image;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -51,16 +57,20 @@ use Doctrine\ORM\EntityManagerInterface;
 class PersonaleCrudController extends AbstractCrudController
 {
 
-    
+ 
+
     /**
      * @var AdminUrlGenerator
      */
     private AdminUrlGenerator $adminUrlGenerator;
 
-    public function __construct(EntityManagerInterface $entityManager,  AdminUrlGenerator $adminUrlGenerator ) 
+    private CsvService $csvService;
+
+    public function __construct(EntityManagerInterface $entityManager,  AdminUrlGenerator $adminUrlGenerator, CsvService $csvService ) 
     {
     $this->entityManager = $entityManager;
     $this->adminUrlGenerator = $adminUrlGenerator;
+    $this->csvService = $csvService;
     }
 
     public static function getEntityFqcn(): string
@@ -121,12 +131,18 @@ class PersonaleCrudController extends AbstractCrudController
         $view_pianoorecantieri = Action::new('ViewPianoOreCantieri', 'Piano Ore Cantieri', 'fa fa-clipboard-list')
         ->linkToCrudAction('ViewPianoOreCantieri')->displayIf(fn ($entity) => !$entity->getCantiere()
         ) ;
+        $export = Action::new('export', 'Esporta lista')
+        ->setIcon('fa fa-download')
+        ->linkToCrudAction('export')
+        ->setCssClass('btn')
+        ->createAsGlobalAction();
 
         return $actions
             // ...
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $view_orelavorate)->add(Crud::PAGE_EDIT, $view_orelavorate)
             ->add(Crud::PAGE_INDEX, $view_pianoorecantieri)
+            ->add(Crud::PAGE_INDEX, $export)
            // ->add(Crud::PAGE_DETAIL,)
             ->add(Crud::PAGE_EDIT,  Action::INDEX )
             ->add(Crud::PAGE_NEW,   Action::INDEX )
@@ -184,6 +200,22 @@ class PersonaleCrudController extends AbstractCrudController
             return $this->redirect($url);  
         }
         
+    }
+
+    public function export(Request $request)
+    {
+        $context = $request->attributes->get(EA::CONTEXT_REQUEST_ATTRIBUTE);
+        $fields = FieldCollection::new($this->configureFields(Crud::PAGE_INDEX));
+        $filters = $this->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $fields, $context->getEntity());
+        $listpersonale = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), $fields, $filters)
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($listpersonale as $persona) {
+            $data[] = $persona->getExportData();
+        }
+        return $this->csvService->export($data, 'export_personale_'.date_create()->format('d-m-y').'.csv');
     }
 
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
