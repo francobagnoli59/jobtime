@@ -464,7 +464,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                     $comment[1] = sprintf('Riga: %d , Colonna: CAP - numero non valido, minore di 5 caratteri', $row) ;
                 } else
                 { 
-                    if (is_int($value) ) {
+                    if (is_numeric($value) ) {
                         $comment[0] = 'OK';
                     }
                     else {  $comment[1] = sprintf('Riga: %d , Colonna: CAP - contiene caratteri non validi', $row) ;}
@@ -523,7 +523,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
             $comment[1] = sprintf('Riga: %d , Colonna: Matricola - dato nullo o inesistente, invece è obbligatorio', $row) ;}
              else
              {
-                if (is_int($value) ) {
+                if (is_numeric($value) ) {
                     if (strlen($value) > 6) { 
                         $comment[1] = sprintf('Riga: %d , Colonna: Matricola - numero non valido, maggiore di 999999', $row) ;
                     } else
@@ -610,7 +610,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
     {
         $comment = [];
         $comment[0] = 'ER';
-        if (is_int($value)) {
+        if (is_numeric($value)) {
         $date = new \DateTime();
         $date->setTimestamp(($value-25569)*86400);
         $dateformat = $date->format('d/m/Y');
@@ -634,7 +634,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
     {
         $comment = [];
         $comment[0] = 'ER';
-        if (is_int($value)) {
+        if (is_numeric($value)) {
         $date = new \DateTime();
         $date->setTimestamp(($value-25569)*86400);
         $dateformat = $date->format('d/m/Y');
@@ -657,7 +657,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
     {
         $comment = [];
         $comment[0] = 'ER';
-        if (is_int($value)) {
+        if (is_numeric($value)) {
         $date = new \DateTime();
         $date->setTimestamp(($value-25569)*86400);
         $dateformat = $date->format('d/m/Y');
@@ -709,7 +709,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
     {
         $comment = [];
         $comment[0] = 'ER';
-        if (is_int($value)) {
+        if (is_numeric($value)) {
         $date = new \DateTime();
         $date->setTimestamp(($value-25569)*86400);
         $dateformat = $date->format('d/m/Y');

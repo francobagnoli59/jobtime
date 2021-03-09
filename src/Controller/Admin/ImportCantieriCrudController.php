@@ -356,7 +356,7 @@ class ImportCantieriCrudController extends AbstractCrudController
     {
         $comment = [];
         $comment[0] = 'ER';
-        if (is_int($value)) {
+        if (is_numeric($value)) {
         $date = new \DateTime();
         $date->setTimestamp(($value-25569)*86400);
         $dateformat = $date->format('d/m/Y');
@@ -379,7 +379,7 @@ class ImportCantieriCrudController extends AbstractCrudController
     {
         $comment = [];
         $comment[0] = 'ER';
-        if (is_int($value)) {
+        if (is_numeric($value)) {
         $date = new \DateTime();
         $date->setTimestamp(($value-25569)*86400);
         $dateformat = $date->format('d/m/Y');
