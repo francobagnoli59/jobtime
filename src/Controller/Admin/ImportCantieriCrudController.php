@@ -135,7 +135,7 @@ class ImportCantieriCrudController extends AbstractCrudController
                         // controlli specifici per tipo di colonna
                         switch ($key){
                             case "NomeCantiere":
-                                if ($cellValue === null || $cellValue === '' ) {  $commentiImport[] = sprintf('Riga: %d , Colonna: %s - dato nullo o inisistente, invece è obbligatorio', $row, $key) ;}
+                                if ($cellValue === null || $cellValue === '' ) {  $commentiImport[] = sprintf('Riga: %d , Colonna: %s - dato nullo o inesistente, invece è obbligatorio', $row, $key) ;}
                                 break;
                             case "Provincia":
                                 $testPR = $this->controlProvincia($cellValue, $row);
@@ -318,7 +318,7 @@ class ImportCantieriCrudController extends AbstractCrudController
         $comment[0] = 'ER';
         $value = strtoupper($value); 
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: Provincia - dato nullo o inisistente, invece è obbligatorio', $row) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: Provincia - dato nullo o inesistente, invece è obbligatorio', $row) ;}
              else
              {
                 if (strlen($value) !== 2) { 
@@ -340,7 +340,7 @@ class ImportCantieriCrudController extends AbstractCrudController
         $comment = [];
         $comment[0] = 'ER';
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: %s - dato nullo o inisistente, invece è obbligatorio', $row, $key ) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: %s - dato nullo o inesistente, invece è obbligatorio', $row, $key ) ;}
              else
              {
                 if (is_numeric( $value)) {

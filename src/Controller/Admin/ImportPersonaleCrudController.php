@@ -151,12 +151,13 @@ class ImportPersonaleCrudController extends AbstractCrudController
                         // determina cella secondo la key
                         $cellValue = $workSheet->getCell($colDatiAssoc[$key].sprintf('%d',$row) )->getValue();  
                         // controlli specifici per tipo di colonna
+                        $cellValue = trim($cellValue); 
                         switch ($key){
                             case "Cognome":
                             case "Nome":
                             case "Indirizzo":
                             case "Città":
-                                if ($cellValue === null || $cellValue === '' ) {  $commentiImport[] = sprintf('Riga: %d , Colonna: %s - dato nullo o inisistente, invece è obbligatorio', $row, $key) ;}
+                                if ($cellValue === null || $cellValue === '' ) {  $commentiImport[] = sprintf('Riga: %d , Colonna: %s - dato nullo o inesistente, invece è obbligatorio', $row, $key) ;}
                                 break;
                             case "CAP":
                                 $testCap = $this->controlCAP($cellValue, $row);
@@ -456,7 +457,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
         $comment = [];
         $comment[0] = 'ER';
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: CAP - dato nullo o inisistente, invece è obbligatorio', $row) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: CAP - dato nullo o inesistente, invece è obbligatorio', $row) ;}
              else
              {
                 if (strlen($value) !== 5) { 
@@ -477,7 +478,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
         $comment = [];
         $comment[0] = 'ER';
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: CodiceFiscale - dato nullo o inisistente, invece è obbligatorio', $row) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: CodiceFiscale - dato nullo o inesistente, invece è obbligatorio', $row) ;}
              else
              {  $codicefiscale = new CodiceFiscaleValidation;
                 $value = strtoupper($value); 
@@ -497,7 +498,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
         $comment[0] = 'ER';
         $value = strtoupper($value); 
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: Provincia - dato nullo o inisistente, invece è obbligatorio', $row) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: Provincia - dato nullo o inesistente, invece è obbligatorio', $row) ;}
              else
              {
                 if (strlen($value) !== 2) { 
@@ -519,7 +520,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
         $comment = [];
         $comment[0] = 'ER';
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: Matricola - dato nullo o inisistente, invece è obbligatorio', $row) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: Matricola - dato nullo o inesistente, invece è obbligatorio', $row) ;}
              else
              {
                 if (is_int($value) ) {
@@ -537,7 +538,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
         $comment = [];
         $comment[0] = 'ER';
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: %s - dato nullo o inisistente, invece è obbligatorio', $row, $key ) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: %s - dato nullo o inesistente, invece è obbligatorio', $row, $key ) ;}
              else
              {
                 if (is_numeric( $value)) {
@@ -554,7 +555,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
         $comment = [];
         $comment[0] = 'ER';
         if ($value === null || $value === '' ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: PlanningSettimanale - dato nullo o inisistente, invece è obbligatorio', $row) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: PlanningSettimanale - dato nullo o inesistente, invece è obbligatorio', $row) ;}
              else
              {
                 $planning = explode ("-", $value ); 
@@ -770,7 +771,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
         $comment = [];
         $comment[0] = 'ER';
         if (($value === null || $value === '' ) && ($DivAb === 1 || $DivAb === '1' || strtoupper($DivAb) === 'SI' || strtoupper($DivAb) === 'TRUE' ) ) { 
-            $comment[1] = sprintf('Riga: %d , Colonna: Mansione - dato nullo o inisistente, invece è obbligatorio nel caso di Invalidità segnalata', $row ) ;}
+            $comment[1] = sprintf('Riga: %d , Colonna: Mansione - dato nullo o inesistente, invece è obbligatorio nel caso di Invalidità segnalata', $row ) ;}
              else
              {
       
