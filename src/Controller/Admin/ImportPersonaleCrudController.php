@@ -350,7 +350,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 break;
                             case "Mansione":
                                 if ($cellValue !== null && $cellValue !== '' ) { 
-                                    $personale->addMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansioneName'=> trim($cellValue)]) ) ;
+                                    $personale->setMansione($this->entityManager->getRepository(Mansioni::class)->findOneBy(['mansioneName'=> trim($cellValue)]) ) ;
                                 }
                                 break;
                             case "Cantiere":
