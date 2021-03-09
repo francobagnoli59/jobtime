@@ -89,8 +89,7 @@ class Cantieri
     private $isPlanningPerson;
 
     /**
-     * @ORM\Column(type="smallint")
-     * @MasotechAssert\SmallIntRequirements()
+     * @ORM\Column(type="integer")
      */
     private $planningHours;
 

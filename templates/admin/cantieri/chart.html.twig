@@ -42,7 +42,7 @@
       var options = {
         gantt: {
           criticalPathEnabled: false,
-          trackHeight: 30,
+          trackHeight: 20,
       //   innerGridHorizLine: {
       //      stroke: '#ffe0b2',
       //      strokeWidth: 2        SFONDO OCRA RIGHE ALTERNATE
@@ -99,8 +99,8 @@
     <body>
       <input type="hidden" id="gant" value="{{ gant_chart|json_encode }}">
       <input type="hidden" id="bar" value="{{ bar_chart|json_encode }}">
-      <div id="gantt_div" style="width: 800px; height: 500px;" > </div>
-      <div id="bar_div" style="width: 800px; height: 500px;" > </div>
+      <div id="gantt_div" style="width: 800px; height: 1600px;" > </div>
+      <div id="bar_div" style="width: 800px; height: 1600px ;" > </div>
     </body>
 
 {% endblock %}

@@ -24,6 +24,7 @@ class CantieriChartController extends AbstractController
 
         foreach ($cantieri as $cantiere) {
 
+            if ($cantiere->getCategoria()->getCategoria() !== 'Organizzazione') {
             $interval = $cantiere->getDateStartJob()->diff($cantiere->getDateEndJob());
             $giorni = $interval->format('%a');
             // calcola la differenza ad oggi
@@ -81,6 +82,7 @@ class CantieriChartController extends AbstractController
                 'Costo' =>  $costo,
             ];
             $bar_data[] =  $arrayBar ;
+            }
         }
 
      
