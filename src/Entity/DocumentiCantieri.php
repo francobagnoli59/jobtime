@@ -6,11 +6,13 @@ use App\Repository\DocumentiCantieriRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=DocumentiCantieriRepository::class)
  * @ORM\HasLifecycleCallbacks()
- * @Vich\Uploadable() 
+ * @Vich\Uploadable()
+ * @Assert\Callback({"App\Validator\DocumentiCantieriValidator", "validate"})    
  */
 class DocumentiCantieri
 {
@@ -23,20 +25,25 @@ class DocumentiCantieri
 
     /**
      * @ORM\Column(type="string", length=80)
+     * @Assert\Length( max=80  ) 
      */
     private $titolo;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * 
+     * @Assert\Length( max=255  ) 
      * @var string
      */
     private $documentoName;
 
     /**
      * @Vich\UploadableField(mapping="cantieri_documenti", fileNameProperty="documentoName")
-     * 
-     * @var File
+     *  @var File
+     *  @Assert\File( 
+     *     maxSize="3048k", 
+     *     mimeTypes = {"application/pdf", "application/x-pdf", "image/png", "image/jpeg", "image/bmp" },
+     *     mimeTypesMessage = "Per favore carica un file PDF o immagini png,bmp,jpeg"
+     *  )
      */
     private $documentoFile;
 

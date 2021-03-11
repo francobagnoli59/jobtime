@@ -88,7 +88,7 @@ class PersonaleCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_DETAIL, fn (Personale $surname) => (string) $surname)
             ->setPageTitle(Crud::PAGE_EDIT, fn (Personale $namefull) => sprintf('Modifica scheda dati di <b>%s</b>', $namefull->getFullName()))
             ->setPageTitle(Crud::PAGE_NEW, 'Crea scheda nuovo personale')
-            ->setSearchFields(['id', 'name', 'surname', 'gender', 'birthday'])
+            ->setSearchFields(['matricola', 'name', 'surname', 'personale.cantiere'])
             ->setDefaultSort(['surname' => 'ASC', 'name' => 'ASC'])
             ;
     }
@@ -370,6 +370,7 @@ class PersonaleCrudController extends AbstractCrudController
             ->setEntryType(DocumentiPersonaleType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 3MB)</mark>');
             $collectionDocView = CollectionField::new('documentiPersonale', 'Documenti/Certificazioni')
             ->setTemplatePath('admin/personale/documenti.html.twig');
+            $matr = TextField::new('matricola', 'Id Matr.')->onlyOnIndex();
             $matricola = TextField::new('matricola', 'Codice Matricola')->setHelp('Inserire solo numeri - (verrà formattata con zeri a sinistra).');
             $fullCostHour = MoneyField::new('fullCostHour', 'Costo orario lordo')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario comprensivo di ferie/tfr ');
             $costoStraordinario = MoneyField::new('costoStraordinario', 'Costo orario straordinario')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario straordinario');
@@ -384,7 +385,7 @@ class PersonaleCrudController extends AbstractCrudController
             $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
             if (Crud::PAGE_INDEX === $pageName) {
-                return [$id, $fullName,  $gender, $photoFile, $isEnforce, $isPartner, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
+                return [$matr, $fullName,  $gender, $photoFile, $isEnforce, $isPartner, $azienda, $eta, $cantiere, $pianoOreCantieri, $planHourWeek, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
                 return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $comboAddr, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {

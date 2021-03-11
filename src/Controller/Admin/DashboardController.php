@@ -45,11 +45,13 @@ class DashboardController extends AbstractDashboardController
         // redirect to some CRUD controller
         $routeBuilder = $this->get(AdminUrlGenerator::class);
 
+       // return $this->redirect($routeBuilder->setController(PersonaleMainChartController::class)->generateUrl());
+
         return $this->redirect($routeBuilder->setController(CantieriCrudController::class)->generateUrl());
 
         // you can also redirect to different pages depending on the current user
         // if ('jane' === $this->getUser()->getUsername()) {
-        //    return $this->redirect('...');
+        //    return $this->redirect('...');  
         //}
 
         // you can also render some template to display a proper Dashboard

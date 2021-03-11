@@ -63,6 +63,8 @@
     google.charts.load('current', {'packages':['corechart', 'table'] });
 
     google.charts.setOnLoadCallback(drawInvChart);
+    google.charts.setOnLoadCallback(drawMIVChart);
+    google.charts.setOnLoadCallback(drawMDIChart);
     google.charts.setOnLoadCallback(drawManChart);
     google.charts.setOnLoadCallback(drawTypChart);
     google.charts.setOnLoadCallback(drawEtaChart);      
@@ -82,11 +84,60 @@
             data.addRows([arrayData]);
            };
 
-       var options = {title:'(%) PERSONALE DIVERSAMENTE ABILE',
+       var options = {title:'(%) PERSONALE DIV. ABILE ad OGGI',
                        width:400,
                        height:300};
 
       var chart = new google.visualization.PieChart(document.getElementById('pieInv_div'));
+      chart.draw(data, options);
+
+    }
+
+    function drawMIVChart() {
+
+      var array = document.getElementById('colMIV').value;
+      var datavalue = JSON.parse(array);
+
+      var data = new google.visualization.DataTable();
+      data.addColumn({type:'string', label:'Periodo'});
+      data.addColumn({type:'number', label:'Invalidi'});
+      data.addColumn({type:'number', label:'Abili'}); 
+      for (i = 0; i < datavalue.length; i++) {
+             var arrayData = [datavalue[i].Periodo, datavalue[i].Invalidi, datavalue[i].Abili];
+            data.addRows([arrayData]);
+           };
+
+       var options = {title:'(%) ANDAMENTO 12 MESI PERS. DIV.ABILE',
+                       width:400,
+                       height:300,
+                       legend: { position: 'top'},
+                       isStacked: 'percent'};
+
+      var chart = new google.visualization.ColumnChart(document.getElementById('colMIV_div'));
+      chart.draw(data, options);
+
+    }
+
+    function drawMDIChart() {
+
+      var array = document.getElementById('colMDI').value;
+      var datavalue = JSON.parse(array);
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Periodo');
+      data.addColumn('number', 'Indeterminato');
+      data.addColumn('number', 'Determinato');
+      for (i = 0; i < datavalue.length; i++) {
+             var arrayData = [datavalue[i].Periodo, datavalue[i].Indeterminato, datavalue[i].Determinato];
+            data.addRows([arrayData]);
+           };
+
+       var options = {title:'(%) ANDAMENTO 12 MESI TIPO CONTRATTO',
+                       width:400,
+                       height:300,
+                       legend: { position: 'top'} };
+
+      var chart = new google.visualization.ColumnChart(document.getElementById('colMDI_div'));
       chart.draw(data, options);
 
     }
@@ -254,9 +305,15 @@
       <input type="hidden" id="tabMed" value="{{ tabMed_chart|json_encode }}">
       <input type="hidden" id="comboTyp" value="{{ comboType_chart|json_encode }}">
       <input type="hidden" id="lineEta" value="{{ lineEta_chart|json_encode }}">
+      <input type="hidden" id="colMIV" value="{{ stack_chart|json_encode }}">
+      <input type="hidden" id="colMDI" value="{{ columns_chart|json_encode }}">
     <table class="columns">
       <tr>
         <td><div id="pieInv_div" style="border: 1px solid #ccc"></div></td>
+        <td><div id="colMIV_div" style="border: 1px solid #ccc"></div></td>
+      </tr>
+      <tr>
+        <td><div id="colMDI_div" style="border: 1px solid #ccc"></div></td>
         <td><div id="pieMan_div" style="border: 1px solid #ccc"></div></td>
       </tr>
        <tr>

@@ -5,7 +5,8 @@ namespace App\Controller\Admin;
 use App\Repository\PersonaleRepository;
 use App\Repository\MansioniRepository;
 use App\Repository\AziendeRepository;
- 
+use App\ServicesRoutine\DateUtility;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,13 +39,18 @@ class PersonaleMainChartController extends AbstractController
       
         $arrTypeAnno = []; // Accumula anni di assunzione
         $pieInv_data = [];  // Torta rapp invalidi / personale
+        $chartMesiInv = []; //  chart rapp mensile invalidi/personale  
+        $chartMesiContr= []; // chart rapp mensile contratto a tempo determinato/indeterminato
         $pieMan_data = [];  // Torta Mansioni
-        $chartType_data = []; // Combo chart andamento tipo personale negli anni
-        $chartEta_data = []; // Combo chart età personale negli anni 
+        $chartType_data = []; // Combo chart incremento tipo personale negli anni
+        $chartEta_data = []; //  Chart età personale negli anni 
         $tabDet_data = [];  // tabella contratti a termine
         $tabMed_data = [];  // tabella visite mediche
-        $countPers = 0; $countDis = 0;
+
+        
+        $countPers = 0; $countDis = 0; $countEscl = 0;
         $countErrMan = 0;
+
         foreach ($personale as $persona) {
             if ($persona->getDateHiring() !== null) {
             $date = $persona->getDateHiring();
@@ -60,7 +66,7 @@ class PersonaleMainChartController extends AbstractController
                     $nomeMan = $persona->getMansione()->getMansioneName(); }
                 else {  $nomeMan = 'Da Assegnare';  }
                 if(array_key_exists($nomeMan,$arrMansioni) ) { 
-                     if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $countDis-- ; } // Mansione non valida per calcolo % Invalidi
+                     if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $countDis--; $countEscl++ ; } // Mansione non valida per calcolo % Invalidi
                      foreach ($arrMansioni as $key => $value) {
                         if ($key === $nomeMan ) {
                             $value ++;
@@ -72,12 +78,74 @@ class PersonaleMainChartController extends AbstractController
             }
         }
 
-        $pieInv_data[] = ['Tipo' => 'Abili', 'Numero' => $countPers-$countDis,];
+        $pieInv_data[] = ['Tipo' => 'Abili', 'Numero' => $countPers-($countDis + $countEscl),];
         $pieInv_data[] = ['Tipo' => 'Invalidi', 'Numero' => $countDis,];
        // $pieInv_data[] = ['Tipo' => 'Errori', 'Numero' => $countErrMan,];
 
         foreach ($arrMansioni as $key => $value) {
             $pieMan_data[] = ['Tipo' => $key , 'Numero' => $value ];
+        }
+
+        // Inizio e fine mese per un anno dal mese in corso -9 mesi e +3  mesi.
+        $arrInizMese = []; // primo del Mese -9  dal mese in corso +3 mesi dopo
+        $arrFineMese = []; // ultimo del Mese -9  dal mese in corso +3 mesi dopo
+        $dateutility = new DateUtility ;
+        $dateObj =  new \DateTime(); 
+        $annocur = $dateObj->format('Y');  $mesecur = $dateObj->format('m'); 
+        $limitiMesi = $dateutility->calculateRangeYear($annocur, $mesecur, -9 );
+        for ($i=0 ; $i<=23; $i++) {
+            if ($i < 12 ) {  $arrInizMese[$i] = $limitiMesi[$i]; } 
+            else {  $arrFineMese[$i-12] = $limitiMesi[$i];}
+          }
+        // calcola per mese i diversamente abili e per contratto a tempo Indeter/Determ.
+        for ($i=0 ; $i<=11; $i++) {
+            $indet = 0; $determ = 0;
+            $abili = 0; $invalidi = 0; $neutri = 0;
+            foreach ($personale as $persona) {
+                // personale a tempo indeterminato
+                if ($persona->getTipoContratto() === 'I' ) {
+                    if ($persona->getDateHiring() !== null) {
+                        if ( $persona->getDateHiring() <=  $arrFineMese[$i] ) {
+                            // presente nel mese a condizione che la data di dimissioni sia nulla
+                            // o maggiore di inizio mese
+                                if ($persona->getDateDismissal() === null || $persona->getDateDismissal() >=  $arrInizMese[$i]) { 
+                                    // può considerarlo 
+                                    $indet++; 
+                                    if ($persona->getIsInvalid() === true) { $invalidi++; }  else { $abili++ ;}
+                                    if ($persona->getMansione() !== null ) { 
+                                        $nomeMan = $persona->getMansione()->getMansioneName(); }
+                                    else {  $nomeMan = 'Da Assegnare';  }
+                                        if(array_key_exists($nomeMan,$arrMansioni) ) { 
+                                            if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $invalidi--; $neutri++ ; } // Mansione non valida per calcolo % Invalidi
+                                        }
+                                } 
+                         }
+                    }
+                } else {
+                // personale contratto a tempo determinato
+                if ( $persona->getDateHiring() <=  $arrFineMese[$i] ) {
+                    // presente nel mese a condizione che la data di scadenza contratto  sia nulla
+                    // o maggiore di inizio mese
+                        if ($persona->getScadenzaContratto() === null || $persona->getScadenzaContratto() >=  $arrInizMese[$i]) { 
+                            // può considerarlo 
+                            $determ++; 
+                            if ($persona->getIsInvalid() === true) { $invalidi++; }  else { $abili++ ;}
+                            if ($persona->getMansione() !== null ) { 
+                                $nomeMan = $persona->getMansione()->getMansioneName(); }
+                            else {  $nomeMan = 'Da Assegnare';  }
+                                if(array_key_exists($nomeMan,$arrMansioni) ) { 
+                                    if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $invalidi--; $neutri++ ; } // Mansione non valida per calcolo % Invalidi
+                                }
+                        } 
+                 }
+                }
+            }
+            // assegna array per chart
+            //  $meseaa = jdmonthname ( $arrInizMese[$i]->format('m'), 1 ).' '.$arrInizMese[$i]->format('y');
+            $meseaa = $arrInizMese[$i]->format('m').'-'.$arrInizMese[$i]->format('y');
+            $abili -= $neutri;  // $invalidi = $invalidi / $abili * 100; $abili = 100 - $invalidi; 
+            $chartMesiInv[] = ['Periodo' => $meseaa, 'Invalidi' => $invalidi, 'Abili' => $abili ];
+            $chartMesiContr[] = ['Periodo' => $meseaa, 'Indeterminato' => $indet, 'Determinato' => $determ];
         }
 
         // Calcola anno/ tipo ed eta
@@ -188,6 +256,8 @@ class PersonaleMainChartController extends AbstractController
             'tabMed_chart' => $tabMed_data ,
             'comboType_chart' => $chartType_data,
             'lineEta_chart' => $chartEta_data,
+            'stack_chart' => $chartMesiInv,
+            'columns_chart' => $chartMesiContr
         ]));
     
     }

@@ -5,11 +5,14 @@ namespace App\Entity;
 use App\Repository\DocumentiPersonaleRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * @ORM\Entity(repositoryClass=DocumentiPersonaleRepository::class)
  * @ORM\HasLifecycleCallbacks()
  * @Vich\Uploadable()
+ * @Assert\Callback({"App\Validator\DocumentiPersonaleValidator", "validate"})  
  */
 class DocumentiPersonale
 {
@@ -22,16 +25,24 @@ class DocumentiPersonale
 
     /**
      * @ORM\Column(type="string", length=80)
+     * @Assert\Length( max=80  )
      */
     private $titolo;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Length( max=255  )
      */
     private $documentoPath;
 
     /**
      * @Vich\UploadableField(mapping="personale_documenti", fileNameProperty="documentoPath")
+     *  @var File
+     *  @Assert\File( 
+     *     maxSize="3048k", 
+     *     mimeTypes = {"application/pdf", "application/x-pdf", "image/png", "image/jpeg", "image/bmp" },
+     *     mimeTypesMessage = "Per favore carica un file PDF o immagini png,bmp,jpeg"
+     *  )
      */
     private $documentoFile;
 

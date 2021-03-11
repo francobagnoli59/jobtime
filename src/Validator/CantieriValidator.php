@@ -4,6 +4,7 @@ namespace App\Validator;
 
 use App\Entity\Cantieri;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class CantieriValidator
 {
@@ -62,5 +63,20 @@ class CantieriValidator
                 }
             }
         }
+        // Controlla documenti 
+        $documentiCantieri = new ArrayCollection;
+        $documentiCantieri = $cantieri->getDocumentiCantiere();
+            foreach ($documentiCantieri as $documento) {
+                if ($documento->getDocumentoFile() !== null && $documento->getTitolo() === null ) {
+                    $context->buildViolation('Se scegli un file documento allora devi inserire anche un Titolo (Tipo documento)')
+                        ->addViolation() ;
+                }
+                if ($documento->getDocumentoFile() === null && $documento->getDocumentoPath()  && $documento->getTitolo() !== null ) {
+                    $context->buildViolation('Se inserisci un Titolo nel tipo documento allora devi scegliere un file (pdf o immagini, dalle dimensioni massime di 3MB)')
+                        ->addViolation() ;
+                }
+
+            }
+
     }
 }

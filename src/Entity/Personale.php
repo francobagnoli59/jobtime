@@ -124,6 +124,7 @@ class Personale
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Length( max = 255  ) 
      */
     private $photoAvatar;
 
@@ -190,6 +191,7 @@ class Personale
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Length( max=255  )
      */
     private $curriculumVitae;
 
