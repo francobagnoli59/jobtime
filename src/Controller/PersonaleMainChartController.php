@@ -81,8 +81,9 @@ class PersonaleMainChartController extends AbstractController
             }
         }
 
-        $pieInv_data[] = ['Tipo' => 'Abili', 'Numero' => $countPers-($countDis + $countEscl),];
-        $pieInv_data[] = ['Tipo' => 'Invalidi', 'Numero' => $countDis,];
+        $invalidi = $countDis / ( $countPers-($countDis + $countEscl) ) * 100; $abili = 100 - $invalidi; 
+        $pieInv_data[] = ['Tipo' => 'Abili', 'Numero' => $abili ,];
+        $pieInv_data[] = ['Tipo' => 'Invalidi', 'Numero' => $invalidi,];
        // $pieInv_data[] = ['Tipo' => 'Errori', 'Numero' => $countErrMan,];
 
         foreach ($arrMansioni as $key => $value) {
@@ -147,7 +148,7 @@ class PersonaleMainChartController extends AbstractController
             // assegna array per chart
             //  $meseaa = jdmonthname ( $arrInizMese[$i]->format('m'), 1 ).' '.$arrInizMese[$i]->format('y');
             $meseaa = $arrInizMese[$i]->format('m').'-'.$arrInizMese[$i]->format('y');
-            $abili -= $neutri;  // $invalidi = $invalidi / $abili * 100; $abili = 100 - $invalidi; 
+            $abili -= $neutri;  $invalidi = $invalidi / $abili * 100; $abili = 100 - $invalidi; 
             $chartMesiInv[] = ['Periodo' => $meseaa, 'Invalidi' => $invalidi, 'Abili' => $abili ];
             $chartMesiContr[] = ['Periodo' => $meseaa, 'Indeterminato' => $indet, 'Determinato' => $determ];
         }
