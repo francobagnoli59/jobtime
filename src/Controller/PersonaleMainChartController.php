@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Admin;
+namespace App\Controller;
 
 use App\Repository\PersonaleRepository;
 use App\Repository\MansioniRepository;
@@ -22,6 +22,9 @@ class PersonaleMainChartController extends AbstractController
     {
        // da parametrizzare nella bar navigation
        $azienda =  $aziendeRepository->findOneBy(['id'=> 1]);
+       $rangeMonth = $azienda->getRangeAnalisi();
+       if ($rangeMonth === null) {$rangeMonth = 0;}
+       $title = 'Dashboard Personale '.$azienda->getNickName();
 
        // legge tabella mansioni
        $arrMansioni = [];  $arrManValid = [];
@@ -86,13 +89,14 @@ class PersonaleMainChartController extends AbstractController
             $pieMan_data[] = ['Tipo' => $key , 'Numero' => $value ];
         }
 
-        // Inizio e fine mese per un anno dal mese in corso -9 mesi e +3  mesi.
+        // Inizio e fine mese per un anno dal mese in corso -9 mesi e +3  mesi 
+        // se rangeAnalisi di Aziende = -9.
         $arrInizMese = []; // primo del Mese -9  dal mese in corso +3 mesi dopo
         $arrFineMese = []; // ultimo del Mese -9  dal mese in corso +3 mesi dopo
         $dateutility = new DateUtility ;
         $dateObj =  new \DateTime(); 
         $annocur = $dateObj->format('Y');  $mesecur = $dateObj->format('m'); 
-        $limitiMesi = $dateutility->calculateRangeYear($annocur, $mesecur, -9 );
+        $limitiMesi = $dateutility->calculateRangeYear($annocur, $mesecur, $rangeMonth );
         for ($i=0 ; $i<=23; $i++) {
             if ($i < 12 ) {  $arrInizMese[$i] = $limitiMesi[$i]; } 
             else {  $arrFineMese[$i-12] = $limitiMesi[$i];}
@@ -248,8 +252,8 @@ class PersonaleMainChartController extends AbstractController
         //  $test =  json_encode($arrMansioni).' ******K: '.json_encode(array_keys($arrMansioni)).
         // ' ******V: '.json_encode(array_values($arrMansioni));
 
-        return new Response($twig->render('admin/personale/mainchart.html.twig', [
-            'page_title'  => 'Dashboard Personale',
+        return new Response($twig->render('personale/mainchart.html.twig', [
+            'page_title'  => $title,
             'pieInv_chart' => $pieInv_data ,
             'pieMan_chart' => $pieMan_data ,
             'tabDet_chart' => $tabDet_data ,

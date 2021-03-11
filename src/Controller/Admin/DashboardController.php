@@ -111,6 +111,9 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::linktoRoute('Vai ai Feedback', 'fas fa-home', 'homepage');
         yield MenuItem::linkToRoute('Dashboard Personale', 'fas fa-chart-pie', 'main_personale_chart');
+        yield MenuItem::linkToRoute('Planning Cantieri', 'fas fa-stream', 'main_cantieri_planchart');
+        yield MenuItem::linkToRoute('Analisi Cantieri', 'fas fa-chart-bar', 'main_cantieri_barchart');
+
         yield MenuItem::section('Inserimento orari di lavoro');
         yield MenuItem::linkToRoute('Prepara mensilità', 'fas fa-calendar', 'planning_month');
         yield MenuItem::linkToCrud('Ore lavorate', 'fas fa-clock',  OreLavorate::class);
@@ -128,7 +131,7 @@ class DashboardController extends AbstractDashboardController
             ]) ;
 
         yield MenuItem::section('Report');
-        yield MenuItem::linkToRoute('Cantieri', 'fas fa-chart-line', 'cantieri_chart');
+       // yield MenuItem::linkToRoute('Analisi Cantieri', 'fas fa-chart-bar', 'cantieri_chart');
 
         yield MenuItem::section();
         yield MenuItem::subMenu('Configurazioni', 'fas fa-cogs ')->setSubItems([

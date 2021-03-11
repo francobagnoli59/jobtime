@@ -82,6 +82,11 @@ class Aziende
     private $codeTransferPaghe;
 
     /**
+     * @ORM\Column(type="smallint", nullable=true)
+     */
+    private $rangeAnalisi;
+
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
@@ -112,6 +117,7 @@ class Aziende
      */
     private $orelavorate;
 
+    
    
     public function __construct()
     {
@@ -379,6 +385,18 @@ class Aziende
                 $orelavorate->setAzienda(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getRangeAnalisi(): ?int
+    {
+        return $this->rangeAnalisi;
+    }
+
+    public function setRangeAnalisi(?int $rangeAnalisi): self
+    {
+        $this->rangeAnalisi = $rangeAnalisi;
 
         return $this;
     }

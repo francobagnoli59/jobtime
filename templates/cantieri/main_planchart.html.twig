@@ -42,7 +42,7 @@
       var options = {
         gantt: {
           criticalPathEnabled: false,
-          trackHeight: 20,
+          trackHeight: 30,
       //   innerGridHorizLine: {
       //      stroke: '#ffe0b2',
       //      strokeWidth: 2        SFONDO OCRA RIGHE ALTERNATE
@@ -58,49 +58,11 @@
     }
   </script>
 
-  <script type="text/javascript">
-
-      google.charts.load('current', {'packages':['bar']});
-      google.charts.setOnLoadCallback(drawChart);
-
- function drawChart() {
-
-     var array = document.getElementById('bar').value;
-     var datavalue = JSON.parse(array); 
-
-     var data = new google.visualization.DataTable();
-      data.addColumn('string', 'Cantiere'  );
-      data.addColumn('number', 'Ore budget'); 
-      data.addColumn('number', 'Ore lavorate'); 
-      data.addColumn('number', 'Prezzo medio'); 
-      data.addColumn('number', 'Costo medio'); 
-      for (i = 0; i < datavalue.length; i++) {
-            var arrayData = [datavalue[i].Cantiere, datavalue[i].OreBud, datavalue[i].OreLav, datavalue[i].Prezzo, datavalue[i].Costo];
-            data.addRows([arrayData]);
-           };
-
-        var options = {
-          colors: ['blue','orange','green','red'],
-          chart: {
-            title: 'Elenco cantieri',
-            subtitle: 'Confronto mensile ore budget/lavorate e Prezzo/Costo medio orario',
-          },
-          bars: 'horizontal' // Required for Material Bar Charts.
-          };
-
-        var chart = new google.charts.Bar(document.getElementById('bar_div'));
-        chart.draw(data, google.charts.Bar.convertOptions(options));
-      }
-
-    </script>
-
-    </head>
+  </head>
 
     <body>
       <input type="hidden" id="gant" value="{{ gant_chart|json_encode }}">
-      <input type="hidden" id="bar" value="{{ bar_chart|json_encode }}">
-      <div id="gantt_div" style="width: 800px; height: 1600px;" > </div>
-      <div id="bar_div" style="width: 800px; height: 1600px ;" > </div>
+      <div id="gantt_div" style="width: 800px; height: 3200px;" > </div>
     </body>
 
 {% endblock %}

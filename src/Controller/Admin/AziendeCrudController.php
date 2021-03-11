@@ -92,6 +92,7 @@ class AziendeCrudController extends AbstractCrudController
             },
              ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
         $codeTransferPaghe = TextField::new('codeTransferPaghe', 'Codice per RPS')->setRequired(true)->setHelp('Inserire il codice idendificativo azienda per l\'applicativo paghe Ranocchi System (Studio Filippeschi)');
+        $rangeAnalisi = IntegerField::new('rangeAnalisi', 'Mesi analisi dashboard')->setHelp('Inserire il numero di mesi che si desidera controllare per l\'andamento dell\'incidenza diversamente abili e tipi di contratto (determinato/indeterminato). Indicare un numero negativo per andare indietro nel tempo, es -12 equivale ad un anno precedente.');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
@@ -99,11 +100,11 @@ class AziendeCrudController extends AbstractCrudController
         if (Crud::PAGE_INDEX === $pageName) {
             return [$nickName, $partitaIva, $address, $city, $provincia, $createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $panel_ID, $id, $createdAt];
+            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $rangeAnalisi, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe];
+            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $rangeAnalisi];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $panel_ID, $id, $createdAt];
+            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $rangeAnalisi, $panel_ID, $id, $createdAt];
         }
     }
 }

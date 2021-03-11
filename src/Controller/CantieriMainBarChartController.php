@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Controller\Admin;
+namespace App\Controller;
 
 use App\Repository\CantieriRepository;
+use App\Repository\AziendeRepository;
 // use Doctrine\ORM\EntityManagerInterface;
 // use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,43 +11,27 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environment;
 
-class CantieriChartController extends AbstractController
+class CantieriMainBarChartController extends AbstractController
 {
     
      /**
-     * @Route("/cantieri_chart", name="cantieri_chart")
+     * @Route("/main_cantieri_barchart", name="main_cantieri_barchart")
      */
-    public function index(Environment $twig, CantieriRepository $cantieriRepository): Response
+    public function index(Environment $twig, CantieriRepository $cantieriRepository, AziendeRepository $aziendeRepository): Response
     {
+         // da parametrizzare nella bar navigation o nell'user collegato
+        $azienda =  $aziendeRepository->findOneBy(['id'=> 1]);
+        $title = 'Analisi cantieri '.$azienda->getNickName();
+        
         $cantieri = $cantieriRepository->findAll();
-        $gant_data = [];
+       
         $bar_data = [];
 
         foreach ($cantieri as $cantiere) {
 
-            if ($cantiere->getCategoria()->getCategoria() !== 'Organizzazione') {
-            $interval = $cantiere->getDateStartJob()->diff($cantiere->getDateEndJob());
-            $giorni = $interval->format('%a');
-            // calcola la differenza ad oggi
-            $interval = $cantiere->getDateStartJob()->diff(new \DateTime("now"));
-            $adoggi = $interval->format('%a');
-            if ($adoggi > $giorni) {
-                $pcompl = 100;
-            } else { $pcompl = intdiv( $adoggi*100, $giorni); }
-        
-            $arrayGantt = [
-                'TaskID' => $cantiere->getNameJob(),
-                'TaskName' => $cantiere->getNameJob(),
-                'Resource' => $cantiere->getProvincia()->getName(),
-                'StartDate' => $cantiere->getDateStartJob()->format('Ymd'),
-                'EndDate' => $cantiere->getDateEndJob()->format('Ymd'), // la passa ma non la assegna
-                'Duration' => $giorni, 
-                'PercentComplete' =>  $pcompl, 
-                'Dependencies' => null 
-            ];
-            $gant_data[] =  $arrayGantt ;
-
-            // chart Bar   Budget Cantiere
+            if ($cantiere->getCategoria()->getCategoria() !== 'Organizzazione' && $cantiere->getAzienda() === $azienda) {
+            
+              // chart Bar   Budget Cantiere
             if ($cantiere->getPlanningHours() === 0 ) {
                 $ricavo = 0 ; $ore = 0;
             } else {
@@ -81,14 +66,17 @@ class CantieriChartController extends AbstractController
                 'Prezzo' =>  $ricavo,
                 'Costo' =>  $costo,
             ];
-            $bar_data[] =  $arrayBar ;
-            }
-        }
+            $bar_data[] =  $arrayBar ; 
 
-     
-        return new Response($twig->render('admin/cantieri/chart.html.twig', [
-            'page_title' => 'Planning Cantieri',
-            'gant_chart' => $gant_data ,
+            }
+        } 
+        // ordinamento decrescente per ore a budget
+        $arrOL = [];
+        $arrOL = array_column($bar_data, 'OreBud');
+        array_multisort($arrOL, SORT_DESC, $bar_data); 
+        
+        return new Response($twig->render('cantieri/main_barchart.html.twig', [
+            'page_title' => $title,
             'bar_chart' => $bar_data ,
         ]));
     }
