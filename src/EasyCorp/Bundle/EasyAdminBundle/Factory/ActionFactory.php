@@ -168,7 +168,7 @@ final class ActionFactory
         if ($request->query->has(EA::SUBMENU_INDEX)) {
             $requestParameters[EA::SUBMENU_INDEX] = $request->get(EA::SUBMENU_INDEX);
         }
-        
+
         return $this->adminUrlGenerator->unsetAllExcept(EA::MENU_INDEX, EA::SUBMENU_INDEX, EA::FILTERS)->setAll($requestParameters)->generateUrl();
     }
 
