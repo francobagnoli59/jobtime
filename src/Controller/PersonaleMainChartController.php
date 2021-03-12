@@ -80,10 +80,12 @@ class PersonaleMainChartController extends AbstractController
                 } else { $countErrMan++; }
             }
         }
-
+        if (( $countPers-($countDis + $countEscl) ) > 0 ) {
         $invalidi = $countDis / ( $countPers-($countDis + $countEscl) ) * 100; $abili = 100 - $invalidi; 
+        } else { $abili = 0; $invalidi = 0; } 
         $pieInv_data[] = ['Tipo' => 'Abili', 'Numero' => $abili ,];
         $pieInv_data[] = ['Tipo' => 'Invalidi', 'Numero' => $invalidi,];
+
        // $pieInv_data[] = ['Tipo' => 'Errori', 'Numero' => $countErrMan,];
 
         foreach ($arrMansioni as $key => $value) {
@@ -148,12 +150,14 @@ class PersonaleMainChartController extends AbstractController
             // assegna array per chart
             //  $meseaa = jdmonthname ( $arrInizMese[$i]->format('m'), 1 ).' '.$arrInizMese[$i]->format('y');
             $meseaa = $arrInizMese[$i]->format('m').'-'.$arrInizMese[$i]->format('y');
+            if ($abili -= $neutri > 0 ) {
             $abili -= $neutri;  $invalidi = $invalidi / $abili * 100; $abili = 100 - $invalidi; 
+            } else { $invalidi = 0;  $abili = 0; }
             $chartMesiInv[] = ['Periodo' => $meseaa, 'Invalidi' => $invalidi, 'Abili' => $abili ];
             $chartMesiContr[] = ['Periodo' => $meseaa, 'Indeterminato' => $indet, 'Determinato' => $determ];
         }
 
-        // Calcola anno/ tipo ed eta
+        // Calcola anno tipo ed età
         sort($arrTypeAnno);
         $etauomini = 0; $etadonne = 0;
         $proguomini = 0 ; $progdonne = 0;
