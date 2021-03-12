@@ -121,9 +121,8 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Anagrafiche');
         yield MenuItem::linkToCrud('Cantieri', 'fas fa-building', Cantieri::class);
-        yield MenuItem::linkToCrud('Personale', 'fas fa-address-card', Personale::class);
-        // ->setQueryParameter('filters[gender][comparison]', '=')
-        // ->setQueryParameter('filters[gender][value]', 'M');
+        yield MenuItem::linkToCrud('Personale', 'fas fa-address-card', Personale::class)
+        ->setQueryParameter('filters[isEnforce][value]', 1);
         yield MenuItem::linkToCrud('Clienti', 'fas fa-users', Clienti::class);
         yield MenuItem::subMenu('Import anagrafiche', 'fas fa-upload')->setSubItems([
             MenuItem::linkToCrud('Import cantieri', 'fas fa-file-excel', ImportCantieri::class),
@@ -156,6 +155,10 @@ class DashboardController extends AbstractDashboardController
         // yield MenuItem::section();
         // yield MenuItem::linkToLogout('Logout', 'fa fa-exit');
 
+        yield MenuItem::subMenu('Storico', 'fas fa-history')->setSubItems([
+            MenuItem::linkToCrud('Personale licenziato', 'fas fa-address-book', Personale::class)
+           ->setQueryParameter('filters[isEnforce][value]', 0),
+           ]) ;
       /*   yield MenuItem::subMenu('Prove', 'fas fa-question')->setSubItems([
               MenuItem::linkToRoute('Export province', 'fas fa-file-excel', 'export')->setLinkTarget("_blank"),
               MenuItem::linkToRoute('Commenti no CRUD', 'fas fa-comments',  'admin_commenti_edit'),

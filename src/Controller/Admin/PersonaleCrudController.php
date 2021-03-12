@@ -104,7 +104,7 @@ class PersonaleCrudController extends AbstractCrudController
                 static fn(AziendeRepository $az) => $az->createQueryBuilder('azienda')
                  ->orderBy('azienda.nickName', 'ASC') ) )
             ->add(ChoiceFilter::new('gender', 'Sesso')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]) )
-            ->add(BooleanFilter::new('isEnforce', 'In forza/assunto'))
+            ->add(BooleanFilter::new('isEnforce', 'Assunto'))
             ->add(BooleanFilter::new('isPartner', 'Socio'))
             ->add(BooleanFilter::new('isInvalid', 'Diversamente abile'))
             ->add(DateTimeFilter::new('birthday', 'Data di nascita'))
@@ -271,7 +271,7 @@ class PersonaleCrudController extends AbstractCrudController
             $gender = ChoiceField::new('gender', 'Sesso')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]);
             $birthday = DateField::new('birthday', 'Data di nascita');
             $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale');
-            $isEnforce = BooleanField::new('isEnforce', 'In forza/assunto');
+            $isEnforce = BooleanField::new('isEnforce', 'Attivo/Dimesso');
             //  $photoFile = ImageField::new('photoAvatar', 'Foto')
             $photoFile = ImageField::new('photoAvatar', 'Upload Foto')
             ->setBasePath('uploads/photos')
