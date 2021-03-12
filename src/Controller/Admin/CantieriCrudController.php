@@ -220,7 +220,7 @@ class CantieriCrudController extends AbstractCrudController
         $panelPA = FormField::addPanel('CANTIERE PUBBLICA AMMINISTRAZIONE')->setIcon('fas fa-landmark')->setHelp('Inserire i dati se il committente è una pubblica amministrazione')->renderCollapsed($collapsePA);
         // dump($panelPA) ;
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $nameJob, $provincia, $categoria, $azienda, $isPublic, $commentiPubblici, $dateStartJob, $dateEndJob];
+            return [$id, $nameJob, $provincia, $categoria, $azienda, $isPublic, $commentiPubblici, $dateEndJob,  $flatRate];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $nameJob, $city, $provincia, $isPublic, $cliente, $dateStartJob, $dateEndJob, $categoria, $descriptionJob, $collectionDocView, $mapsGoogle, $distance, $panel2, $azienda, $hourlyRate, $extraRate, $flatRate, $regolaFatturazione, $isPlanningPerson, $planningHours, $isPlanningMaterial, $planningCostMaterial, $panelPA, $typeOrderPA, $numDocumento, $dateDocumento, $codiceCIG, $codiceCUP, $codiceIPA, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
