@@ -34,7 +34,8 @@ class PersonaleMainChartController extends AbstractController
             $arrMansioni[$name] = 0  ;
             $arrManValid[$name] = $mansione->getIsValidDA(); 
         } 
-        $arrMansioni['Da Assegnare'] = 0;
+        $name = 'Da Assegnare';
+        $arrMansioni[$name] = 0;
         $arrManValid[$name] = false ; 
        
         // collection personale
@@ -52,7 +53,7 @@ class PersonaleMainChartController extends AbstractController
 
         
         $countPers = 0; $countDis = 0; $countEscl = 0;
-        $countErrMan = 0;
+        $countErrMan = 0; $oggi = new \DateTime('now');
 
         foreach ($personale as $persona) {
             if ($persona->getDateHiring() !== null) {
@@ -61,32 +62,36 @@ class PersonaleMainChartController extends AbstractController
             }
 
             if (!in_array($anno, $arrTypeAnno)) {$arrTypeAnno[] = $anno ;}
-            if ($persona->getIsEnforce() === true) {
-                $countPers++ ;  
-                
-                if ($persona->getIsInvalid() === true) { $countDis++; }  
-                if ($persona->getMansione() !== null ) { 
-                    $nomeMan = $persona->getMansione()->getMansioneName(); }
-                else {  $nomeMan = 'Da Assegnare';  }
-                if(array_key_exists($nomeMan,$arrMansioni) ) { 
-                     if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $countDis--; $countEscl++ ; } // Mansione non valida per calcolo % Invalidi
-                     foreach ($arrMansioni as $key => $value) {
-                        if ($key === $nomeMan ) {
-                            $value ++;
-                            $arrMansioni[$nomeMan] = $value;
-                        } 
-                     }
+            if ( $persona->getIsEnforce() === true || ( $persona->getDateDismissal() !== null && $persona->getDateDismissal() >= $oggi ) ) {
+                if ($persona->getScadenzaContratto() === null || $persona->getScadenzaContratto() >=  $oggi) { 
+                        // può considerarlo 
+                    $countPers++ ;  
+                    
+                    if ($persona->getMansione() !== null ) { 
+                        $nomeMan = $persona->getMansione()->getMansioneName(); }
+                    else {  $nomeMan = 'Da Assegnare';  }
+                    if ($persona->getIsInvalid() === true  &&  $arrManValid[$nomeMan] === true ) { $countDis++; }  
+                    if(array_key_exists($nomeMan,$arrMansioni) ) { 
+                       // if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $countDis--; $countEscl++ ; } // Mansione non valida per calcolo base % Invalidi
+                        if ( $arrManValid[$nomeMan] === false ) { $countEscl++ ; } // Mansione non valida per calcolo % incidenza Invalidi
+                        foreach ($arrMansioni as $key => $value) {
+                            if ($key === $nomeMan ) {
+                                $value ++;
+                                $arrMansioni[$nomeMan] = $value;
+                            } 
+                        }
 
-                } else { $countErrMan++; }
+                    } else { $countErrMan++; }
+                }
             }
         }
         if (( $countPers-($countDis + $countEscl) ) > 0 ) {
-        $invalidi = $countDis / ( $countPers-($countDis + $countEscl) ) * 100; $abili = 100 - $invalidi; 
-        } else { $abili = 0; $invalidi = 0; } 
-        $pieInv_data[] = ['Tipo' => 'Abili', 'Numero' => $abili ,];
-        $pieInv_data[] = ['Tipo' => 'Invalidi', 'Numero' => $invalidi,];
-
-       // $pieInv_data[] = ['Tipo' => 'Errori', 'Numero' => $countErrMan,];
+        $abili = $countPers-($countDis + $countEscl) ; $invalidi = $countDis;   
+        $incidDis = $invalidi / $abili * 100; $incidAb = 100 - $incidDis; 
+        } else { $abili = 0; $invalidi = 0; $incidDis=0;  $incidAb=0;} 
+        $pieInv_data[] = ['Tipo' => 'Abili', 'Numero' => $incidAb ,];
+        $pieInv_data[] = ['Tipo' => 'Invalidi', 'Numero' => $incidDis,];
+        // $pieInv_data[] = ['Tipo' => 'Errori', 'Numero' => $countErrMan,];
 
         foreach ($arrMansioni as $key => $value) {
             $pieMan_data[] = ['Tipo' => $key , 'Numero' => $value ];
@@ -118,44 +123,46 @@ class PersonaleMainChartController extends AbstractController
                                 if ($persona->getDateDismissal() === null || $persona->getDateDismissal() >=  $arrInizMese[$i]) { 
                                     // può considerarlo 
                                     $indet++; 
-                                    if ($persona->getIsInvalid() === true) { $invalidi++; }  else { $abili++ ;}
-                                    if ($persona->getMansione() !== null ) { 
+                                     if ($persona->getMansione() !== null ) { 
                                         $nomeMan = $persona->getMansione()->getMansioneName(); }
                                     else {  $nomeMan = 'Da Assegnare';  }
-                                        if(array_key_exists($nomeMan,$arrMansioni) ) { 
-                                            if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $invalidi--; $neutri++ ; } // Mansione non valida per calcolo % Invalidi
-                                        }
+                                    if(array_key_exists($nomeMan,$arrMansioni) ) { 
+                                        if ($persona->getIsInvalid() === true && $arrManValid[$nomeMan] === true) { $invalidi++; }  else { $abili++ ;}
+                                        if ( $arrManValid[$nomeMan] === false ) {  $neutri++ ; } // Mansione non valida per calcolo % incidenza Invalidi
+                                    }
                                 } 
                          }
                     }
                 } else {
                 // personale contratto a tempo determinato
-                if ( $persona->getDateHiring() <=  $arrFineMese[$i] ) {
+                if ( ($persona->getDateHiring() <=  $arrFineMese[$i] ) && ($persona->getDateDismissal() === null || $persona->getDateDismissal() >=  $arrInizMese[$i] )) {
                     // presente nel mese a condizione che la data di scadenza contratto  sia nulla
                     // o maggiore di inizio mese
                         if ($persona->getScadenzaContratto() === null || $persona->getScadenzaContratto() >=  $arrInizMese[$i]) { 
                             // può considerarlo 
                             $determ++; 
-                            if ($persona->getIsInvalid() === true) { $invalidi++; }  else { $abili++ ;}
                             if ($persona->getMansione() !== null ) { 
                                 $nomeMan = $persona->getMansione()->getMansioneName(); }
                             else {  $nomeMan = 'Da Assegnare';  }
                                 if(array_key_exists($nomeMan,$arrMansioni) ) { 
-                                    if ( $persona->getIsInvalid() === true &&  $arrManValid[$nomeMan] === false ) { $invalidi--; $neutri++ ; } // Mansione non valida per calcolo % Invalidi
+                                    if ($persona->getIsInvalid() === true && $arrManValid[$nomeMan] === true) { $invalidi++; }  else { $abili++ ;}
+                                    if ( $arrManValid[$nomeMan] === false ) {  $neutri++ ; } // Mansione non valida per calcolo % incidenza Invalidi
                                 }
-                        } 
-                 }
+                            }
+                    }
                 }
             }
             // assegna array per chart
             //  $meseaa = jdmonthname ( $arrInizMese[$i]->format('m'), 1 ).' '.$arrInizMese[$i]->format('y');
-            $meseaa = $arrInizMese[$i]->format('m').'-'.$arrInizMese[$i]->format('y');
-            if ($abili -= $neutri > 0 ) {
-            $abili -= $neutri;  $invalidi = $invalidi / $abili * 100; $abili = 100 - $invalidi; 
-            } else { $invalidi = 0;  $abili = 0; }
-            $chartMesiInv[] = ['Periodo' => $meseaa, 'Invalidi' => $invalidi, 'Abili' => $abili ];
-            $chartMesiContr[] = ['Periodo' => $meseaa, 'Indeterminato' => $indet, 'Determinato' => $determ];
-        }
+                $meseaa = $arrInizMese[$i]->format('m').'-'.$arrInizMese[$i]->format('y');
+                if ($abili -= $neutri > 0 ) {
+                $abili -= $neutri;       
+                $incidDis = $invalidi / $abili * 100; $incidAb = 100 - $incidDis; 
+                } else { $invalidi = 0;  $abili = 0; $incidDis = 0;  $incidAb = 0; }
+                $chartMesiInv[] = ['Periodo' => $meseaa, 'Invalidi' => $incidDis, 'Abili' => $incidAb ];
+                $chartMesiContr[] = ['Periodo' => $meseaa, 'Indeterminato' => $indet, 'Determinato' => $determ];
+            }
+        
 
         // Calcola anno tipo ed età
         sort($arrTypeAnno);

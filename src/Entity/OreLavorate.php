@@ -29,7 +29,7 @@ class OreLavorate
     private $giorno;
 
     /**
-     * @ORM\Column(type="string", length=3, nullable=true)
+     * @ORM\Column(type="string", length=4, nullable=true)
      */
     private $orePianificate;
 

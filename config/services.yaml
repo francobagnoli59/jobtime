@@ -11,10 +11,6 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    vendor\EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory: ~
-    vendor\EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory: 
-        class: App\EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory
-
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -34,5 +30,7 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-   
+    #vendor\easycorp\easyadmin-bundle\src\Factory\ActionFactory: ~
+    #vendor\easycorp\easyadmin-bundle\src\Factory\ActionFactory: 
+    #    class: App\EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory
 
