@@ -59,7 +59,7 @@ class CausaliCrudController extends AbstractCrudController
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
-
+        
         if (Crud::PAGE_INDEX === $pageName) {
             return [$id, $code, $description, $createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {

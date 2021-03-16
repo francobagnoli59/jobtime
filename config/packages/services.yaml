@@ -9,6 +9,4 @@ services:
     # _defaults:
     #   bind:
     #       $photoDir: "%kernel.project_dir%/public/uploads/photos"  
-    vendor\easycorp\easyadmin-bundle\src\Factory\ActionFactory: ~
-    vendor\easycorp\easyadmin-bundle\src\Factory\ActionFactory: 
-        class: App\EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory
+    

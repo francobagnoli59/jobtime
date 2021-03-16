@@ -208,6 +208,7 @@ class CantieriCrudController extends AbstractCrudController
         $commentiPubblici = AssociationField::new('commentiPubblici', 'Commenti');
                 
         $typeOrderPA = ChoiceField::new('typeOrderPA', 'Tipologia appalto P.A.')->setChoices(['Nessun contratto P.A.' => 'N', 'Contratto pubblico' => 'C', 'Convenzione pubblica' => 'E', 'Ordine di acquisto' => 'O']);
+        // ->allowMultipleChoices() per poter scegliere più opzioni ( non è questo il caso, ma documentato come promemoria)
         $numDocumento = TextField::new('numDocumento', 'Numero Documento')->setHelp('Si riferisce alla tipologia di appalto');
         $dateDocumento = DateField::new('dateDocumento', 'Data Documento')->setHelp('Si riferisce alla tipologia di appalto');
         $codiceCIG = TextField::new('codiceCIG', 'Codice C.I.G.')->setHelp('Codice Identificativo Gara');
