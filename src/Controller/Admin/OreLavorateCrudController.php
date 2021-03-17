@@ -18,6 +18,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
@@ -31,8 +34,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-
-
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class OreLavorateCrudController extends AbstractCrudController
 {
@@ -160,6 +164,41 @@ class OreLavorateCrudController extends AbstractCrudController
     }
 
 
+    public function confirmView(Request $request):Response
+    {
+        $item = 0;
+        if ($request !== null ){
+            $context = $request->attributes->get(EA::CONTEXT_REQUEST_ATTRIBUTE);
+            $fields = FieldCollection::new($this->configureFields(Crud::PAGE_INDEX));
+            $filters = $this->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $fields, $context->getEntity());
+            $listaorari = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), $fields, $filters)
+                ->getQuery()
+                ->getResult();
+
+                foreach ($listaorari as $orarioRecord) {
+                    $itemOrario->setIsConfirmed(true);
+                    $this->entityManager->persist($orarioRecord);
+                    $this->entityManager->flush();
+                    $item++ ; 
+                }
+            }
+        if ($item > 0 ) {
+        $this->addFlash('success', sprintf('Sono stati confermati %d orari, eventualmente ricaricare la pagina per visualizzare la situazione aggiornata.', $item )); 
+        } else {
+        $this->addFlash('info', sprintf('Non ci sono orari da confermare.')); 
+        }
+        $crud = $context->getCrud();
+        $controller = $crud->getControllerFqcn();
+        $action     = $crud->getCurrentAction();
+        $url = $this->adminUrlGenerator
+        ->setController($controller)
+        ->setAction('index')
+        ->generateUrl();
+
+        return (new RedirectResponse($url));
+        
+    }
+
     public function configureCrud(Crud $crud): Crud
     {
     
@@ -201,13 +240,19 @@ class OreLavorateCrudController extends AbstractCrudController
           $add_orelavorate = Action::new('addOreLavorate', 'Aggiungi Ore lavorate', 'fa fa-calendar-plus')
          ->linkToCrudAction('addOreLavorate')->setCssClass('btn')->displayIf(fn ($entity) => !$entity->getIsTransfer());
          
-         //->createAsGlobalAction();  
+         $confirmView = Action::new('confirmView', 'Conferma orari in elenco')
+         ->setIcon('fa fa-clipboard-check')->setHtmlAttributes(['title' => 'Conferma gli orari dell\'elenco attuale (usare i filtri per la selezione desiderata)'])
+         ->linkToCrudAction('confirmView')
+         ->setCssClass('btn btn-primary')
+         ->createAsGlobalAction();
+        
        
         return $actions
                 ->remove(Crud::PAGE_INDEX, Action::NEW)
              //   ->remove(Crud::PAGE_INDEX, Action::DELETE)
                 ->remove(Crud::PAGE_DETAIL, Action::DELETE)
                 ->add(Crud::PAGE_INDEX, $add_orelavorate)->add(Crud::PAGE_EDIT, $add_orelavorate)
+                ->add(Crud::PAGE_INDEX, $confirmView)
                 // ...
                 ->add(Crud::PAGE_INDEX, Action::DETAIL)
                 // ->add(Crud::PAGE_DETAIL,)

@@ -130,7 +130,7 @@ class DashboardController extends AbstractDashboardController
             ]) ;
 
         yield MenuItem::section('Report');
-       // yield MenuItem::linkToRoute('Analisi Cantieri', 'fas fa-chart-bar', 'cantieri_chart');
+        //yield MenuItem::linkToRoute('Analisi Cantiere', 'fas fa-chart-bar', 'cantiere_chart');
 
         yield MenuItem::section();
         yield MenuItem::subMenu('Configurazioni', 'fas fa-cogs ')->setSubItems([

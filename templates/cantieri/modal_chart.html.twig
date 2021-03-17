@@ -1,7 +1,9 @@
-{% extends '@!EasyAdmin/page/content.html.twig' %}
+{# N O N     U S A T O  #}
 
-{% block page_content %}
-    <h4>{{ page_title }}</h4>
+{% extends '@!EasyAdmin/crud/index.html.twig' %}
+
+ {% block page_content %}
+   
     <head>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
@@ -22,7 +24,7 @@
       data.addColumn('number', 'Prezzo medio'); 
       data.addColumn('number', 'Costo medio'); 
       for (i = 0; i < datavalue.length; i++) {
-            var arrayData = [datavalue[i].Cantiere, datavalue[i].OreBud, datavalue[i].OreLav, datavalue[i].Prezzo, datavalue[i].Costo];
+            var arrayData = [' ', datavalue[i].OreBud, datavalue[i].OreLav, datavalue[i].Prezzo, datavalue[i].Costo];
             data.addRows([arrayData]);
            };
 
@@ -42,11 +44,35 @@
     </script>
 
     </head>
+    
+   
+    
+    <body id="modal-chart" class ="modal fade" aria-modal="true" role="dialog" style="padding-right: 17px; display: block;" >   
+                <div class = "modal-dialog">
+                <div class = "modal-content">
+                <div class = "modal-haeder">
+                <button type="button" data-dismiss="modal" class="btn btn-sm btn-secondary" id="modal-clear-button" formtarget="_self">
+                    <i class="fa fa-close"></i> Cancella
+                </button>
+                    <h5 class="modal-title">{{ page_title }}</h5>
+                    <div class="modal-body p-0" >
+                                          
+                    <input type="hidden" id="bar" value="{{ bar_chart|json_encode }}">
+                    <div id="bar_div" style="width: 400px; height: 400px ;" > </div>
 
+                    </div>
+                </div> 
+                </div> 
+                </div> 
     <body>
-      <input type="hidden" id="bar" value="{{ bar_chart|json_encode }}">
-      <div id="bar_div" style="width: 800px; height: 3200px ;" > </div>
-    </body>
+  
+   {% endblock %}
+    
+   
 
-{% endblock %}
+ 
+
+
+
+
 

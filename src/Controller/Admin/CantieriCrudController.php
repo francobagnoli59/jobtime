@@ -20,6 +20,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -36,6 +38,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 
+
 class CantieriCrudController extends AbstractCrudController
 {
     
@@ -45,6 +48,7 @@ class CantieriCrudController extends AbstractCrudController
         return Cantieri::class;
     }
 
+  
     public function configureCrud(Crud $crud): Crud
     {
     
@@ -65,19 +69,16 @@ class CantieriCrudController extends AbstractCrudController
     
     public function configureActions(Actions $actions): Actions
     {
-           //   
-     /*    $viewInvoice = Action::new('viewinvoice', 'View Invoice', 'fas fa-file-invoice')
-        ->linktoRoute('homepage')
-        ->setHtmlAttributes(['title' => 'Vedi Fattura'])
-        ->displayIf(fn ($entity) => $entity->getIsPublic()
-        ); */
-    
+ 
+            /*   $show_chartcantiere = Action::new('showChartCantiere', 'Vedi analisi mensile', 'fa fa-chart-bar')
+              ->linkToCrudAction('showChartCantiere')->displayIf(fn ($entity) => $entity->getOrelavorate());
+     */
           
         return $actions
                 // ...
               
                 ->add(Crud::PAGE_INDEX, Action::DETAIL)
-                // ->add(Crud::PAGE_INDEX, $viewInvoice)
+               // ->add(Crud::PAGE_INDEX, $show_chartcantiere)
                // ->add(Crud::PAGE_DETAIL,)
                 ->add(Crud::PAGE_EDIT,  Action::DELETE )
                 ->add(Crud::PAGE_NEW,   Action::INDEX )
