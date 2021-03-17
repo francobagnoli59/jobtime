@@ -183,7 +183,7 @@ class OreLavorateCrudController extends AbstractCrudController
                 }
             }
         if ($item > 0 ) {
-        $this->addFlash('success', sprintf('Sono stati confermati %d orari, eventualmente ricaricare la pagina per visualizzare la situazione aggiornata.', $item )); 
+        $this->addFlash('success', sprintf('Sono stati confermati %d orari, se necessario eseguire altri filtri per confermare altri orari.', $item )); 
         } else {
         $this->addFlash('info', sprintf('Non ci sono orari da confermare.')); 
         }
@@ -276,8 +276,8 @@ class OreLavorateCrudController extends AbstractCrudController
     public function addOreLavorate(AdminContext $context)
     {
         $oreitem = $context->getEntity()->getInstance();
-
-        $url = $this->adminUrlGenerator->unsetAll()
+// ->unsetAll()
+        $url = $this->adminUrlGenerator
             ->setController(OreLavorateCrudController::class)
             ->setAction(Action::NEW)
             ->set('azienda', $oreitem->getAzienda()->getId())
@@ -292,12 +292,12 @@ class OreLavorateCrudController extends AbstractCrudController
      public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('ORE LAVORATE')->setIcon('fas fa-clock');
-        $giorno = DateField::new('giorno', 'Data')->setFormTypeOptions(['disabled' => 'true']);;
+        $giorno = DateField::new('giorno', 'Data'); //->setFormTypeOptions(['disabled' => 'true']);;
         $dayOfWeek = TextField::new('dayOfWeek', 'Giorno')->setFormTypeOptions(['disabled' => 'true']);;
         $isConfirmed= BooleanField::new('isConfirmed', 'Orario confermato');
         $orePianificate = TextField::new('orePianificate', 'Ore previste')->setFormTypeOptions(['disabled' => 'true']);
         $keyReference = TextField::new('keyReference', 'Chiave registrazione')->setFormTypeOptions(['disabled' => 'true']);
-        $oreRegistrate = TextField::new('oreRegistrate', 'Ore lavorate');
+        $oreRegistrate = TextField::new('oreRegistrate', 'Ore lavorate')->setHelp('<mark>Inserire 0 ore se orario da annullare.</mark>');
         $azienda = AssociationField::new('azienda', 'Azienda')
             ->setFormTypeOptions([
             'query_builder' => function (AziendeRepository $az) {
