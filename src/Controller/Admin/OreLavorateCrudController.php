@@ -176,7 +176,7 @@ class OreLavorateCrudController extends AbstractCrudController
                 ->getResult();
 
                 foreach ($listaorari as $orarioRecord) {
-                    $itemOrario->setIsConfirmed(true);
+                    $orarioRecord->setIsConfirmed(true);
                     $this->entityManager->persist($orarioRecord);
                     $this->entityManager->flush();
                     $item++ ; 
