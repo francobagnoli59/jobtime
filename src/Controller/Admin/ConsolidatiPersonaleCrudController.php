@@ -24,6 +24,20 @@ class ConsolidatiPersonaleCrudController extends AbstractCrudController
         return ConsolidatiPersonale::class;
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+    
+        return $crud
+            ->setEntityLabelInSingular('Consolidato persona')
+            ->setEntityLabelInPlural('Consolidato personale')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Ore Consolidate')
+             ->setPageTitle(Crud::PAGE_DETAIL, 'Visualizza Ore Consolidate')
+            ->setPageTitle(Crud::PAGE_EDIT,'Modifica Ore Consolidate')
+            ->setSearchFields(['id', 'persona.surname', 'meseAziendale.keyReference'])
+            ->setDefaultSort(['persona.surname' => 'ASC',  'meseAziendale.keyReference' => 'ASC'])
+            ->showEntityActionsAsDropdown();
+    }
+    
     public function configureActions(Actions $actions): Actions
     {
                

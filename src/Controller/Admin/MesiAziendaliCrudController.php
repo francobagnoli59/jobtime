@@ -81,6 +81,7 @@ class MesiAziendaliCrudController extends AbstractCrudController
          // contatori e array di totalizzazione
          $countTotalPersone = $entityInstance->getNumeroPersone();
          $countConfirmedPersone = 0;
+         $countAlreadyConfPersone = 0;
          $countNotConfPersone = 0;
          $arrayCantieri = [];   // array che contiene index Id cantiere
          $totArrayCantieri = []; // array che contiene totalizzatori a parità di index
@@ -174,7 +175,8 @@ class MesiAziendaliCrudController extends AbstractCrudController
                                 } // ciclo ore lavorate
                             } else { $countNotConfPersone++ ;}
                         } // Ore Lavorate nel mese tutte confermate
-                    } // esclude personale consolidato
+                    } // personale consolidato: lo conta
+                    else { $countAlreadyConfPersone++ ; }
                   } // personale assunto
 
                   if ($valido === true ) {
@@ -246,7 +248,7 @@ class MesiAziendaliCrudController extends AbstractCrudController
                   $entityInstance->setOreImproduttive($entityInstance->getOreImproduttive() + $globOreCantImpr);
                   $entityInstance->setOreIninfluenti($entityInstance->getOreIninfluenti() + $globOreCantInin);
                   $entityInstance->setCostMonthHuman(round(($entityInstance->getCostMonthHuman() + $globCostoCantLav),2));
-                  if ($countTotalPersone  === $countConfirmedPersone ) {
+                  if ($countTotalPersone  === ($countConfirmedPersone + $countAlreadyConfPersone) ) {
                     $entityInstance->setIsHoursCompleted(true);
                   }
                 // Alla fine riepiloga i risultati della elaborazione (Personale elaborato e non elaborato e Numero cantieri trattai)
@@ -260,6 +262,10 @@ class MesiAziendaliCrudController extends AbstractCrudController
             } else { 
                 if ($countNotConfPersone > 0) {
                     $this->addFlash('warning', sprintf('Nel mese selezionato sono state trovate %d persone con orari da CONFERMARE. Elaborazione del mese non eseguita', $countNotConfPersone ) );
+                } else {
+                    if ($countTotalPersone  === ($countConfirmedPersone + $countAlreadyConfPersone) ) {
+                        $entityInstance->setIsHoursCompleted(true);
+                      }
                 }
             }
         }

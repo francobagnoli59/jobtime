@@ -24,6 +24,21 @@ class ConsolidatiCantieriCrudController extends AbstractCrudController
         return ConsolidatiCantieri::class;
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+    
+        return $crud
+            ->setEntityLabelInSingular('Consolidato cantiere')
+            ->setEntityLabelInPlural('Consolidato cantieri')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Ore Consolidate dei Cantieri')
+             ->setPageTitle(Crud::PAGE_DETAIL, 'Visualizza Ore Consolidate per Cantiere')
+            ->setPageTitle(Crud::PAGE_EDIT,'Modifica Ore Consolidate per Cantiere')
+            ->setSearchFields(['id', 'cantiere.nameJob', 'meseAziendale.keyReference'])
+            ->setDefaultSort(['cantiere.nameJob' => 'ASC',  'meseAziendale.keyReference' => 'ASC'])
+            ->showEntityActionsAsDropdown();
+    }
+    
+
     public function configureActions(Actions $actions): Actions
     {
                
