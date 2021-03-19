@@ -261,7 +261,7 @@ class OreLavorateCrudController extends AbstractCrudController
 
                 // crea il file
                 $writer = new Xlsx($spreadsheet);
-                $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('d-m-y-%F').'.xlsx';
+                $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('Y-m-d\TH:i:s').'.xlsx';
                 $writer->save('downloads/flowsalary/'.$filename);
             
                 $filesystem = new Filesystem();
