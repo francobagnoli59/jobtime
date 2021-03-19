@@ -235,40 +235,42 @@ class OreLavorateCrudController extends AbstractCrudController
                        break; 
                     } 
                 }
-            // prepara array (giorni del mese)
-            $daysOfMonth = daysOfMonth($lastdate);
-            $col = [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF,AG,AH];    
+            if ($item <= 20 ) {    
+                // prepara array (giorni del mese)
+                $daysOfMonth = $this->daysOfMonth($lastdate);
+                $col = [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF,AG,AH];    
+                
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+        
+                $sheet->setTitle('Nome persona');
+        
+                $sheet->getCell('A1')->setValue('RIEPILOGO ORE MENSILI');
+                $sheet->getCell('A3')->setValue('Nome Azienda');
+                $sheet->getCell('C3')->setValue('Mese Anno');
+                $sheet->getCell('A5')->setValue('Operatore');
+                $sheet->getCell('B5')->setValue('Nome persona');
+                $sheet->getCell('A7')->setValue('Cantiere');
+                $d = 0;  // colonne dei giorni
+                    foreach ( $daysOfMonth as $days) {
+                        $sheet->getCell($col[$d+1].'7')->setValue($days);
+                        $d++;
+                    }
+                    // ciclo lettura orari personale 
+
+
+                // crea il file
+                $writer = new Xlsx($spreadsheet);
+                $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('d-m-y-F').'.xlsx';
+                $writer->save('downloads/flowsalary/'.$filename);
             
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-    
-            $sheet->setTitle('Nome persona');
-    
-            $sheet->getCell('A1')->setValue('RIEPILOGO ORE MENSILI');
-            $sheet->getCell('A3')->setValue('Nome Azienda');
-            $sheet->getCell('C3')->setValue('Mese Anno');
-            $sheet->getCell('A5')->setValue('Operatore');
-            $sheet->getCell('B5')->setValue('Nome persona');
-            $sheet->getCell('A7')->setValue('Cantiere');
-            $d = 0;  // colonne dei giorni
-            foreach ( $daysOfMonth as $days) {
-                $sheet->getCell($col[$d+1].'7')->setValue($days);
-                $d++;
-            }
-            // ciclo lettura orari personale 
-
-
-            // crea il file
-            $writer = new Xlsx($spreadsheet);
-            $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('d-m-y-F').'.xlsx';
-            $writer->save('downloads/flowsalary/'.$filename);
-           
-            $filesystem = new Filesystem();
-            //$filename = $this->adminUrlGenerator->get('azienda');
-            $pathfile = 'downloads/flowsalary/'.$filename;
-            // $filesystem->dumpFile($pathfile,  $value);
-            $link = '<a href="'.$pathfile.'" download> Clicca qui per scaricarlo</a>';
-            }
+                $filesystem = new Filesystem();
+                //$filename = $this->adminUrlGenerator->get('azienda');
+                $pathfile = 'downloads/flowsalary/'.$filename;
+                // $filesystem->dumpFile($pathfile,  $value);
+                $link = '<a href="'.$pathfile.'" download> Clicca qui per scaricarlo</a>';
+                }
+        }
 
         // risultati   
         if ($item > 0 ) {    
