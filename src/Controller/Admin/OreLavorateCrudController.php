@@ -237,7 +237,7 @@ class OreLavorateCrudController extends AbstractCrudController
                 }
             if ($item <= 20 ) {    
                 // prepara array (giorni del mese)
-                $daysOfMonth = $this->daysOfMonth($lastdate);
+                $arrDaysOfMonth = $this->daysOfMonth($lastdate);
                 $col = [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF,AG,AH];    
                 
                 $spreadsheet = new Spreadsheet();
@@ -252,7 +252,7 @@ class OreLavorateCrudController extends AbstractCrudController
                 $sheet->getCell('B5')->setValue('Nome persona');
                 $sheet->getCell('A7')->setValue('Cantiere');
                 $d = 0;  // colonne dei giorni
-                    foreach ( $daysOfMonth as $days) {
+                    foreach ( $arrDaysOfMonth as $days) {
                         $sheet->getCell($col[$d+1].'7')->setValue($days);
                         $d++;
                     }
@@ -261,7 +261,7 @@ class OreLavorateCrudController extends AbstractCrudController
 
                 // crea il file
                 $writer = new Xlsx($spreadsheet);
-                $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('d-m-y-F').'.xlsx';
+                $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('d-m-y-%F').'.xlsx';
                 $writer->save('downloads/flowsalary/'.$filename);
             
                 $filesystem = new Filesystem();
@@ -296,7 +296,7 @@ class OreLavorateCrudController extends AbstractCrudController
         
     }
 
-    private function daysOfMonth($lastdate): array
+    public function daysOfMonth($lastdate): array
     {
         $giornodellasettimana=array('','lun','mar','mer','gio','ven','sab','dom');//0 vuoto
         $arrDays = [];
