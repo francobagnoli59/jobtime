@@ -226,9 +226,9 @@ class OreLavorateCrudController extends AbstractCrudController
                     } else {  
                         if ($orarioRecord->getGiorno() > $lastdate ) { $lastdate = $orarioRecord->getGiorno(); }
                     }
-                    // array parsone
+                    // array persone
                     $idpers =  $orarioRecord->getPersona()->getId();
-                    if(!array_key_exists($idpers,$personescelte) ) { 
+                    if(array_key_exists($idpers, $personescelte) === false) { 
                         $personescelte[] = $idpers; $item++ ;
                     }
                     if ($item > 20 ) {
