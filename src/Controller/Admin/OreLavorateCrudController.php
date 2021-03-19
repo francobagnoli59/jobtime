@@ -275,8 +275,9 @@ class OreLavorateCrudController extends AbstractCrudController
         // risultati   
         if ($item > 0 ) {    
             if ($item <= 20 ) {
-            // emissione file    
-            $this->addFlash('success', sprintf('File excel prodotto. Sono state preparate %d cartelle, una ciascuna per persona. '.$click , $item )); 
+            // emissione file 
+            $success =  sprintf('File excel prodotto. Sono state preparate %d cartelle, una ciascuna per persona. ', $item ) ; 
+            $this->addFlash('success', $success.$link ); 
             } else {
             $this->addFlash('warning', sprintf('La selezione supera 20 persone, riepilogo troppo esteso e non rappresentabile.')); 
             }
