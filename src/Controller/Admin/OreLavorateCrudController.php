@@ -219,17 +219,19 @@ class OreLavorateCrudController extends AbstractCrudController
                 // determina array personale ( max 20 persone = cartelle su un foglio di excel) Limitato per motivi di leggibilità 
                 $personescelte = []; 
                 $lastdate = new \DateTime; 
+                $first = true; 
                 foreach ($listaorari as $orarioRecord) {
                     // data più recente nei risultati
-                    if ($lastdate === null) {
-                        $lastdate = $orarioRecord->getGiorno();
+                    if ($first === true) {
+                        $lastdate = $orarioRecord->getGiorno(); $first = false; 
+                        $aziendaNickName = $orarioRecord->getAzienda()->getNickName();
                     } else {  
                         if ($orarioRecord->getGiorno() > $lastdate ) { $lastdate = $orarioRecord->getGiorno(); }
                     }
                     // array persone
                     $idpers =  $orarioRecord->getPersona()->getId();
                     if(array_key_exists($idpers, $personescelte) === false) { 
-                        $personescelte[] = [$idpers => $orarioRecord->getFullName(), ]; $item++ ;
+                        $personescelte[] = [$idpers => $orarioRecord->getPersona()->getFullName(), ]; $item++ ;
                     }
                     if ($item > 20 ) {
                        break; 
@@ -238,13 +240,12 @@ class OreLavorateCrudController extends AbstractCrudController
             if ($item <= 20 ) {    
                 // prepara array (giorni del mese)
                 $arrDaysOfMonth = $this->daysOfMonth($lastdate);
-                $col = [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF,AG,AH];    
+                $col = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH'];    
                 
                 $spreadsheet = new Spreadsheet();
                 $sheet = $spreadsheet->getActiveSheet();
         
                 $sheet->setTitle('Nome persona');
-        
                 $sheet->getCell('A1')->setValue('RIEPILOGO ORE MENSILI');
                 $sheet->getCell('A3')->setValue('Nome Azienda');
                 $sheet->getCell('C3')->setValue('Mese Anno');
@@ -252,16 +253,21 @@ class OreLavorateCrudController extends AbstractCrudController
                 $sheet->getCell('B5')->setValue('Nome persona');
                 $sheet->getCell('A7')->setValue('Cantiere');
                 $d = 0;  // colonne dei giorni
-                    foreach ( $arrDaysOfMonth as $days) {
-                        $sheet->getCell($col[$d+1].'7')->setValue($days);
-                        $d++;
+                    foreach ( $arrDaysOfMonth as $dayOfMonth) {
+                        foreach ( $dayOfMonth as $key => $valore) {
+                           // $this->addFlash('info', sprintf('Array giorni del mese con key: %s valore: %s', $key, $valore) ); 
+                           $cellalpha = $col[$d+1] ;
+                           $sheet->getCell($cellalpha."7")->setValue($valore);
+                           $d++;
+                        } 
                     }
-                    // ciclo lettura orari personale 
+                   
+                // ciclo lettura orari personale 
 
 
                 // crea il file
                 $writer = new Xlsx($spreadsheet);
-                $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('Y-m-d\TH:i:s').'.xlsx';
+                $filename = $aziendaNickName.'_riepilogo_personale_'.date_create()->format('Y-m-d\TH:i:s').'.xlsx';
                 $writer->save('downloads/flowsalary/'.$filename);
             
                 $filesystem = new Filesystem();
@@ -303,11 +309,13 @@ class OreLavorateCrudController extends AbstractCrudController
         $mese = intval($lastdate->format('m')) ; $anno = intval($lastdate->format('Y'));
         $numday = cal_days_in_month(CAL_GREGORIAN, $mese , $anno);
         for ($ii=1; $ii<=$numday; $ii++) {
-            $giorno = new \DateTime;
+            // $giorno = new \DateTime;
             $giorno=mktime(0,0,0,$mese,$ii,$anno);
             $num_gg=(int)date("N",$giorno);
             $dayExcel = sprintf('%d %s', $ii, $giornodellasettimana[$num_gg] );
-            $arrDays[] = [$giorno => $dayExcel ,];
+            $day = sprintf("%d-%'.02d-%'.02d", $anno, $mese, $ii );
+            $arrDays[] = [$day => $dayExcel ]; 
+            // $arrDays[] = $dayExcel;
         }
         return $arrDays ;
     }
