@@ -229,7 +229,7 @@ class OreLavorateCrudController extends AbstractCrudController
                     // array persone
                     $idpers =  $orarioRecord->getPersona()->getId();
                     if(array_key_exists($idpers, $personescelte) === false) { 
-                        $personescelte[] = $idpers; $item++ ;
+                        $personescelte[] = [$idpers => $orarioRecord->getFullName(), ]; $item++ ;
                     }
                     if ($item > 20 ) {
                        break; 
@@ -300,7 +300,7 @@ class OreLavorateCrudController extends AbstractCrudController
     {
         $giornodellasettimana=array('','lun','mar','mer','gio','ven','sab','dom');//0 vuoto
         $arrDays = [];
-        $mese = $lastdate->format('m') ; $anno = $lastdate->format('Y');
+        $mese = intval($lastdate->format('m')) ; $anno = intval($lastdate->format('Y'));
         $numday = cal_days_in_month(CAL_GREGORIAN, $mese , $anno);
         for ($ii=1; $ii<=$numday; $ii++) {
             $giorno = new \DateTime;
