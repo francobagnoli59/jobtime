@@ -37,6 +37,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Symfony\Component\Filesystem\Filesystem;
 
 class OreLavorateCrudController extends AbstractCrudController
 {
@@ -176,10 +179,12 @@ class OreLavorateCrudController extends AbstractCrudController
                 ->getResult();
 
                 foreach ($listaorari as $orarioRecord) {
-                    $orarioRecord->setIsConfirmed(true);
-                    $this->entityManager->persist($orarioRecord);
-                    $this->entityManager->flush();
-                    $item++ ; 
+                    if ($orarioRecord->getIsConfirmed() === false) {
+                        $orarioRecord->setIsConfirmed(true);
+                        $this->entityManager->persist($orarioRecord);
+                        $this->entityManager->flush();
+                        $item++ ;
+                    } 
                 }
             }
         if ($item > 0 ) {
@@ -198,6 +203,112 @@ class OreLavorateCrudController extends AbstractCrudController
         return (new RedirectResponse($url));
         
     }
+
+
+    public function riepilogoOre(Request $request):Response
+    {
+        $item = 0;
+        if ($request !== null ){
+            $context = $request->attributes->get(EA::CONTEXT_REQUEST_ATTRIBUTE);
+            $fields = FieldCollection::new($this->configureFields(Crud::PAGE_INDEX));
+            $filters = $this->get(FilterFactory::class)->create($context->getCrud()->getFiltersConfig(), $fields, $context->getEntity());
+            $listaorari = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), $fields, $filters)
+                ->getQuery()
+                ->getResult();
+
+                // determina array personale ( max 20 persone = cartelle su un foglio di excel) Limitato per motivi di leggibilità 
+                $personescelte = []; 
+                $lastdate = new \DateTime; 
+                foreach ($listaorari as $orarioRecord) {
+                    // data più recente nei risultati
+                    if ($lastdate === null) {
+                        $lastdate = $orarioRecord->getGiorno();
+                    } else {  
+                        if ($orarioRecord->getGiorno() > $lastdate ) { $lastdate = $orarioRecord->getGiorno(); }
+                    }
+                    // array parsone
+                    $idpers =  $orarioRecord->getPersona()->getId();
+                    if(!array_key_exists($idpers,$personescelte) ) { 
+                        $personescelte[] = $idpers; $item++ ;
+                    }
+                    if ($item > 20 ) {
+                       break; 
+                    } 
+                }
+            // prepara array (giorni del mese)
+            $daysOfMonth = daysOfMonth($lastdate);
+            $col = [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF,AG,AH];    
+            
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+    
+            $sheet->setTitle('Nome persona');
+    
+            $sheet->getCell('A1')->setValue('RIEPILOGO ORE MENSILI');
+            $sheet->getCell('A3')->setValue('Nome Azienda');
+            $sheet->getCell('C3')->setValue('Mese Anno');
+            $sheet->getCell('A5')->setValue('Operatore');
+            $sheet->getCell('B5')->setValue('Nome persona');
+            $sheet->getCell('A7')->setValue('Cantiere');
+            $d = 0;  // colonne dei giorni
+            foreach ( $daysOfMonth as $days) {
+                $sheet->getCell($col[$d+1].'7')->setValue($days);
+                $d++;
+            }
+            // ciclo lettura orari personale 
+
+
+            // crea il file
+            $writer = new Xlsx($spreadsheet);
+            $filename = $this->adminUrlGenerator->get('azienda').'riepilogo_personale_'.date_create()->format('d-m-y-F').'.xlsx';
+            $writer->save('downloads/flowsalary/'.$filename);
+           
+            $filesystem = new Filesystem();
+            //$filename = $this->adminUrlGenerator->get('azienda');
+            $pathfile = 'downloads/flowsalary/'.$filename;
+            // $filesystem->dumpFile($pathfile,  $value);
+            $link = '<a href="'.$pathfile.'" download> Clicca qui per scaricarlo</a>';
+            }
+
+        // risultati   
+        if ($item > 0 ) {    
+            if ($item <= 20 ) {
+            // emissione file    
+            $this->addFlash('success', sprintf('File excel prodotto. Sono state preparate %d cartelle, una ciascuna per persona. '.$click , $item )); 
+            } else {
+            $this->addFlash('warning', sprintf('La selezione supera 20 persone, riepilogo troppo esteso e non rappresentabile.')); 
+            }
+        } else { $this->addFlash('info', sprintf('Riepilogo non rappresentabile con nessun risultato trovato.')); }
+
+        // rimane sul crud attuale
+        $crud = $context->getCrud();
+        $controller = $crud->getControllerFqcn();
+        $action     = $crud->getCurrentAction();
+        $url = $this->adminUrlGenerator
+        ->setController($controller)
+        ->setAction('index')
+        ->generateUrl();
+
+        return (new RedirectResponse($url));
+        
+    }
+
+    private function daysOfMonth($lastdate): array
+    {
+        $giornodellasettimana=array('','lun','mar','mer','gio','ven','sab','dom');//0 vuoto
+        $arrDays = [];
+        $mese = $lastdate->format('m') ; $anno = $lastdate->format('Y');
+        $numday = cal_days_in_month(CAL_GREGORIAN, $mese , $anno);
+        for ($ii=1; $ii<=$numday; $ii++) {
+            $giorno = new \DateTime;
+            $giorno=mktime(0,0,0,$mese,$ii,$anno);
+            $num_gg=(int)date("N",$giorno);
+            $dayExcel = sprintf('%d %s', $ii, $giornodellasettimana[$num_gg] );
+            $arrDays[] = [$giorno => $dayExcel ,];
+        }
+        return $arrDays ;
+    }
+
 
     public function configureCrud(Crud $crud): Crud
     {
@@ -246,13 +357,18 @@ class OreLavorateCrudController extends AbstractCrudController
          ->setCssClass('btn btn-primary')
          ->createAsGlobalAction();
         
+         $riepilogoOre = Action::new('riepilogoOre', 'Riepilogo ore in Excel')
+         ->setIcon('fa fa-file-excel')->setHtmlAttributes(['title' => 'Produce un file di excel con il personale dell\'elenco attuale (usare i filtri per la selezione desiderata)'])
+         ->linkToCrudAction('riepilogoOre')
+         ->setCssClass('btn btn-secondary')
+         ->createAsGlobalAction();
        
         return $actions
                 ->remove(Crud::PAGE_INDEX, Action::NEW)
              //   ->remove(Crud::PAGE_INDEX, Action::DELETE)
                 ->remove(Crud::PAGE_DETAIL, Action::DELETE)
                 ->add(Crud::PAGE_INDEX, $add_orelavorate)->add(Crud::PAGE_EDIT, $add_orelavorate)
-                ->add(Crud::PAGE_INDEX, $confirmView)
+                ->add(Crud::PAGE_INDEX, $confirmView)  ->add(Crud::PAGE_INDEX, $riepilogoOre)
                 // ...
                 ->add(Crud::PAGE_INDEX, Action::DETAIL)
                 // ->add(Crud::PAGE_DETAIL,)
