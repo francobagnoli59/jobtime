@@ -39,6 +39,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Symfony\Component\Filesystem\Filesystem;
 
 class OreLavorateCrudController extends AbstractCrudController
@@ -216,10 +217,11 @@ class OreLavorateCrudController extends AbstractCrudController
                 ->getQuery()
                 ->getResult();
 
-                // determina array personale ( max 20 persone = cartelle su un foglio di excel) Limitato per motivi di leggibilità 
+                // determina array personale ( max 40 persone = cartelle su un foglio di excel) Limitato per motivi di leggibilità 
                 $personescelte = []; 
                 $lastdate = new \DateTime; 
                 $first = true; 
+                $item = 0;
                 foreach ($listaorari as $orarioRecord) {
                     // data più recente nei risultati
                     if ($first === true) {
@@ -230,44 +232,90 @@ class OreLavorateCrudController extends AbstractCrudController
                     }
                     // array persone
                     $idpers =  $orarioRecord->getPersona()->getId();
+                    $fullname =  $orarioRecord->getPersona()->getFullName();
                     if(array_key_exists($idpers, $personescelte) === false) { 
-                        $personescelte[] = [$idpers => $orarioRecord->getPersona()->getFullName(), ]; $item++ ;
+                        $personescelte[$idpers] = $fullname ;
+                        $item++ ;
                     }
-                    if ($item > 20 ) {
+                    if ($item > 40 ) {
                        break; 
                     } 
                 }
-            if ($item <= 20 ) {    
+            if ($item <= 40 && $item > 0 ) {    
                 // prepara array (giorni del mese)
                 $arrDaysOfMonth = $this->daysOfMonth($lastdate);
                 $col = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH'];    
-                
+                $meseanno=array('','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre');//0 vuoto
+                //
+                $styleArray = [
+                    'font' => [
+                        'bold' => true,
+                    ],
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+                    'borders' => [
+                        'top' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ],
+                    ],
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                        'rotation' => 90,
+                        'startColor' => [
+                            'argb' => 'FFA0A0A0',
+                        ],
+                        'endColor' => [
+                            'argb' => 'FFFFFFFF',
+                        ],
+                    ],
+                ];
+                // scorre array persone 
                 $spreadsheet = new Spreadsheet();
-                $sheet = $spreadsheet->getActiveSheet();
-        
-                $sheet->setTitle('Nome persona');
-                $sheet->getCell('A1')->setValue('RIEPILOGO ORE MENSILI');
-                $sheet->getCell('A3')->setValue('Nome Azienda');
-                $sheet->getCell('C3')->setValue('Mese Anno');
-                $sheet->getCell('A5')->setValue('Operatore');
-                $sheet->getCell('B5')->setValue('Nome persona');
-                $sheet->getCell('A7')->setValue('Cantiere');
-                $d = 0;  // colonne dei giorni
-                    foreach ( $arrDaysOfMonth as $dayOfMonth) {
-                        foreach ( $dayOfMonth as $key => $valore) {
-                           // $this->addFlash('info', sprintf('Array giorni del mese con key: %s valore: %s', $key, $valore) ); 
-                           $cellalpha = $col[$d+1] ;
-                           $sheet->getCell($cellalpha."7")->setValue($valore);
-                           $d++;
-                        } 
-                    }
-                   
+                $personekeys = array_keys($personescelte) ;
+                $indexsheet = 0;
+                foreach ( $personekeys as $idPersona) {
+                   //
+                        $fullname = $personescelte[$idPersona]; 
+                        if ($indexsheet > 0) { $sheet = new Worksheet($spreadsheet,  $fullname); $spreadsheet->addSheet($sheet); }
+                        else {$sheet = $spreadsheet->getActiveSheet(); $sheet->setTitle($fullname); }
+                       
+                        // 
+                        $sheet->getCell('A1')->setValue('RIEPILOGO ORE MENSILI');
+                        $spreadsheet->getSheet($indexsheet)->getStyle('A1')
+                        ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED);
+
+                        $sheet->getCell('A3')->setValue($aziendaNickName);
+                        $spreadsheet->getSheet($indexsheet)->getStyle('A3')->applyFromArray($styleArray);
+                        $sheet->getCell('C3')->setValue($meseanno[intval($lastdate->format('m'))].' '.$lastdate->format('Y'));
+                        $spreadsheet->getSheet($indexsheet)->getStyle('C3')->applyFromArray($styleArray);
+                       
+                        $sheet->getCell('A5')->setValue('Operatore');
+                        $sheet->getCell('B5')->setValue($fullname);
+                        $spreadsheet->getSheet($indexsheet)->getStyle('B5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+                        $spreadsheet->getSheet($indexsheet)->getStyle('B5')->getFill()->getStartColor()->setARGB('FFFF0000');
+                      
+                        $sheet->getCell('A7')->setValue('Cantiere');
+                        $d = 0;  // colonne dei giorni
+                            foreach ( $arrDaysOfMonth as $dayOfMonth) {
+                                foreach ( $dayOfMonth as $key => $valore) {
+                                // $this->addFlash('info', sprintf('Array giorni del mese con key: %s valore: %s', $key, $valore) ); 
+                                $sheet->getCell($col[$d+1]."7")->setValue($valore);
+                                // $spreadsheet->getActiveSheet()
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1]."7")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                                $d++;
+                                } 
+                            }
+                   // 
+
+                   $indexsheet++ ;
+                }       
                 // ciclo lettura orari personale 
 
 
                 // crea il file
                 $writer = new Xlsx($spreadsheet);
-                $filename = $aziendaNickName.'_riepilogo_personale_'.date_create()->format('Y-m-d\TH:i:s').'.xlsx';
+                $filename = $aziendaNickName.'_riepilogo_personale_'.date_create()->format('Y_m_d\TH_i_s').'.xlsx';
                 $writer->save('downloads/flowsalary/'.$filename);
             
                 $filesystem = new Filesystem();
@@ -280,12 +328,15 @@ class OreLavorateCrudController extends AbstractCrudController
 
         // risultati   
         if ($item > 0 ) {    
-            if ($item <= 20 ) {
-            // emissione file 
+            if ($item <= 40 ) {
+            // emissione file
+            if ($item === 1 ) { $success =  sprintf('File excel prodotto.' ) ;  } 
+            else { 
             $success =  sprintf('File excel prodotto. Sono state preparate %d cartelle, una ciascuna per persona. ', $item ) ; 
+            }
             $this->addFlash('success', $success.$link ); 
             } else {
-            $this->addFlash('warning', sprintf('La selezione supera 20 persone, riepilogo troppo esteso e non rappresentabile.')); 
+            $this->addFlash('warning', sprintf('La selezione supera 40 persone, riepilogo troppo esteso e non rappresentabile.')); 
             }
         } else { $this->addFlash('info', sprintf('Riepilogo non rappresentabile con nessun risultato trovato.')); }
 
