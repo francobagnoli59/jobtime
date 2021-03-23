@@ -8,12 +8,13 @@ use App\Entity\MesiAziendali;
 use App\Entity\Personale;
 use App\Entity\Cantieri;
 use App\Entity\Aziende;
+use App\Entity\Causali;
 use App\Repository\AziendeRepository;
 use App\Repository\CantieriRepository;
 use App\Repository\PersonaleRepository;
 use App\ServicesRoutine\PhpOfficeStyle;
 use App\ServicesRoutine\DateUtility;
-//use App\Repository\CausaliRepository;
+ 
 use Doctrine\ORM\EntityManagerInterface;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -292,15 +293,15 @@ class OreLavorateCrudController extends AbstractCrudController
 
                         $sheet->getCell('A3')->setValue($aziendaNickName);
                         $spreadsheet->getSheet($indexsheet)->getStyle('A3')->applyFromArray($styleArray->title2());
-                        $sheet->getCell('C3')->setValue($meseanno[intval($lastdate->format('m'))].' '.$lastdate->format('Y'));
-                        $spreadsheet->getSheet($indexsheet)->getStyle('C3')->applyFromArray($styleArray->title2());
+                        $sheet->getCell('C1')->setValue($meseanno[intval($lastdate->format('m'))].' '.$lastdate->format('Y'));
+                        $spreadsheet->getSheet($indexsheet)->getStyle('C1')->applyFromArray($styleArray->title2());
                        
                         $sheet->getCell('A5')->setValue('Operatore:');
                         $spreadsheet->getSheet($indexsheet)->getStyle('A5')->applyFromArray($styleArray->title3());
                         $spreadsheet->getSheet($indexsheet)->getStyle('A5')->applyFromArray($styleArray->alignHRight());
                       
                         $sheet->getCell('B5')->setValue($fullname);
-                        $spreadsheet->getSheet($indexsheet)->getStyle('B5:D5')->applyFromArray($styleArray->backGroundYellow());
+                        $spreadsheet->getSheet($indexsheet)->getStyle('B5:D5')->applyFromArray($styleArray->title2());
                       
                         $sheet->getCell('A7')->setValue('Cantiere');
                         $spreadsheet->getSheet($indexsheet)->getStyle('A7')->applyFromArray($styleArray->columnTitleGrey());
@@ -315,22 +316,23 @@ class OreLavorateCrudController extends AbstractCrudController
                                         if ($dayOfMonth['festa'] === false ) {
                                         $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1-$countDayMonth]."7")->applyFromArray($styleArray->columnTitleGrey()); }
                                         else {
-                                            $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1-$countDayMonth]."7")->applyFromArray($styleArray->columnTitleCoral()); }
-                                            $dayFestiviMese[] = $col[$d+1-$countDayMonth];
+                                            $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1-$countDayMonth]."7")->applyFromArray($styleArray->columnTitleCoral());
+                                            array_push($dayFestiviMese, $col[$d+1-$countDayMonth]); }
                                         }
                                     // $this->addFlash('info', sprintf('Array giorni del mese con key: %s valore: %s', $key, $valore) );        
                                     $d++; 
                                      if ($countDayMonth === $giorninelmese && $firstLoop === false ) { $sheet->getCell($col[$d+2-$countDayMonth]."7")->setValue('Totale');
-                                     $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+2-$countDayMonth]."7")->applyFromArray($styleArray->rowTotal());
-                                     $firstLoop = true;  }
+                                     $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+2-$countDayMonth]."7")->applyFromArray($styleArray->columnTotal());
+                                     $firstLoop = true; $columnTotal = $col[$d+2-$countDayMonth] ; $lastColumnMonth = $col[$d+1-$countDayMonth] ; }
                                     } 
                             }
                    // 
 
                 $row = 8;  // prima riga utile dopo l'intestazione colonne
                 // ciclo lettura orari personale 
-                $cantierilavorati = []; 
-                    // cerca per persona se ci sono ore lavorate confermate nel mese 
+                $cantierilavorati = []; $daConfermare = false;
+                $causaliLavoro = [];
+                    // cerca per persona se ci sono ore lavorate CONFERMATE nel mese 
                     $count = $this->entityManager->getRepository(OreLavorate::class)->countPersonaConfirmed($idPersona, true , $dataInizio, $dataFine);
                     if ($count > 0) {
                         // Seleziona le ore lavorate e confermate del mese
@@ -339,7 +341,10 @@ class OreLavorateCrudController extends AbstractCrudController
                         foreach ($oreLavorateCollection as $ol ){
                             $giorno = $ol->getGiorno();
                             $causale = $ol->getCausale()->getCode();
-                            $oreReg = $ol->getOreRegistrate();
+                            $oreReg = $ol->getOreRegistrate(); 
+                            if(array_key_exists($causale,  $causaliLavoro) === false) { 
+                                $causaliLavoro[$causale] = $oreReg ;  }
+                                else { $causaliLavoro[$causale] = $causaliLavoro[$causale]+$oreReg ; }
                             $idCantiere = $ol->getCantiere()->getId();
                             // determina riga cantiere
                             if(array_key_exists($idCantiere,  $cantierilavorati) === false) { 
@@ -348,12 +353,13 @@ class OreLavorateCrudController extends AbstractCrudController
                                 $row++ ;
                             } else { $currentRow = $cantierilavorati[$idCantiere] ; } 
                             $d = intval($giorno->format('d'));
-                            $sheet->getCell($col[$d+1].sprintf('%s',$currentRow))->setValue($oreReg);
-                            if (in_array($col[$d+1], $dayFestiviMese) === true) { 
-                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
+                            $sheet->getCell($col[$d].sprintf('%s',$currentRow))->setValue($oreReg);
+                            $lettcol = $col[$d];
+                            if (in_array( $lettcol, $dayFestiviMese)) { 
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
                             }
                             else {
-                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowGrey());
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowGrey());
                              }
                         }
                     }
@@ -361,6 +367,7 @@ class OreLavorateCrudController extends AbstractCrudController
                     // cerca per persona se ci sono ore lavorate da confrmare nel mese 
                     $count = $this->entityManager->getRepository(OreLavorate::class)->countPersonaConfirmed($idPersona, false , $dataInizio, $dataFine);
                     if ($count > 0) {
+                        $daConfermare = true;
                         // Seleziona le ore lavorate e NON confermate del mese
                         $oreLavorateCollection = $this->entityManager->getRepository(OreLavorate::class)->collectionPersonaConfirmed($idPersona, false , $dataInizio, $dataFine);
                         // ciclo sulla collection delle ore lavorate
@@ -368,6 +375,9 @@ class OreLavorateCrudController extends AbstractCrudController
                             $giorno = $ol->getGiorno();
                             $causale = $ol->getCausale()->getCode();
                             $orePian = $ol->getOrePianificate();
+                            if(array_key_exists($causale,  $causaliLavoro) === false) { 
+                                $causaliLavoro[$causale] = $orePian ;  }
+                                else { $causaliLavoro[$causale] = $causaliLavoro[$causale]+$orePian ; }
                             $idCantiere = $ol->getCantiere()->getId();
                             // determina riga cantiere
                             if(array_key_exists($idCantiere,  $cantierilavorati) === false) { 
@@ -376,12 +386,13 @@ class OreLavorateCrudController extends AbstractCrudController
                                 $row++ ;
                             } else { $currentRow = $cantierilavorati[$idCantiere] ; } 
                             $d = intval($giorno->format('d'));
-                            $sheet->getCell($col[$d+1].sprintf('%s',$currentRow))->setValue($orePian);
-                            if (in_array($col[$d+1], $dayFestiviMese) === true) { 
-                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
+                            $sheet->getCell($col[$d].sprintf('%s',$currentRow))->setValue($orePian);
+                            $lettcol = $col[$d];
+                            if (in_array( $lettcol, $dayFestiviMese)) { 
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
                             }
                             else {
-                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->backGroundAqua());    
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->corsivo3());    
                                 //$spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowGrey());
                                 }
                                
@@ -389,6 +400,9 @@ class OreLavorateCrudController extends AbstractCrudController
                     }
 
                     // scrive cantieri
+                    $locale = 'it';
+                    $validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale);
+                    $lastRow = 0;
                     $cantierikeys = array_keys($cantierilavorati) ;
                     foreach ( $cantierikeys as $idCantiere) {
                        //
@@ -396,18 +410,59 @@ class OreLavorateCrudController extends AbstractCrudController
                             $cantiereRecord = $this->entityManager->getRepository(Cantieri::class)->findOneBy(['id'=> $idCantiere]);
                             $sheet->getCell('A'.sprintf('%s',$rowCantiere))->setValue($cantiereRecord->getnameJob());
                             $spreadsheet->getSheet($indexsheet)->getStyle('A'.sprintf('%s',$rowCantiere))->applyFromArray($styleArray->rowGrey());
+                       // Totale riga Cantiere
+                            $spreadsheet->getActiveSheet()->setCellValue($columnTotal.sprintf('%s',$rowCantiere),'=SUM(B'.sprintf('%s',$rowCantiere).':'.$lastColumnMonth.sprintf('%s',$rowCantiere).')');
+                            $formula = $spreadsheet->getActiveSheet()->getCell($columnTotal.sprintf('%s',$rowCantiere))->getValue();
+                            $translatedFormula = \PhpOffice\PhpSpreadsheet\Calculation\Calculation::getInstance()->_translateFormulaToLocale($formula);
+                            $spreadsheet->getSheet($indexsheet)->getStyle($columnTotal.sprintf('%s',$rowCantiere))->applyFromArray($styleArray->rowTotal());
+                            if ($rowCantiere > $lastRow ) { $lastRow = $rowCantiere ;}
                         }  
-                    // dump   $dayFestiviMese
-                    $intest = '';
-                    foreach ( $dayFestiviMese as $intcol) {
-                        $intest =  $intcol.' ';
+                    if (count($cantierikeys) > 0 ) {
+                       // Totale ore della persona
+                       // ciclo giorni
+                       for ($d=1; $d<=$giorninelmese; $d++) {
+                        $spreadsheet->getActiveSheet()->setCellValue($col[$d].sprintf('%s',$lastRow+1),'=SUM('.$col[$d].'8:'.$col[$d].sprintf('%s',$lastRow).')');
+                        $formula = $spreadsheet->getActiveSheet()->getCell($col[$d].sprintf('%s',$lastRow+1))->getValue();
+                        $translatedFormula = \PhpOffice\PhpSpreadsheet\Calculation\Calculation::getInstance()->_translateFormulaToLocale($formula);
+                        $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$lastRow+1))->applyFromArray($styleArray->rowTotal()); 
+                       } 
+                       // totale finale
+                       $spreadsheet->getActiveSheet()->setCellValue($columnTotal.sprintf('%s',$lastRow+1),'=SUM('.$columnTotal.'8:'.$columnTotal.sprintf('%s',$lastRow).')');
+                       $formula = $spreadsheet->getActiveSheet()->getCell($columnTotal.sprintf('%s',$lastRow+1))->getValue();
+                       $translatedFormula = \PhpOffice\PhpSpreadsheet\Calculation\Calculation::getInstance()->_translateFormulaToLocale($formula);
+                       $spreadsheet->getSheet($indexsheet)->getStyle($columnTotal.sprintf('%s',$lastRow+1))->applyFromArray($styleArray->rowTotal());
                     }
-                    $sheet->getCell('A15')->setValue($intest);
-
+                     // avvertimento su orari da confermare e riepilogo per causale
+                    $rowRiep = $lastRow+4;
+                    if ($daConfermare === true) {
+                    $sheet->getCell('A'.sprintf('%s',$rowRiep))->setValue('ATTENZIONE CI SONO ORARI DA CONFERMARE');
+                    $spreadsheet->getSheet($indexsheet)->getStyle('A'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->title2());
+                    $spreadsheet->getSheet($indexsheet)->getStyle('A'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->backGroundYellow());
+                    $spreadsheet->getSheet($indexsheet)->getStyle('A'.sprintf('%s',$rowRiep))->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED);    
+                    $rowRiep =  $rowRiep + 2;
+                    }
+                    $causalikeys = array_keys($causaliLavoro) ; $totOreCausale = 0;
+                    foreach ( $causalikeys as $causaleCode) {
+                            $oreCausale = $causaliLavoro[$causaleCode]; $totOreCausale += $oreCausale ;
+                            $causaleRecord = $this->entityManager->getRepository(Causali::class)->findOneBy(['code'=> $causaleCode]);
+                            $sheet->getCell('A'.sprintf('%s',$rowRiep))->setValue($causaleRecord->getDescription());
+                            $spreadsheet->getSheet($indexsheet)->getStyle('A'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->title3());            
+                            $spreadsheet->getSheet($indexsheet)->getStyle('A'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->backGroundSilver());            
+                            $sheet->getCell('B'.sprintf('%s',$rowRiep))->setValue($oreCausale);
+                            $spreadsheet->getSheet($indexsheet)->getStyle('B'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->title3());            
+                            $spreadsheet->getSheet($indexsheet)->getStyle('B'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->backGroundSilver());            
+                            $spreadsheet->getSheet($indexsheet)->getStyle('B'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->alignHRight());
+                            $rowRiep++;
+                        }
+                        $sheet->getCell('B'.sprintf('%s',$rowRiep))->setValue($totOreCausale);
+                        $spreadsheet->getSheet($indexsheet)->getStyle('B'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->rowTotal());            
+                        $spreadsheet->getSheet($indexsheet)->getStyle('B'.sprintf('%s',$rowRiep))->applyFromArray($styleArray->alignHRight());            
+                    // Colonna A (auto size)
+                    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);    
+                    // passa alla persona successiva  
                     $indexsheet++ ;
                 }       
-                
-
+               
                 // crea il file
                 $writer = new Xlsx($spreadsheet);
                 $filename = $aziendaNickName.'_riepilogo_personale_'.date_create()->format('Y_m_d\TH_i_s').'.xlsx';

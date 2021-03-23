@@ -162,7 +162,7 @@ class PhpOfficeStyle
                 'argb' => 'FFA0A0A0',
             ],
             'endColor' => [
-                'argb' => 'FFFFFFFF',
+                'argb' => 'FFE6E6E6',
             ],
         ],
       ];
@@ -187,7 +187,7 @@ class PhpOfficeStyle
                 'argb' => 'FFFF7F50',
             ],
             'endColor' => [
-                'argb' => 'FFFFFFFF',
+                'argb' => 'FFFFE6DC',
             ],
         ],
       ];
@@ -205,15 +205,11 @@ class PhpOfficeStyle
             'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
         ],
         'fill' => [
-            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
-            'rotation' => 90,
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
             'startColor' => [
-                'argb' => 'FFA0A0A0',
+                'argb' => 'FFE6E6E6',
             ],
-            'endColor' => [
-                'argb' => 'FFFFFFFF',
-            ],
-        ],
+          ],
       ];
       return $styleArray;
     }
@@ -229,15 +225,11 @@ class PhpOfficeStyle
             'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
         ],
         'fill' => [
-            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
-            'rotation' => 90,
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
             'startColor' => [
-                'argb' => 'FFFF7F50',
+                'argb' => 'FFFFE6DC',
             ],
-            'endColor' => [
-                'argb' => 'FFFFFFFF',
-            ],
-        ],
+          ],
       ];
       return $styleArray;
     }
@@ -265,7 +257,7 @@ class PhpOfficeStyle
                 'argb' => 'FF87CEFA',
             ],
             'endColor' => [
-                'argb' => 'FFFFFFFF',
+                'argb' => 'FFE1F3FE',
             ],
         ],
       ];
@@ -284,13 +276,9 @@ class PhpOfficeStyle
             'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
         ],
         'fill' => [
-            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
-            'rotation' => 90,
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
             'startColor' => [
-                'argb' => 'FF87CEFA',
-            ],
-            'endColor' => [
-                'argb' => 'FFFFFFFF',
+              'argb' => 'FFE1F3FE',
             ],
         ],
       ];
