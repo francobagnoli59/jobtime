@@ -11,6 +11,8 @@ use App\Entity\Aziende;
 use App\Repository\AziendeRepository;
 use App\Repository\CantieriRepository;
 use App\Repository\PersonaleRepository;
+use App\ServicesRoutine\PhpOfficeStyle;
+use App\ServicesRoutine\DateUtility;
 //use App\Repository\CausaliRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -241,35 +243,37 @@ class OreLavorateCrudController extends AbstractCrudController
                        break; 
                     } 
                 }
-            if ($item <= 40 && $item > 0 ) {    
+            if ($item <= 40 && $item > 0 ) { 
+
+                // valori iniziali per preparazione periodo mensile (primo e ultimo giorno)
+                $anno = sprintf("%04d",  intval($lastdate->format('Y')));
+                $dateutility = new DateUtility ;
+                $limitiMese = $dateutility->calculateLimitMonth($anno, sprintf('%d', intval($lastdate->format('m')) ) );
+                $dataInizio = $limitiMese[1] ;
+                $dataFine = $limitiMese[2] ;
+
+                // legge le festività dell'anno
+                $festivita = $this->entityManager->getRepository(FestivitaAnnuali::class)->findOneBy(['anno'=> $anno]);
+                $arrayFestivita = $festivita->getDateFestivita();
+                // Costruisce date festività  
+                $dateFeste = [];
+                foreach ($arrayFestivita as $ar) {
+                    $gg = substr($ar,0,2);
+                    $mm = substr($ar,2,2);
+                    $dateholiday = sprintf("%d-%'.02d-%'.02d", $anno, $mm, $gg );
+                    $dateFeste[] = $dateholiday;
+                }
+                              
                 // prepara array (giorni del mese)
-                $arrDaysOfMonth = $this->daysOfMonth($lastdate);
+                $arrDaysOfMonth = $this->daysOfMonth($lastdate, $dateFeste);
                 $col = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH'];    
                 $meseanno=array('','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre');//0 vuoto
-                //
-                $styleArray = [
-                    'font' => [
-                        'bold' => true,
-                    ],
-                    'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
-                    ],
-                    'borders' => [
-                        'top' => [
-                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        ],
-                    ],
-                    'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
-                        'rotation' => 90,
-                        'startColor' => [
-                            'argb' => 'FFA0A0A0',
-                        ],
-                        'endColor' => [
-                            'argb' => 'FFFFFFFF',
-                        ],
-                    ],
-                ];
+                
+                $giorninelmese = cal_days_in_month(CAL_GREGORIAN, intval($lastdate->format('m')) , intval($lastdate->format('Y')));
+                
+                // stili configurati
+                $styleArray = new PhpOfficeStyle ;
+              
                 // scorre array persone 
                 $spreadsheet = new Spreadsheet();
                 $personekeys = array_keys($personescelte) ;
@@ -282,36 +286,127 @@ class OreLavorateCrudController extends AbstractCrudController
                        
                         // 
                         $sheet->getCell('A1')->setValue('RIEPILOGO ORE MENSILI');
-                        $spreadsheet->getSheet($indexsheet)->getStyle('A1')
-                        ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED);
+                        $spreadsheet->getSheet($indexsheet)->getStyle('A1')->applyFromArray($styleArray->title1());
+                        // foreground rosso 
+                        // $spreadsheet->getSheet($indexsheet)->getStyle('A1')->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED);
 
                         $sheet->getCell('A3')->setValue($aziendaNickName);
-                        $spreadsheet->getSheet($indexsheet)->getStyle('A3')->applyFromArray($styleArray);
+                        $spreadsheet->getSheet($indexsheet)->getStyle('A3')->applyFromArray($styleArray->title2());
                         $sheet->getCell('C3')->setValue($meseanno[intval($lastdate->format('m'))].' '.$lastdate->format('Y'));
-                        $spreadsheet->getSheet($indexsheet)->getStyle('C3')->applyFromArray($styleArray);
+                        $spreadsheet->getSheet($indexsheet)->getStyle('C3')->applyFromArray($styleArray->title2());
                        
-                        $sheet->getCell('A5')->setValue('Operatore');
+                        $sheet->getCell('A5')->setValue('Operatore:');
+                        $spreadsheet->getSheet($indexsheet)->getStyle('A5')->applyFromArray($styleArray->title3());
+                        $spreadsheet->getSheet($indexsheet)->getStyle('A5')->applyFromArray($styleArray->alignHRight());
+                      
                         $sheet->getCell('B5')->setValue($fullname);
-                        $spreadsheet->getSheet($indexsheet)->getStyle('B5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-                        $spreadsheet->getSheet($indexsheet)->getStyle('B5')->getFill()->getStartColor()->setARGB('FFFF0000');
+                        $spreadsheet->getSheet($indexsheet)->getStyle('B5:D5')->applyFromArray($styleArray->backGroundYellow());
                       
                         $sheet->getCell('A7')->setValue('Cantiere');
-                        $d = 0;  // colonne dei giorni
-                            foreach ( $arrDaysOfMonth as $dayOfMonth) {
+                        $spreadsheet->getSheet($indexsheet)->getStyle('A7')->applyFromArray($styleArray->columnTitleGrey());
+                        $d = 0; $countDayMonth = 0;  $firstLoop = false; // costruisce colonne dei giorni
+                        $dayFestiviMese = [];
+                        foreach ( $arrDaysOfMonth as $dayOfMonth) {
                                 foreach ( $dayOfMonth as $key => $valore) {
-                                // $this->addFlash('info', sprintf('Array giorni del mese con key: %s valore: %s', $key, $valore) ); 
-                                $sheet->getCell($col[$d+1]."7")->setValue($valore);
-                                // $spreadsheet->getActiveSheet()
-                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1]."7")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                                $d++;
-                                } 
+                                    if ($key !== 'festa') {  
+                                    $sheet->getCell($col[$d+1-$countDayMonth]."7")->setValue($valore);
+                                    $countDayMonth++ ; }
+                                    else {
+                                        if ($dayOfMonth['festa'] === false ) {
+                                        $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1-$countDayMonth]."7")->applyFromArray($styleArray->columnTitleGrey()); }
+                                        else {
+                                            $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1-$countDayMonth]."7")->applyFromArray($styleArray->columnTitleCoral()); }
+                                            $dayFestiviMese[] = $col[$d+1-$countDayMonth];
+                                        }
+                                    // $this->addFlash('info', sprintf('Array giorni del mese con key: %s valore: %s', $key, $valore) );        
+                                    $d++; 
+                                     if ($countDayMonth === $giorninelmese && $firstLoop === false ) { $sheet->getCell($col[$d+2-$countDayMonth]."7")->setValue('Totale');
+                                     $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+2-$countDayMonth]."7")->applyFromArray($styleArray->rowTotal());
+                                     $firstLoop = true;  }
+                                    } 
                             }
                    // 
 
-                   $indexsheet++ ;
-                }       
+                $row = 8;  // prima riga utile dopo l'intestazione colonne
                 // ciclo lettura orari personale 
+                $cantierilavorati = []; 
+                    // cerca per persona se ci sono ore lavorate confermate nel mese 
+                    $count = $this->entityManager->getRepository(OreLavorate::class)->countPersonaConfirmed($idPersona, true , $dataInizio, $dataFine);
+                    if ($count > 0) {
+                        // Seleziona le ore lavorate e confermate del mese
+                        $oreLavorateCollection = $this->entityManager->getRepository(OreLavorate::class)->collectionPersonaConfirmed($idPersona, true , $dataInizio, $dataFine);
+                        // ciclo sulla collection delle ore lavorate
+                        foreach ($oreLavorateCollection as $ol ){
+                            $giorno = $ol->getGiorno();
+                            $causale = $ol->getCausale()->getCode();
+                            $oreReg = $ol->getOreRegistrate();
+                            $idCantiere = $ol->getCantiere()->getId();
+                            // determina riga cantiere
+                            if(array_key_exists($idCantiere,  $cantierilavorati) === false) { 
+                                $cantierilavorati[$idCantiere] = $row ;
+                                $currentRow = $row ;
+                                $row++ ;
+                            } else { $currentRow = $cantierilavorati[$idCantiere] ; } 
+                            $d = intval($giorno->format('d'));
+                            $sheet->getCell($col[$d+1].sprintf('%s',$currentRow))->setValue($oreReg);
+                            if (in_array($col[$d+1], $dayFestiviMese) === true) { 
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
+                            }
+                            else {
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowGrey());
+                             }
+                        }
+                    }
 
+                    // cerca per persona se ci sono ore lavorate da confrmare nel mese 
+                    $count = $this->entityManager->getRepository(OreLavorate::class)->countPersonaConfirmed($idPersona, false , $dataInizio, $dataFine);
+                    if ($count > 0) {
+                        // Seleziona le ore lavorate e NON confermate del mese
+                        $oreLavorateCollection = $this->entityManager->getRepository(OreLavorate::class)->collectionPersonaConfirmed($idPersona, false , $dataInizio, $dataFine);
+                        // ciclo sulla collection delle ore lavorate
+                        foreach ($oreLavorateCollection as $ol ){
+                            $giorno = $ol->getGiorno();
+                            $causale = $ol->getCausale()->getCode();
+                            $orePian = $ol->getOrePianificate();
+                            $idCantiere = $ol->getCantiere()->getId();
+                            // determina riga cantiere
+                            if(array_key_exists($idCantiere,  $cantierilavorati) === false) { 
+                                $cantierilavorati[$idCantiere] = $row ;
+                                $currentRow = $row ;
+                                $row++ ;
+                            } else { $currentRow = $cantierilavorati[$idCantiere] ; } 
+                            $d = intval($giorno->format('d'));
+                            $sheet->getCell($col[$d+1].sprintf('%s',$currentRow))->setValue($orePian);
+                            if (in_array($col[$d+1], $dayFestiviMese) === true) { 
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
+                            }
+                            else {
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->backGroundAqua());    
+                                //$spreadsheet->getSheet($indexsheet)->getStyle($col[$d+1].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowGrey());
+                                }
+                               
+                        }
+                    }
+
+                    // scrive cantieri
+                    $cantierikeys = array_keys($cantierilavorati) ;
+                    foreach ( $cantierikeys as $idCantiere) {
+                       //
+                            $rowCantiere = $cantierilavorati[$idCantiere];
+                            $cantiereRecord = $this->entityManager->getRepository(Cantieri::class)->findOneBy(['id'=> $idCantiere]);
+                            $sheet->getCell('A'.sprintf('%s',$rowCantiere))->setValue($cantiereRecord->getnameJob());
+                            $spreadsheet->getSheet($indexsheet)->getStyle('A'.sprintf('%s',$rowCantiere))->applyFromArray($styleArray->rowGrey());
+                        }  
+                    // dump   $dayFestiviMese
+                    $intest = '';
+                    foreach ( $dayFestiviMese as $intcol) {
+                        $intest =  $intcol.' ';
+                    }
+                    $sheet->getCell('A15')->setValue($intest);
+
+                    $indexsheet++ ;
+                }       
+                
 
                 // crea il file
                 $writer = new Xlsx($spreadsheet);
@@ -353,7 +448,7 @@ class OreLavorateCrudController extends AbstractCrudController
         
     }
 
-    public function daysOfMonth($lastdate): array
+    public function daysOfMonth($lastdate, $dateFeste): array
     {
         $giornodellasettimana=array('','lun','mar','mer','gio','ven','sab','dom');//0 vuoto
         $arrDays = [];
@@ -365,7 +460,8 @@ class OreLavorateCrudController extends AbstractCrudController
             $num_gg=(int)date("N",$giorno);
             $dayExcel = sprintf('%d %s', $ii, $giornodellasettimana[$num_gg] );
             $day = sprintf("%d-%'.02d-%'.02d", $anno, $mese, $ii );
-            $arrDays[] = [$day => $dayExcel ]; 
+            if ($num_gg === 6 || $num_gg === 7 || in_array($day, $dateFeste) === true ) { $festa = true ;} else {$festa = false ; }
+            $arrDays[] = [$day => $dayExcel, 'festa' => $festa ]; 
             // $arrDays[] = $dayExcel;
         }
         return $arrDays ;
