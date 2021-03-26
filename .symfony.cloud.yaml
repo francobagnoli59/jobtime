@@ -41,6 +41,7 @@ mounts:
     "/public/uploads/files/cantieri/documenti": { source: local, source_path: documenti }
     "/public/uploads/files/cantieri/import": { source: local, source_path: import }
     "/public/downloads/flowsalary": { source: local, source_path: flowsalary }
+    "/public/downloads/excelExport": { source: local, source_path: excelExport }
     "/public/downloads/errorImport": { source: local, source_path: errorImport } 
 
 hooks:

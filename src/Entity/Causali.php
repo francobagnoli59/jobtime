@@ -49,6 +49,15 @@ class Causali
             return (string) $this->getDescription();
     }
 
+    public function getExportData()
+    {
+        return \array_merge([
+            'Codice' => $this->code,
+            'Descrizione' => $this->description,
+            'Data aggiornamento' => $this->createdAt->format('d.m.Y H:m'),
+        ]);
+    }
+
     public function getId(): ?int
     {
         return $this->id;

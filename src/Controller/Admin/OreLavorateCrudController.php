@@ -230,6 +230,7 @@ class OreLavorateCrudController extends AbstractCrudController
                     if ($first === true) {
                         $lastdate = $orarioRecord->getGiorno(); $first = false; 
                         $aziendaNickName = $orarioRecord->getAzienda()->getNickName();
+                        $aziendaRagSociale = $orarioRecord->getAzienda()->getCompanyName();
                     } else {  
                         if ($orarioRecord->getGiorno() > $lastdate ) { $lastdate = $orarioRecord->getGiorno(); }
                     }
@@ -277,6 +278,17 @@ class OreLavorateCrudController extends AbstractCrudController
               
                 // scorre array persone 
                 $spreadsheet = new Spreadsheet();
+                $spreadsheet->getProperties()
+                    ->setCreator("Produced by Masotech (c)")
+                    ->setLastModifiedBy("Masotech")
+                    ->setTitle("Riepilogo orari mensili")
+                    ->setSubject("Informazioni orari lavoro su dati ".$aziendaNickName)
+                    ->setDescription(
+                        "Documento da considerarsi strettamente riservato."
+                    )
+                    ->setKeywords($meseanno[intval($lastdate->format('m'))].' '.$lastdate->format('Y'))
+                    ->setManager("JobTime")
+                    ->setCompany($aziendaRagSociale);
                 $personekeys = array_keys($personescelte) ;
                 $indexsheet = 0;
                 foreach ( $personekeys as $idPersona) {
@@ -480,15 +492,15 @@ class OreLavorateCrudController extends AbstractCrudController
         if ($item > 0 ) {    
             if ($item <= 40 ) {
             // emissione file
-            if ($item === 1 ) { $success =  sprintf('File excel prodotto.' ) ;  } 
+            if ($item === 1 ) { $success =  'File excel prodotto.' ;  } 
             else { 
             $success =  sprintf('File excel prodotto. Sono state preparate %d cartelle, una ciascuna per persona. ', $item ) ; 
             }
             $this->addFlash('success', $success.$link ); 
             } else {
-            $this->addFlash('warning', sprintf('La selezione supera 40 persone, riepilogo troppo esteso e non rappresentabile.')); 
+            $this->addFlash('warning', 'La selezione supera 40 persone, riepilogo troppo esteso e non rappresentabile.'); 
             }
-        } else { $this->addFlash('info', sprintf('Riepilogo non rappresentabile con nessun risultato trovato.')); }
+        } else { $this->addFlash('info', 'Riepilogo non rappresentabile con nessun risultato trovato.'); }
 
         // rimane sul crud attuale
         $crud = $context->getCrud();

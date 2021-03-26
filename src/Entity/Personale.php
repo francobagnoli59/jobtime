@@ -321,7 +321,7 @@ class Personale
 
     }
 
-    public function getExportData()
+   /*  public function getExportData()
     {
         return \array_merge([
             'matricola' => $this->matricola,
@@ -330,7 +330,7 @@ class Personale
             'costo' => $this->fullCostHour/100,
             'aggiornato' => $this->createdAt->format('d.m.Y H:m'),
         ]);
-    }
+    } */
 
 
     public function getFullName(): string

@@ -401,4 +401,241 @@ class PhpOfficeStyle
       ];
       return $styleArray;
     }
+
+
+    public function columnPrimary(): array
+    {
+     // Calibri 12 Grassetto nero, sfondo sfumato violetto (primary), senza bordi
+      $styleArray = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+            'rotation' => 90,
+            'startColor' => [
+                'argb' => 'FFD3D8F2',
+            ],
+            'endColor' => [
+                'argb' => 'FFE8EBF9',
+            ],
+        ],
+      ];
+      return $styleArray;
+    }
+
+    public function columnSuccess(): array
+    {
+     // Calibri 12 Grassetto nero, sfondo sfumato verdino (success), senza bordi
+      $styleArray = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+            'rotation' => 90,
+            'startColor' => [
+                'argb' => 'FFC0E5D7',
+            ],
+            'endColor' => [
+                'argb' => 'FFDDF1EA',
+            ],
+        ],
+      ];
+      return $styleArray;
+    }
+
+    public function columnWarning(): array
+    {
+     // Calibri 12 Grassetto nero, sfondo sfumato salmone (warning), senza bordi
+      $styleArray = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+            'rotation' => 90,
+            'startColor' => [
+                'argb' => 'FFF4D9BE',
+            ],
+            'endColor' => [
+                'argb' => 'FFF8E8D8',
+            ],
+        ],
+      ];
+      return $styleArray;
+    }
+
+    public function columnInfo(): array
+    {
+     // Calibri 12 Grassetto nero, sfondo sfumato celestino (info), senza bordi
+      $styleArray = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+            'rotation' => 90,
+            'startColor' => [
+                'argb' => 'FFB9D9EB',
+            ],
+            'endColor' => [
+                'argb' => 'FFE1EEF6',
+            ],
+        ],
+      ];
+      return $styleArray;
+    }
+
+    public function columnDark(): array
+    {
+     // Calibri 12 Grassetto nero, sfondo sfumato grigio scuro (dark), senza bordi
+      $styleArray = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+            'rotation' => 90,
+            'startColor' => [
+                'argb' => 'FFC6C8CA',
+            ],
+            'endColor' => [
+                'argb' => 'FFEAEAEA',
+            ],
+        ],
+      ];
+      return $styleArray;
+    }
+
+    public function columnGreyLight(): array
+    {
+     // Calibri 12 Grassetto nero, sfondo sfumato grigio chiaro, senza bordi
+      $styleArray = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+            'rotation' => 90,
+            'startColor' => [
+                'argb' => 'FFF8FAFC',
+            ],
+            'endColor' => [
+                'argb' => 'FFFAFBFD',
+            ],
+        ],
+      ];
+      return $styleArray;
+    }
+
+    public function rowPrimary(): array
+    {
+      // Calibri 11 nero, sfondo sfumato violetto, senza bordi
+      $styleArray = [
+        'font' => [
+            'size' => 11,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'FFE8EBF9',
+            ],
+          ],
+      ];
+      return $styleArray;
+    }
+
+    public function rowSuccess(): array
+    {
+      // Calibri 11 nero, sfondo sfumato verdino, senza bordi
+      $styleArray = [
+        'font' => [
+            'size' => 11,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'FFDDF1EA',
+            ],
+          ],
+      ];
+      return $styleArray;
+    }
+
+    public function rowWarning(): array
+    {
+      // Calibri 11 nero, sfondo sfumato salmone, senza bordi
+      $styleArray = [
+        'font' => [
+            'size' => 11,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'FFF8E8D8',
+            ],
+          ],
+      ];
+      return $styleArray;
+    }
+
+    public function rowInfo(): array
+    {
+      // Calibri 11 nero, sfondo sfumato celestino, senza bordi
+      $styleArray = [
+        'font' => [
+            'size' => 11,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'FFE1EEF6',
+            ],
+          ],
+      ];
+      return $styleArray;
+    }
+
+    public function rowDark(): array
+    {
+      // Calibri 11 nero, sfondo sfumato grigio scuro, senza bordi
+      $styleArray = [
+        'font' => [
+            'size' => 11,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'FFEAEAEA',
+            ],
+          ],
+      ];
+      return $styleArray;
+    }
+
+    public function rowGreyLight(): array
+    {
+      // Calibri 11 nero, sfondo sfumato grigio chiaro, senza bordi
+      $styleArray = [
+        'font' => [
+            'size' => 11,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'FFFAFBFD',
+            ],
+          ],
+      ];
+      return $styleArray;
+    }
+
+
 }
