@@ -6,12 +6,12 @@ use App\Entity\Personale;
 use App\Entity\Cantieri;
 use App\Entity\PianoOreCantieri;
 use App\Form\DocumentiPersonaleType;
+
 use App\Repository\ProvinceRepository;
 use App\Repository\CantieriRepository;
 use App\Repository\AziendeRepository;
 use App\Repository\MansioniRepository;
 use App\ServicesRoutine\PhpOfficeStyle;
-// use App\Service\CsvService;
 
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -49,7 +49,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
-
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
 use Symfony\Component\Validator\Constraints\Image;
@@ -64,11 +63,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Symfony\Component\Filesystem\Filesystem;
 
-// use Symfony\Component\Form\Extension\Core\Type\RangeType;
 
-    
-
-class PersonaleCrudController extends AbstractCrudController
+class PersonaleDimessoCrudController extends AbstractCrudController
 {
 
  
@@ -94,28 +90,27 @@ class PersonaleCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
-
+ 
         $azienda = $this->getUser()->getAziendadefault();
         if ($azienda !== null ) {
             $aziendaNickName = $azienda->getNickName();
         } else { $aziendaNickName = '...seleziona azienda!!!'; } 
 
-        $LabelSing = 'Personale '.$aziendaNickName ;
-        $LabelPlur = 'Personale '.$aziendaNickName ;
-        $LabelNew = 'Crea nuovo personale '.$aziendaNickName ;
-        $LabelList = 'Elenco Personale '.$aziendaNickName ;
+        $LabelSing = 'Personale dimesso '.$aziendaNickName ;
+        $LabelPlur = 'Personale dimesso '.$aziendaNickName ;
+        $LabelList = 'Elenco Personale dimesso '.$aziendaNickName ;
 
         return $crud
             ->showEntityActionsAsDropdown()
             ->setEntityLabelInSingular($LabelSing)
             ->setEntityLabelInPlural($LabelPlur)
             ->setPageTitle(Crud::PAGE_INDEX, $LabelList)
-            ->setPageTitle(Crud::PAGE_DETAIL, fn (Personale $surname) => (string) $surname)
-            ->setPageTitle(Crud::PAGE_EDIT, fn (Personale $namefull) => sprintf('Modifica scheda dati di <b>%s</b>', $namefull->getFullName()))
-            ->setPageTitle(Crud::PAGE_NEW, $LabelNew)
+            ->setPageTitle(Crud::PAGE_DETAIL, fn (Personale $namefull) => sprintf('Visualizza scheda dati di <b>%s</b> (dimesso)', $namefull->getFullName()))
+            ->setPageTitle(Crud::PAGE_EDIT, fn (Personale $namefull) => sprintf('Modifica scheda dati di <b>%s</b> (dimesso)', $namefull->getFullName()))
             ->setSearchFields(['matricola', 'name', 'surname', 'cantiere.nameJob', 'mansione.mansioneName' ])
             ->setDefaultSort(['surname' => 'ASC', 'name' => 'ASC'])
             ;
+          //  ->setPageTitle(Crud::PAGE_NEW, 'Crea scheda nuovo personale')
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -125,9 +120,9 @@ class PersonaleCrudController extends AbstractCrudController
             ->add(EntityFilter::new('cantiere')->setFormTypeOption('value_type_options.query_builder', 
                  static fn(CantieriRepository $ca) => $ca->createQueryBuilder('cantiere')
                  ->orderBy('cantiere.nameJob', 'ASC') ) )
-           /*  ->add(EntityFilter::new('azienda')->setFormTypeOption('value_type_options.query_builder', 
+            ->add(EntityFilter::new('azienda')->setFormTypeOption('value_type_options.query_builder', 
                 static fn(AziendeRepository $az) => $az->createQueryBuilder('azienda')
-                 ->orderBy('azienda.nickName', 'ASC') ) ) */
+                 ->orderBy('azienda.nickName', 'ASC') ) )
             ->add(ChoiceFilter::new('gender', 'Sesso')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]) )
             ->add(BooleanFilter::new('isPartner', 'Socio'))
             ->add(BooleanFilter::new('isInvalid', 'Diversamente abile'))
@@ -144,8 +139,7 @@ class PersonaleCrudController extends AbstractCrudController
             ->add(EntityFilter::new('mansione')->setFormTypeOption('value_type_options.query_builder', 
                 static fn(MansioniRepository $ma) => $ma->createQueryBuilder('mansione')
                  ->orderBy('mansione.mansioneName', 'ASC') ) );
-           //        ->add(BooleanFilter::new('isEnforce', 'Assunto'))
-          
+            // ->add(BooleanFilter::new('isEnforce', 'Assunto'))
     }
  
     public function configureActions(Actions $actions): Actions
@@ -164,13 +158,14 @@ class PersonaleCrudController extends AbstractCrudController
 
         return $actions
             // ...
+            ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $view_orelavorate)->add(Crud::PAGE_EDIT, $view_orelavorate)
             ->add(Crud::PAGE_INDEX, $view_pianoorecantieri)
             ->add(Crud::PAGE_INDEX, $export)
            // ->add(Crud::PAGE_DETAIL,)
             ->add(Crud::PAGE_EDIT,  Action::INDEX )
-            ->add(Crud::PAGE_NEW,   Action::INDEX )
+            // ->add(Crud::PAGE_NEW,   Action::INDEX )
 
             ->update(Crud::PAGE_INDEX, Action::EDIT,
              fn (Action $action) => $action->setIcon('fa fa-edit')->setHtmlAttributes(['title' => 'Modifica']))
@@ -180,47 +175,25 @@ class PersonaleCrudController extends AbstractCrudController
              fn (Action $action) => $action->setIcon('fa fa-eye')->setHtmlAttributes(['title' => 'Vedi scheda']))
         ;
     }
-
+// 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $response = $this->get(EntityRepository::class)->createQueryBuilder($searchDto, $entityDto, $fields, $filters);
-  
         $azienda = $this->getUser()->getAziendadefault();
         if ($azienda !== null ) {
             $aziendaId = $azienda->getId();
         $response->andWhere('entity.azienda = '. $aziendaId);
-        $response->andWhere('entity.isEnforce = true');
+        $response->andWhere('entity.isEnforce = false');
         } else {  $response->andWhere('entity.azienda = 0');
-            $response->andWhere('entity.isEnforce = true'); } // così non visualizza niente
+            $response->andWhere('entity.isEnforce = false'); } // così non visualizza niente
         return $response;
-    }
-
-    public function createEntity(string $entityFqcn)
-    {
-        $azienda = $this->getUser()->getAziendadefault();
-        if ($azienda !== null ) {
-            $personale = new Personale();
-            $personale->setAzienda($personale);
-        return $personale;
-        }
     }
 
     public function ViewOreLavorate(AdminContext $context)
     {
         $personale = $context->getEntity()->getInstance();
 
-       /*  $ds = new \Datetime('-20 day');
-        $d1 = $ds->format('YmgHi');           HO PROVATO IN PIU' MODI MA LA COMPONENTE EA3 MI DICE CHE NON TROVA L?INDEX VALUE
-        $de = new \Datetime('-1 day');
-        $d2 = $de->format('YmgHi');
-        ->set('filters[giorno][comparison]', 'between')
-            ->set('filters[giorno][value]', $d1);
-            ->set('filters[giorno][value2]', $d2);
-            NEMMENO COSI' FUNZIONA
-         ->set('filters[giorno][comparison]', '>')
-            ->set('filters[giorno][value]', $personale->getBirthday()->format('Y-m-d'));
- */
-        $url = $this->adminUrlGenerator->unsetAll()
+         $url = $this->adminUrlGenerator->unsetAll()
             ->setController(OreLavorateCrudController::class)
             ->setAction(Action::INDEX)
             ->set('filters[persona][comparison]', '=')
@@ -576,13 +549,7 @@ class PersonaleCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $azienda = $this->getUser()->getAziendadefault();
-        if ($azienda !== null ) {
-            $statusAzienda = true ; $helpAz = '';}
-            else { $statusAzienda = false ; $helpAz = 'Scegliere l\'azienda del gruppo nella quale è assunta la persona'; }
- 
-            $collapse = false ;    
-
+        
             $panel1 = FormField::addPanel('INFORMAZIONI ANAGRAFICHE')->setIcon('fas fa-address-card');
             $name = TextField::new('name', 'Nome di battesimo')->addCssClass('list-group-item-primary');
             $surname = TextField::new('surname', 'Cognome')->addCssClass('list-group-item-primary');
@@ -594,7 +561,7 @@ class PersonaleCrudController extends AbstractCrudController
             $birthday = DateField::new('birthday', 'Data di nascita')->addCssClass('list-group-item-primary');
             $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale')->addCssClass('list-group-item-primary');
             $isEnforce = BooleanField::new('isEnforce', 'Attivo/Dimesso')->addCssClass('list-group-item-warning');
-            $isPart = BooleanField::new('isPartner', 'Socio')->onlyOnIndex();
+            $isAtt = BooleanField::new('isEnforce', 'Attivo/Dimesso')->onlyOnIndex();
             //  $photoFile = ImageField::new('photoAvatar', 'Foto')
             $photoFile = ImageField::new('photoAvatar', 'Upload Foto')
             ->setBasePath('uploads/photos')
@@ -621,13 +588,14 @@ class PersonaleCrudController extends AbstractCrudController
                         ->orderBy('p.name', 'ASC');
                 },
                  ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
-            $azienda = AssociationField::new('azienda', 'Azienda')->setHelp($helpAz)->addCssClass('list-group-item-warning')
+            
+            $azienda = AssociationField::new('azienda', 'Azienda')->addCssClass('list-group-item-warning')
             ->setFormTypeOptions([
                 'query_builder' => function (AziendeRepository $az) {
                     return $az->createQueryBuilder('az')
                         ->orderBy('az.nickName', 'ASC');
                 },
-                 ])->setRequired(true)->setCustomOptions(array('widget' => 'native'))->setFormTypeOptions(['disabled' => $statusAzienda]);
+                 ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
             $cant = AssociationField::new('cantiere', 'Cantiere')->onlyOnIndex();
             $cantiere = AssociationField::new('cantiere', 'Cantiere')->addCssClass('list-group-item-warning')
             ->setFormTypeOptions([
@@ -638,6 +606,9 @@ class PersonaleCrudController extends AbstractCrudController
                  ])
             ->setHelp('<mark><b>Indicare solo nel caso la persona lavori prevalentemente per un unico Cantiere. Per più cantieri una volta inserita la persona utilizzare la funzione [Piano Ore Cantieri]</b></mark>');
 
+
+            $collapse = false ;
+         
             $panelPortrait = FormField::addPanel('FOTO RITRATTO')->setIcon('fas fa-id-badge')->renderCollapsed($collapse);
             $imagePortrait = TextField::new('imageVichFile', 'Ritratto')->setFormType(VichImageType::class)
             ->setFormTypeOptions(['constraints' => [ new Image(['maxSize' => '2048k']) ] , 'allow_delete' => false] );
@@ -698,7 +669,7 @@ class PersonaleCrudController extends AbstractCrudController
             $planHourWeek = ArrayField::new('planHourWeek', 'Ore settimanali')->setHelp('<mark><b>Inserire 7 numeri intesi come ore intere dal lunedì alla domenica, se è necessario indicare la mezz\'ora inserire .5  (usare il punto, non la virgola)</b></mark>')->addCssClass('list-group-item-warning');
             $planHW = ArrayField::new('planHourWeek', 'Ore settimanali')->onlyOnIndex();
             $dateHiring = DateField::new('dateHiring', 'Data di assunzione')->setRequired(true)->addCssClass('list-group-item-warning');
-            $dateDismissal = DateField::new('dateDismissal', 'Data di licenziamento')->addCssClass('list-group-item-warning');
+            $dateDismissal = DateField::new('dateDismissal', 'Dimesso il')->addCssClass('list-group-item-warning');
             $ibanConto = TextField::new('ibanConto', 'Conto Bancario (IBAN)')->setHelp('Per bonifici inserire le coordinate bancarie (senza spazi)');
             $intestatarioConto = TextField::new('intestatarioConto', 'Intestatario Conto')->setHelp('Inserire il nome intestatario se diverso dal nominativo della scheda personale');
             $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
@@ -707,7 +678,7 @@ class PersonaleCrudController extends AbstractCrudController
             $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
 
             if (Crud::PAGE_INDEX === $pageName) {
-                return [$matr, $fullName, $photoFile, $eta, $isPart,  $cant, $mans, $pianoOreCantieri, $planHW, $stringTotalHourWeek ];
+                return [$matr, $fullName, $photoFile, $eta, $dateDismissal,  $cant, $mans, $pianoOreCantieri, $planHW, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
                 return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $comboAddr, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {

@@ -16,20 +16,22 @@ use App\ServicesRoutine\PhpOfficeStyle;
 use App\ServicesRoutine\DateUtility;
  
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
-use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -37,13 +39,19 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Filesystem\Filesystem;
+
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Symfony\Component\Filesystem\Filesystem;
+
 
 class OreLavorateCrudController extends AbstractCrudController
 {
@@ -66,6 +74,16 @@ class OreLavorateCrudController extends AbstractCrudController
         return OreLavorate::class;
     }
 
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $response = $this->get(EntityRepository::class)->createQueryBuilder($searchDto, $entityDto, $fields, $filters);
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $aziendaId = $azienda->getId();
+        $response->andWhere('entity.azienda = '. $aziendaId);
+        } else {  $response->andWhere('entity.azienda = 0'); } // così non visualizza niente
+        return $response;
+    }
 
     public function createEntity(string $entityFqcn)
     {
@@ -537,12 +555,21 @@ class OreLavorateCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
-    
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $aziendaNickName = $azienda->getNickName();
+        } else { $aziendaNickName = '...seleziona azienda!!!'; } 
+
+        $LabelSing = 'Orario di lavoro '.$aziendaNickName ;
+        $LabelPlur = 'Ore Lavorate '.$aziendaNickName ;
+        $LabelNew = 'Registra ore lavorate '.$aziendaNickName ;
+        $Labellist = 'Elenco Ore Lavorate '.$aziendaNickName ;
+
         return $crud
-            ->setEntityLabelInSingular('Orario di lavoro')
-            ->setEntityLabelInPlural('Ore Lavorate')
-            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Ore Lavorate')
-            ->setPageTitle(Crud::PAGE_NEW, 'Registra ore lavorate')
+            ->setEntityLabelInSingular($LabelSing)
+            ->setEntityLabelInPlural($LabelPlur)
+            ->setPageTitle(Crud::PAGE_INDEX,  $Labellist)
+            ->setPageTitle(Crud::PAGE_NEW, $LabelNew)
             ->setPageTitle(Crud::PAGE_DETAIL, fn (OreLavorate $orario) => sprintf('Ore giornata lavorate da <b>%s</b>', $orario->getPersona()->getFullName()))
             ->setPageTitle(Crud::PAGE_EDIT, fn (OreLavorate $orario) => sprintf('Modifica Ore giornata lavorate da <b>%s</b>', $orario->getPersona()->getFullName()))
             ->setSearchFields(['id', 'giorno', 'azienda.nickName', 'cantiere.nameJob', 'persona.surname', 'oreRegistrate'])
@@ -557,9 +584,9 @@ class OreLavorateCrudController extends AbstractCrudController
             ->add(BooleanFilter::new('isConfirmed', 'Orari confermati'))
             ->add('giorno')
             ->add(EntityFilter::new('causale', 'Causale lavoro'))
-            ->add(EntityFilter::new('azienda')->setFormTypeOption('value_type_options.query_builder', 
+/*             ->add(EntityFilter::new('azienda')->setFormTypeOption('value_type_options.query_builder', 
                 static fn(AziendeRepository $az) => $az->createQueryBuilder('azienda')
-                        ->orderBy('azienda.nickName', 'ASC') ) ) 
+                        ->orderBy('azienda.nickName', 'ASC') ) )  */
             ->add(EntityFilter::new('cantiere')->setFormTypeOption('value_type_options.query_builder', 
                 static fn(CantieriRepository $ca) => $ca->createQueryBuilder('cantiere')
                      ->orderBy('cantiere.nameJob', 'ASC') ) )
@@ -632,6 +659,11 @@ class OreLavorateCrudController extends AbstractCrudController
 
      public function configureFields(string $pageName): iterable
     {
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $statusAzienda = true ; $helpAz = '';}
+            else { $statusAzienda = false ;}
+
         $panel1 = FormField::addPanel('ORE LAVORATE')->setIcon('fas fa-clock');
         $giorno = DateField::new('giorno', 'Data'); //->setFormTypeOptions(['disabled' => 'true']);;
         $dayOfWeek = TextField::new('dayOfWeek', 'Giorno')->setFormTypeOptions(['disabled' => 'true']);;
@@ -645,7 +677,7 @@ class OreLavorateCrudController extends AbstractCrudController
                 return $az->createQueryBuilder('a')
                     ->orderBy('a.nickName', 'ASC');
             },
-            ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
+            ])->setRequired(true)->setCustomOptions(array('widget' => 'native'))->setFormTypeOptions(['disabled' => $statusAzienda]);
         $cantiere = AssociationField::new('cantiere', 'Cantiere')
             ->setFormTypeOptions([
             'query_builder' => function (CantieriRepository $ca) {

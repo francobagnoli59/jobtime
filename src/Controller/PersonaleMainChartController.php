@@ -20,11 +20,15 @@ class PersonaleMainChartController extends AbstractController
      */
     public function index(Environment $twig, PersonaleRepository $personaleRepository, MansioniRepository $mansioniRepository, AziendeRepository $aziendeRepository): Response
     {
-       // da parametrizzare nella bar navigation
-       $azienda =  $aziendeRepository->findOneBy(['id'=> 1]);
-       $rangeMonth = $azienda->getRangeAnalisi();
-       if ($rangeMonth === null) {$rangeMonth = 0;}
-       $title = 'Dashboard Personale '.$azienda->getNickName();
+       $azienda = $this->getUser()->getAziendadefault();
+       if ($azienda !== null ) {
+           $aziendaNickName = $azienda->getNickName();
+           $aziendaId = $azienda->getId();
+       } else { $aziendaNickName = '...seleziona azienda!!!'; $aziendaId = 0;} 
+       // $azienda =  $aziendeRepository->findOneBy(['id'=> 1]);
+       $rangeMonth = 0;
+       if ($azienda !== null) { $rangeMonth = $azienda->getRangeAnalisi();}
+       $title = 'Dashboard Personale '. $aziendaNickName;
 
        // legge tabella mansioni
        $arrMansioni = [];  $arrManValid = [];
@@ -39,8 +43,8 @@ class PersonaleMainChartController extends AbstractController
         $arrManValid[$name] = false ; 
        
         // collection personale
-        $personale = $personaleRepository->findAll(); // prevedere chiamata  X AZIENDA
-      
+        //$personale = $personaleRepository->findAll(); // prevedere chiamata  X AZIENDA
+        $personale = $personaleRepository->findBy(['azienda' => $aziendaId]); 
         $arrTypeAnno = []; // Accumula anni di assunzione
         $pieInv_data = [];  // Torta rapp invalidi / personale
         $chartMesiInv = []; //  chart rapp mensile invalidi/personale  

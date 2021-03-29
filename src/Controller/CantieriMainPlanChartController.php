@@ -19,11 +19,17 @@ class CantieriMainPlanChartController extends AbstractController
      */
     public function index(Environment $twig, CantieriRepository $cantieriRepository, AziendeRepository $aziendeRepository): Response
     {
-         // da parametrizzare nella bar navigation o nell'user collegato
-        $azienda =  $aziendeRepository->findOneBy(['id'=> 1]);
-        $title = 'Planning cantieri '.$azienda->getNickName();
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $aziendaNickName = $azienda->getNickName();
+            $aziendaId = $azienda->getId();
+        } else { $aziendaNickName = '...seleziona azienda!!!'; $aziendaId = 0;} 
+       
+        $title = 'Planning cantieri '.$aziendaNickName;
         
-        $cantieri = $cantieriRepository->findAll();
+        // $cantieri = $cantieriRepository->findAll();
+        $cantieri = $cantieriRepository->findBy(['azienda' => $aziendaId]);
+
         $gant_data = [];
        
         foreach ($cantieri as $cantiere) {

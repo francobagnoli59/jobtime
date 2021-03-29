@@ -54,6 +54,10 @@ class PreparaMensilitaController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
 
         $mesiaziendali = new MesiAziendali();
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $mesiaziendali->setAzienda($azienda);
+            }
         $mesiaziendali->setIsHoursCompleted(false);
         $mesiaziendali->setIsInvoicesCompleted(false);
         $mesiaziendali->setCostMonthHuman(0)->setCostMonthMaterial(0)->setIncomeMonth(0)->setNumeroPersone(0)->setNumeroCantieri(0)

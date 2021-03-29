@@ -4,8 +4,10 @@ namespace App\Controller\Admin;
 
 use App\Entity\Aziende;
 use App\Entity\Province;
+use App\Entity\User;
 use App\Repository\ProvinceRepository;
 use Doctrine\ORM\EntityManagerInterface;
+
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -19,7 +21,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
-class AziendeCrudController extends AbstractCrudController
+class SceltaAziendaCrudController extends AbstractCrudController
 {
 
     /**
@@ -42,61 +44,68 @@ class AziendeCrudController extends AbstractCrudController
     }
 
  
-  /*   public function selectAzienda(AdminContext $context)
+    public function selectAzienda(AdminContext $context)
     {
         $azienda = $context->getEntity()->getInstance();
-// ->unsetAll()    ->setRoute('admin', ['azienda_selection_nickName', $azienda->getNickName()]);       
+        $UserRecord = $this->entityManager->getRepository(User::class)->findOneByEmail($this->getUser()->getUsername()) ;
+        $UserRecord->setAziendadefault($azienda);
+        $this->entityManager->persist($UserRecord);
+        $this->entityManager->flush();
+
         $url = $this->adminUrlGenerator
             ->setRoute('admin')
             ->set('azienda_selection_nickName', $azienda->getNickName())
             ->set('azienda_selection_id', $azienda->getId());
-           // ->setController(CantieriCrudController::class) 
-           // ->setAction(Action::INDEX)    
-           
             return $this->redirect($url);
     }
- */
 
-    public function createEntity(string $entityFqcn)
+    public function resetAzienda(AdminContext $context)
     {
-        
-        $azienda = new Aziende();
-        $azienda->setProvincia($this->entityManager->getRepository(Province::class)->findOneBy(['code'=>'PI']));
-        return $azienda;
+        $azienda = $context->getEntity()->getInstance();
+        $UserRecord = $this->entityManager->getRepository(User::class)->findOneByEmail($this->getUser()->getUsername()) ;
+        $UserRecord->setAziendadefault(null);
+        $this->entityManager->persist($UserRecord);
+        $this->entityManager->flush();
+
+        $url = $this->adminUrlGenerator
+            ->setRoute('admin')
+            ->set('azienda_selection_nickName', ' ')
+            ->set('azienda_selection_id', 0);
+            return $this->redirect($url);
     }
+
+
+
     public function configureCrud(Crud $crud): Crud
     {
     
         return $crud
             ->setEntityLabelInSingular('Azienda')
             ->setEntityLabelInPlural('Aziende')
-            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Aziende del gruppo')
-            ->setPageTitle(Crud::PAGE_EDIT, 'Modifica Azienda')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Scegli un\'azienda del gruppo')
             ->setPageTitle(Crud::PAGE_DETAIL, 'Visualizza Azienda')
-            ->setPageTitle(Crud::PAGE_NEW, 'Crea nuova Azienda')
             ->setDefaultSort(['nickName' => 'ASC'])
             ;
     }
     
-     public function configureActions(Actions $actions): Actions
+    public function configureActions(Actions $actions): Actions
     {
-        /*
         $selectAzienda = Action::new('selectAzienda', 'Scegli azienda da gestire', 'fa fa-industry')
         ->linkToCrudAction('selectAzienda')->setCssClass('btn btn-primary');
-       */
+      
+        $resetAzienda = Action::new('resetAzienda', 'Reset scelta azienda ', 'fa fa-backspace')
+        ->linkToCrudAction('resetAzienda')->setCssClass('btn btn-light')->createAsGlobalAction();
        
         return $actions
                 // ...
                 ->add(Crud::PAGE_INDEX, Action::DETAIL)
-                // ->add(Crud::PAGE_INDEX, $selectAzienda)
-                // ->add(Crud::PAGE_DETAIL,)
-                ->add(Crud::PAGE_EDIT,  Action::INDEX )
-                ->add(Crud::PAGE_NEW,   Action::INDEX )
-    
-                ->update(Crud::PAGE_INDEX, Action::EDIT,
-                 fn (Action $action) => $action->setIcon('fa fa-edit') )
-                ->update(Crud::PAGE_INDEX, Action::DELETE,
-                 fn (Action $action) => $action->setIcon('fa fa-trash') )
+                ->add(Crud::PAGE_INDEX, $selectAzienda)
+                ->add(Crud::PAGE_INDEX, $resetAzienda)
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->remove(Crud::PAGE_INDEX, Action::NEW)
+                ->remove(Crud::PAGE_INDEX, Action::DELETE)
+                ->remove(Crud::PAGE_DETAIL, Action::EDIT)
+                ->remove(Crud::PAGE_DETAIL, Action::DELETE)
                 ->update(Crud::PAGE_INDEX, Action::DETAIL,
                  fn (Action $action) => $action->setIcon('fa fa-eye') )
             ;
@@ -129,11 +138,7 @@ class AziendeCrudController extends AbstractCrudController
             return [$nickName, $partitaIva, $address, $city, $provincia, $createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $rangeAnalisi, $panel_ID, $id, $createdAt];
-        } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $rangeAnalisi];
-        } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $rangeAnalisi, $panel_ID, $id, $createdAt];
-        }
+        } 
     }
 }
 

@@ -106,13 +106,16 @@ class CausaliCrudController extends AbstractCrudController
     {
         $panel1 = FormField::addPanel('CAUSALI PAGHE')->setIcon('fas fa-pencil-ruler');
         $code = TextField::new('code', 'Codice Causale Paghe')->addCssClass('list-group-item-primary');  
-        $description = TextField::new('description', 'Descrizione')->setCssClass('list-group-item-success');
+        $description = TextField::new('description', 'Descrizione')->addCssClass('list-group-item-primary');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->setCssClass('list-group-item-warning');
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->setCssClass('list-group-item-dark');
-        
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $in_code = TextField::new('code', 'Codice Causale Paghe');
+        $in_description = TextField::new('description', 'Descrizione');
+        $in_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
+
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $code, $description, $createdAt];
+            return [$in_code, $in_description, $in_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $code, $description, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

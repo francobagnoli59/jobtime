@@ -14,8 +14,12 @@ use App\Repository\FestivitaAnnualiRepository;
 use App\ServicesRoutine\DateUtility;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -28,6 +32,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 
 
 class MesiAziendaliCrudController extends AbstractCrudController
@@ -47,6 +54,17 @@ class MesiAziendaliCrudController extends AbstractCrudController
     public static function getEntityFqcn(): string
     {
         return MesiAziendali::class;
+    }
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $response = $this->get(EntityRepository::class)->createQueryBuilder($searchDto, $entityDto, $fields, $filters);
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $aziendaId = $azienda->getId();
+        $response->andWhere('entity.azienda = '. $aziendaId);
+        } else {  $response->andWhere('entity.azienda = 0'); } // così non visualizza niente
+        return $response;
     }
 
     public function buildFlowSalary(AdminContext $context)
@@ -319,13 +337,21 @@ class MesiAziendaliCrudController extends AbstractCrudController
     
     public function configureCrud(Crud $crud): Crud
     {
-        
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $aziendaNickName = $azienda->getNickName();
+        } else { $aziendaNickName = '...seleziona azienda!!!'; } 
+
+        $LabelSing = 'Consolidato mensile '.$aziendaNickName ;
+        $LabelPlur = 'Consolidati mensili '.$aziendaNickName ;
+        $Labellist = 'Elenco Mesi consolidati '.$aziendaNickName ;
+
         return $crud
-            ->setEntityLabelInSingular('Consolidato mensile')
-            ->setEntityLabelInPlural('Consolidati mensili')
-            ->setPageTitle(Crud::PAGE_INDEX, 'Elenco Mesi consolidati')
-            ->setPageTitle(Crud::PAGE_DETAIL, fn (MesiAziendali $name) => sprintf('Consolidato mensile <b>%s</b>', $name ))
-            ->setPageTitle(Crud::PAGE_EDIT, fn (MesiAziendali $name) => sprintf('Consolidato mensile <b>%s</b>', $name->getKeyReference()))
+            ->setEntityLabelInSingular($LabelSing)
+            ->setEntityLabelInPlural($LabelPlur)
+            ->setPageTitle(Crud::PAGE_INDEX,  $Labellist)
+            ->setPageTitle(Crud::PAGE_DETAIL, fn (MesiAziendali $name) => sprintf('Consolidato mensile %s <b>%s</b>',  $name ))
+            ->setPageTitle(Crud::PAGE_EDIT, fn (MesiAziendali $name) => sprintf('Consolidato mensile %s <b>%s</b>',  $name->getKeyReference()))
             ->setSearchFields(['festivitaAnnuale', 'mese', 'azienda' ])
             ->setDefaultSort(['festivitaAnnuale' => 'ASC', 'mese' => 'ASC', 'azienda' => 'ASC'])
             ->showEntityActionsAsDropdown();

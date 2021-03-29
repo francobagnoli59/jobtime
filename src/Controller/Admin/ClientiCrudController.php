@@ -93,36 +93,42 @@ class ClientiCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('INFORMAZIONI DI BASE')->setIcon('fas fa-users');
-        $typeCliente = ChoiceField::new('typeCliente', 'Tipo Cliente')->setChoices(['Pubblica amministrazione' => 'PA', 'Azienda Privata' => 'PG', 'Ditta Individuale' => 'DI', 'Ente NO Profit' => 'EN', 'Persona fisica' => 'PF' ]);
-        $name = TextField::new('name', 'Nome Cliente');
+        $typeCliente = ChoiceField::new('typeCliente', 'Tipo Cliente')->setChoices(['Pubblica amministrazione' => 'PA', 'Azienda Privata' => 'PG', 'Ditta Individuale' => 'DI', 'Ente NO Profit' => 'EN', 'Persona fisica' => 'PF' ])->addCssClass('list-group-item-primary');
+        $i_typeCliente = ChoiceField::new('typeCliente', 'Tipo Cliente')->setChoices(['Pubblica amministrazione' => 'PA', 'Azienda Privata' => 'PG', 'Ditta Individuale' => 'DI', 'Ente NO Profit' => 'EN', 'Persona fisica' => 'PF' ]);
+        $name = TextField::new('name', 'Nome Cliente')->addCssClass('list-group-item-primary');
+        $i_name = TextField::new('name', 'Nome Cliente');
         $nameResult = TextField::new('nameResult', 'Cliente');
         $nickName = TextField::new('nickName', 'Nick Name')
         ->setFormTypeOptions([
-            'attr' => ['placeholder' => 'soprannome .. nome sintetico'] ]);
-        $partitaIva = TextField::new('partitaIva', 'Partita Iva');
-        $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale');
+            'attr' => ['placeholder' => 'soprannome .. nome sintetico'] ])->addCssClass('list-group-item-primary');;
+        $partitaIva = TextField::new('partitaIva', 'Partita Iva')->addCssClass('list-group-item-warning');;
+        $i_partitaIva = TextField::new('partitaIva', 'Partita Iva');
+        $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale')->addCssClass('list-group-item-warning');;
         $address = TextField::new('address', 'Indirizzo')
         ->setFormTypeOptions([
-                'attr' => ['placeholder' => 'via, piazza ... civico'] ]);
+                'attr' => ['placeholder' => 'via, piazza ... civico'] ])->addCssClass('list-group-item-success');;
         //->setFormTypeOptions([
         //    'attr' => ['value' => 'Via Pastrengo'] ]);  Per valore iniziale, creare due field tra PAGE:NEW e le altre
-        $city = TextField::new('city', 'Città');
-        $zipCode = TextField::new('zipCode', 'Codice Avviamento Postale');
-        $codeSdi = TextField::new('codeSdi', 'Codice Univoco (SDI)');
-        $country = CountryField::new('country', 'Nazione');
+        $city = TextField::new('city', 'Città')->addCssClass('list-group-item-success');
+        $i_city = TextField::new('city', 'Città');
+        $zipCode = TextField::new('zipCode', 'Codice Avviamento Postale')->addCssClass('list-group-item-success');
+        $codeSdi = TextField::new('codeSdi', 'Codice Univoco (SDI)')->addCssClass('list-group-item-warning');
+        $i_codeSdi = TextField::new('codeSdi', 'Codice Univoco (SDI)'); 
+        $country = CountryField::new('country', 'Nazione')->addCssClass('list-group-item-success');
+        $i_provincia = AssociationField::new('provincia', 'Provincia');
         $provincia = AssociationField::new('provincia', 'Provincia')
             ->setFormTypeOptions([
             'query_builder' => function (ProvinceRepository $pr) {
                 return $pr->createQueryBuilder('p')
                     ->orderBy('p.name', 'ASC');
             },
-             ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
+             ])->setRequired(true)->setCustomOptions(array('widget' => 'native'))->addCssClass('list-group-item-success');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
         
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$name, $typeCliente, $partitaIva, $city, $provincia, $codeSdi];
+            return [$i_name, $i_typeCliente, $i_partitaIva, $i_city, $i_provincia, $i_codeSdi];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $typeCliente, $name, $nickName, $address, $zipCode, $city, $provincia, $country, $partitaIva, $fiscalCode, $codeSdi, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

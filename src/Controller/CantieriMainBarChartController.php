@@ -19,12 +19,16 @@ class CantieriMainBarChartController extends AbstractController
      */
     public function index(Environment $twig, CantieriRepository $cantieriRepository, AziendeRepository $aziendeRepository): Response
     {
-         // da parametrizzare nella bar navigation o nell'user collegato
-        $azienda =  $aziendeRepository->findOneBy(['id'=> 1]);
-        $title = 'Analisi cantieri '.$azienda->getNickName();
-        
-        $cantieri = $cantieriRepository->findAll();
+        $azienda = $this->getUser()->getAziendadefault();
+        if ($azienda !== null ) {
+            $aziendaNickName = $azienda->getNickName();
+            $aziendaId = $azienda->getId();
+        } else { $aziendaNickName = '...seleziona azienda!!!'; $aziendaId = 0;} 
        
+        $title = 'Analisi cantieri '.$aziendaNickName;
+        
+        // $cantieri = $cantieriRepository->findAll();
+        $cantieri = $cantieriRepository->findBy(['azienda' => $aziendaId]);
         $bar_data = [];
 
         foreach ($cantieri as $cantiere) {
