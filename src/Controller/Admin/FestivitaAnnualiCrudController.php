@@ -58,16 +58,20 @@ class FestivitaAnnualiCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('FESTE ANNUALI')->setIcon('fas fa-plane-departure');
-        $anno = TextField::new('anno', 'Anno festività annuali');
+        $anno = TextField::new('anno', 'Anno festività annuali')->addCssClass('list-group-item-primary');
        // $festivitaCollection = CollectionField::new("dateFestivita") ->allowDelete(true) ->allowAdd(true) ->setEntryIsComplex(true)
        // ->setFormTypeOptions(["by_reference" => false, "entry_type" => "App\Form\FestivitaType", "required" => true, "entry_options" => ["label" => false]]);
-        $festeArray = ArrayField::new('dateFestivita', 'Giorno della Festa')->setHelp('Indicare la data nella forma ggmm es. 0101 per il capodanno 2021, se desiderato aggiungere il nome della festa.');
+        $i_anno = TextField::new('anno', 'Anno festività annuali'); 
+        $festeArray = ArrayField::new('dateFestivita', 'Giorno della Festa')->addCssClass('list-group-item-primary')->setHelp('Indicare la data nella forma ggmm es. 0101 per il capodanno 2021, se desiderato aggiungere il nome della festa.');
+        $i_festeArray = ArrayField::new('dateFestivita', 'Giorno della Festa');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_id = IntegerField::new('id', 'ID');
+        $i_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $anno, $festeArray,  $createdAt];
+            return [$i_id, $i_anno, $i_festeArray,  $i_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $anno, $festeArray,  $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

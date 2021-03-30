@@ -54,13 +54,16 @@ class AreeGeograficheCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('AREE/ZONE GEOGRAFICHE')->setIcon('fas fa-map-marked-alt');
-        $area = TextField::new('area', 'Nome Area/zona geografica');  //->addCssClass('row col-12 col-lg-6')
+        $i_area = TextField::new('area', 'Nome Area/zona geografica');
+        $area = TextField::new('area', 'Nome Area/zona geografica')->addCssClass('list-group-item-success');  //->addCssClass('row col-12 col-lg-6')
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
+        $i_id = IntegerField::new('id', 'ID');
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $area,  $createdAt];
+            return [$i_id, $i_area,  $i_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $area, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

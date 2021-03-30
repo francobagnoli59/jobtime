@@ -55,14 +55,18 @@ class MansioniCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('MANSIONI DEL PERSONALE')->setIcon('fas fa-id-card-alt');
-        $mansione = TextField::new('mansioneName', 'Mansione'); 
-        $isValidDA = BooleanField::new('isValidDA', 'Valida per diversamente abili')->setHelp('<mark>Selezionare se la mansione è valida per il calcolo del rapporto percentuale forza lavoro diversamente abile</mark>');  //->addCssClass('row col-12 col-lg-6')
+        $i_mansione = TextField::new('mansioneName', 'Mansione');
+        $mansione = TextField::new('mansioneName', 'Mansione')->addCssClass('list-group-item-warning'); 
+        $isValidDA = BooleanField::new('isValidDA', 'Valida per diversamente abili')->addCssClass('list-group-item-warning')->setHelp('<mark>Selezionare se la mansione è valida per il calcolo del rapporto percentuale forza lavoro diversamente abile</mark>');  //->addCssClass('row col-12 col-lg-6')
+        $i_isValidDA = BooleanField::new('isValidDA', 'Valida per diversamente abili');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_id = IntegerField::new('id', 'ID');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $mansione, $isValidDA, $createdAt];
+            return [$i_id, $i_mansione, $i_isValidDA, $i_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $mansione, $isValidDA, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

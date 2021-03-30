@@ -54,13 +54,16 @@ class CategorieServiziCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('CATEGORIE SERVIZI')->setIcon('fas fa-dolly');
-        $categoria = TextField::new('categoria', 'Nome Categoria Servizi');  //->addCssClass('row col-12 col-lg-6')
+        $i_categoria = TextField::new('categoria', 'Nome Categoria Servizi');
+        $categoria = TextField::new('categoria', 'Nome Categoria Servizi')->addCssClass('list-group-item-warning');  //->addCssClass('row col-12 col-lg-6')
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_id = IntegerField::new('id', 'ID');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->addCssClass('list-group-item-dark')->setFormTypeOptions(['disabled' => 'true']);
+        $i_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $categoria,  $createdAt];
+            return [$i_id, $i_categoria,  $i_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $categoria, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

@@ -54,14 +54,18 @@ class RegoleFatturazioneCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('REGOLE DI FATTURAZIONE')->setIcon('fas fa-wave-square');
-        $billingCadence = TextField::new('billingCadence', 'Nome regola di fatturazione');  //->addCssClass('row col-12 col-lg-6')
-        $daysRange = IntegerField::new('daysRange', 'Giorni del ciclo')->setHelp('Indicare 0 per fatturazione quando richiesta, 30 per mensile, 60 bimestrale, etc. etc.');
+        $i_billingCadence = TextField::new('billingCadence', 'Nome regola di fatturazione');
+        $billingCadence = TextField::new('billingCadence', 'Nome regola di fatturazione')->addCssClass('list-group-item-warning');  //->addCssClass('row col-12 col-lg-6')
+        $daysRange = IntegerField::new('daysRange', 'Giorni del ciclo')->addCssClass('list-group-item-warning')->setHelp('Indicare 0 per fatturazione quando richiesta, 30 per mensile, 60 bimestrale, etc. etc.');
+        $i_daysRange = IntegerField::new('daysRange', 'Giorni del ciclo');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_id = IntegerField::new('id', 'ID');
+        $i_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $billingCadence, $daysRange, $createdAt];
+            return [$i_id, $i_billingCadence, $i_daysRange, $i_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $billingCadence, $daysRange, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

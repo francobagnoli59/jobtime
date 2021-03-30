@@ -71,13 +71,17 @@ class ProvinceCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('SIGLA E NOME PROVINCIA')->setIcon('fas fa-map-marker-alt');
-        $code = TextField::new('code', 'Sigla targa');
-        $name = TextField::new('name', 'Nome provincia');
+        $i_code = TextField::new('code', 'Sigla targa');
+        $code = TextField::new('code', 'Sigla targa')->addCssClass('list-group-item-success');
+        $i_name = TextField::new('name', 'Nome provincia');
+        $name = TextField::new('name', 'Nome provincia')->addCssClass('list-group-item-success');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
+        $i_id = IntegerField::new('id', 'ID');
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $code, $name, $createdAt];
+            return [$i_id, $i_code, $i_name, $i_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $code, $name, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

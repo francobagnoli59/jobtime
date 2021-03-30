@@ -105,28 +105,34 @@ class AziendeCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('INFORMAZIONI DI BASE')->setIcon('fas fa-industry');
-        $companyName = TextField::new('companyName', 'Nome Azienda');
-        $nickName = TextField::new('nickName', 'Nick Name');
-        $partitaIva = TextField::new('partitaIva', 'Partita Iva')->setRequired(true);
-        $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale');
-        $address = TextField::new('address', 'Indirizzo');
-        $city = TextField::new('city', 'Città');
-        $zipCode = TextField::new('zipCode', 'Codice Avviamento Postale');
+        $companyName = TextField::new('companyName', 'Nome Azienda')->addCssClass('list-group-item-primary');
+        $nickName = TextField::new('nickName', 'Nick Name')->addCssClass('list-group-item-primary');
+        $i_nickName = TextField::new('nickName', 'Nick Name');
+        $partitaIva = TextField::new('partitaIva', 'Partita Iva')->setRequired(true)->addCssClass('list-group-item-warning');
+        $i_partitaIva = TextField::new('partitaIva', 'Partita Iva');
+        $fiscalCode = TextField::new('fiscalCode', 'Codice Fiscale')->addCssClass('list-group-item-warning');
+        $address = TextField::new('address', 'Indirizzo')->addCssClass('list-group-item-success');
+        $i_address = TextField::new('address', 'Indirizzo');
+        $city = TextField::new('city', 'Città')->addCssClass('list-group-item-success');
+        $i_city = TextField::new('city', 'Città');
+        $zipCode = TextField::new('zipCode', 'Codice Avviamento Postale')->addCssClass('list-group-item-success');
+        $i_provincia = AssociationField::new('provincia', 'Provincia');
         $provincia = AssociationField::new('provincia', 'Provincia')
             ->setFormTypeOptions([
             'query_builder' => function (ProvinceRepository $pr) {
                 return $pr->createQueryBuilder('p')
                     ->orderBy('p.name', 'ASC');
             },
-             ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
-        $codeTransferPaghe = TextField::new('codeTransferPaghe', 'Codice per RPS')->setRequired(true)->setHelp('Inserire il codice idendificativo azienda per l\'applicativo paghe Ranocchi System (Studio Filippeschi)');
-        $rangeAnalisi = IntegerField::new('rangeAnalisi', 'Mesi analisi dashboard')->setHelp('Inserire il numero di mesi che si desidera controllare per l\'andamento dell\'incidenza diversamente abili e tipi di contratto (determinato/indeterminato). Indicare un numero negativo per andare indietro nel tempo, es -12 equivale ad un anno precedente.');
+             ])->setRequired(true)->setCustomOptions(array('widget' => 'native'))->addCssClass('list-group-item-success');
+        $codeTransferPaghe = TextField::new('codeTransferPaghe', 'Codice per RPS')->addCssClass('list-group-item-warning')->setRequired(true)->setHelp('Inserire il codice idendificativo azienda per l\'applicativo paghe Ranocchi System (Studio Filippeschi)');
+        $rangeAnalisi = IntegerField::new('rangeAnalisi', 'Mesi analisi dashboard')->addCssClass('list-group-item-warning')->setHelp('Inserire il numero di mesi che si desidera controllare per l\'andamento dell\'incidenza diversamente abili e tipi di contratto (determinato/indeterminato). Indicare un numero negativo per andare indietro nel tempo, es -12 equivale ad un anno precedente.');
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
-        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
-        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
-        
+        $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true'])->addCssClass('list-group-item-dark');
+        $i_createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento');
+
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$nickName, $partitaIva, $address, $city, $provincia, $createdAt];
+            return [$i_nickName, $i_partitaIva, $i_address, $i_city, $i_provincia, $i_createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1, $companyName, $nickName, $address, $zipCode, $city, $provincia, $partitaIva, $fiscalCode, $codeTransferPaghe, $rangeAnalisi, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
