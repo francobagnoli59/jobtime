@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}Cantieri Guestbook - {{ cantieri }}{% endblock %}
+{% block body %}
+    <h2>{{ cantieri }} Conference</h2>
+    {% if commenti|length > 0 %}
+        <div>Ci sono {{ commenti|length}} commenti. </div>
+        {% for commento in commenti %}
+{% if commento.photoFilename %}
+    <img src="{{ asset('uploads/photos/' ~ commento.photoFilename) }}" />
+{% endif %}
+<h4>{{ commento.author }}</h4>
+<small>
+    {{ commento.createdAt|format_datetime('medium', 'short') }}
+</small>
+<p>{{ commento.textComment }}</p>
+{% endfor %}
+{% if previous >= 0 %}
+    <a href="{{ path('cantieri', { id: cantieri.id, offset: previous}) }}">Precedente</a>
+{% endif %}
+    {% if next < commenti|length %}
+    <a href="{{ path('cantieri', { id: cantieri.id, offset: next}) }}">Successiva</a>
+    {% endif %}
+    {% else %}
+        <div>Non ci sono suggerimenti per questo Cantiere.</div>
+    {% endif %}
+{% endblock %}

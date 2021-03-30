@@ -3,8 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\CommentiPubblici;
+use App\Entity\Cantieri;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
  * @method CommentiPubblici|null find($id, $lockMode = null, $lockVersion = null)
@@ -14,9 +16,27 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CommentiPubbliciRepository extends ServiceEntityRepository
 {
+    public const PAGINATOR_PER_PAGE = 2;
+
     public function __construct(ManagerRegistry $registry)
     {
+    
         parent::__construct($registry, CommentiPubblici::class);
+    }
+
+    public function getCommentPaginator(Cantieri $cantieri, int $offset): Paginator
+    {
+            $query = $this->createQueryBuilder('c')
+           ->andWhere('c.cantieri = :cantieri')
+            ->setParameter('cantieri', $cantieri)
+            ->orderBy('c.createdAt', 'DESC')
+            ->setMaxResults(self::PAGINATOR_PER_PAGE)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ;
+            
+            return new Paginator($query); 
+        
     }
 
     // /**

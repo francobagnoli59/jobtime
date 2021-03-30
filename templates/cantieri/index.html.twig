@@ -1,6 +1,22 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello CantieriController!{% endblock %}
+{% block title %}I nostri Cantieri e i vostri preziosi consigli{% endblock %}
+
+{% block body %}
+    <h2>Dacci un tuo suggerimento o una tua impressione!</h2>
+    {% for cantiere in cantieri %}
+        <h4>{{ cantiere }}</h4>
+        <p>
+        <a href="{{ path('cantieri', { id: cantiere.id }) }}">View</a>
+        </p>
+    {% endfor %}
+{% endblock %}
+
+
+
+{# {% extends 'base.html.twig' %}
+
+{% block title %}I nostri Cantieri e i vostri preziosi consigli{% endblock %}
 
 {% block body %}
 <style>
@@ -17,4 +33,4 @@
         <li>Your template at <code><a href="{{ 'C:/Users/Administrator/Desktop/jobtime/templates/cantieri/index.html.twig'|file_link(0) }}">templates/cantieri/index.html.twig</a></code></li>
     </ul>
 </div>
-{% endblock %}
+{% endblock %} #}
