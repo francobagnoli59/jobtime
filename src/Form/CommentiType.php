@@ -16,12 +16,14 @@ class CommentiType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('author', null, ['label' => 'Your name', ])
-            ->add('textComment')
-            ->add('email', EmailType::class)
-            ->add('photoFilename', FileType::class, [ 'required' => false, 'mapped' => false,
+            ->add('author', null, ['label' => 'Il tuo nome', ])
+            ->add('textComment', null, ['label' => 'Cosa ci dici?', ])
+            ->add('email', EmailType::class, ['label' => 'La tua e-mail', ])
+            ->add('photoFilename')
+            ->add('photo', FileType::class, ['label' => 'Se vuoi, inviaci una foto', 'required' => false, 'mapped' => false,
                     'constraints' => [ new Image(['maxSize' => '1024k'])  ], ])
-      //      ->add('submit', SubmitType::class)
+           // ->add('cantieri')
+            ->add('submit', SubmitType::class)
           ;
     }
 

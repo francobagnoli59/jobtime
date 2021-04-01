@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CommentiPubbliciRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
 * @ORM\Entity(repositoryClass=CommentiPubbliciRepository::class)
@@ -20,16 +21,21 @@ class CommentiPubblici
 
     /**
      * @ORM\Column(type="string", length=40)
+     * @Assert\NotBlank
+     * @Assert\Length( max=40 ) 
      */
     private $author;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Assert\NotBlank
+     * @Assert\Email
      */
     private $email;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank
      */
     private $textComment;
 

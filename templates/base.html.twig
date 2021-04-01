@@ -2,11 +2,21 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}Benvenuti!{% endblock %}</title>
         {% block stylesheets %}{% endblock %}
+        {% block javascripts %}{% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
+        <header>
+            <h1><a href="{{ path('homepage') }}">I nostri cantieri e le vostre preziose valutazioni </a></h1>
+                <ul>
+                {% for cantieri in listcantieri %}
+                    <li><a href="{{ path('cantieri', { nameJob: cantieri.nameJob }) }}">{{ cantieri }}</a></li>
+                {% endfor %}
+                </ul>
+                <hr />
+            </header>
+            {% block body %}{% endblock %}
+      
     </body>
 </html>

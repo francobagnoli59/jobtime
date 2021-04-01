@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
-{% block title %}Cantieri Guestbook - {{ cantieri }}{% endblock %}
+{% block title %}Cantiere - {{ cantieri }}{% endblock %}
 {% block body %}
-    <h2>{{ cantieri }} Conference</h2>
+    <h2>{{ cantieri }} </h2>
     {% if commenti|length > 0 %}
         <div>Ci sono {{ commenti|length}} commenti. </div>
         {% for commento in commenti %}
@@ -15,12 +15,14 @@
 <p>{{ commento.textComment }}</p>
 {% endfor %}
 {% if previous >= 0 %}
-    <a href="{{ path('cantieri', { id: cantieri.id, offset: previous}) }}">Precedente</a>
+    <a href="{{ path('cantieri', { jobName: cantieri.jobName, offset: previous}) }}">Precedente</a>
 {% endif %}
     {% if next < commenti|length %}
-    <a href="{{ path('cantieri', { id: cantieri.id, offset: next}) }}">Successiva</a>
+    <a href="{{ path('cantieri', { jobName: cantieri.jobName, offset: next}) }}">Successiva</a>
     {% endif %}
     {% else %}
         <div>Non ci sono suggerimenti per questo Cantiere.</div>
     {% endif %}
+    <h2>Aggiungi un tuo commento </h2>
+    {{ form(commento_form) }}
 {% endblock %}

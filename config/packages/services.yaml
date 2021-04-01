@@ -5,8 +5,6 @@ parameters:
     app.path.prodotti_images: /uploads/images
          # ...
 
-services:
-    # _defaults:
-    #   bind:
-    #       $photoDir: "%kernel.project_dir%/public/uploads/photos"  
+
+        
     

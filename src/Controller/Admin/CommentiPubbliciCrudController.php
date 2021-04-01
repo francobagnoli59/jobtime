@@ -44,14 +44,14 @@ class CommentiPubbliciCrudController extends AbstractCrudController
         $author = TextField::new('author');
         $email = EmailField::new('email');
         $textComment = TextareaField::new('textComment');
-        // $photoFilename = ImageField::new('photoFilename');
+        $photoFilename = ImageField::new('photoFilename')->setBasePath('/uploads/photos')->setLabel('Foto');
         $state = TextField::new('state');
         $createdAt = DateTimeField::new('createdAt');
         $cantieri = AssociationField::new('cantieri');
         $id = IntegerField::new('id', 'ID');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$author, $email, $createdAt, $textComment, $state];
+            return [$author, $email, $createdAt, $textComment, $photoFilename, $state];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $author, $email, $textComment,  $state, $createdAt, $cantieri];
         } elseif (Crud::PAGE_NEW === $pageName) {
