@@ -7,11 +7,14 @@ use App\Entity\CommentiPubblici;
 use App\Repository\CommentiPubbliciRepository;
 use App\Repository\CantieriRepository;
 use App\Form\CommentiType;
+use App\Message\CommentiMessage;
+// use App\SpamChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environment;
 
@@ -19,11 +22,13 @@ class CantieriController extends AbstractController
 {   
     private $twig;
     private $entityManager;
+    private $bus;
 
-    public function __construct(Environment $twig, EntityManagerInterface $entityManager)
+    public function __construct(Environment $twig, EntityManagerInterface $entityManager, MessageBusInterface $bus)
     {
     $this->twig = $twig; 
     $this->entityManager = $entityManager;
+    $this->bus = $bus;
     }
 
 
@@ -71,6 +76,18 @@ class CantieriController extends AbstractController
             }
             $this->entityManager->persist($commento);
             $this->entityManager->flush();
+
+            $context = [
+                'user_ip' => $request->getClientIp(),
+                'user_agent' => $request->headers->get('user_agent'),
+                'referrer' => $request->headers->get('referrer'),
+                'permalink' => $request->getUri(),
+            ];
+/*             if (2 === $spamChecker->getSpamScore($commento, $context)) {
+                throw new \RuntimeException('Spam palese, va via!');
+            }
+            $this->entityManager->flush(); */
+            $this->bus->dispatch(new CommentiMessage($commento->getId(), $context));
             return $this->redirectToRoute('cantieri', ['nameJob' => $cantieri->getNameJob()]);
         }
         

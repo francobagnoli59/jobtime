@@ -15,10 +15,10 @@
 <p>{{ commento.textComment }}</p>
 {% endfor %}
 {% if previous >= 0 %}
-    <a href="{{ path('cantieri', { jobName: cantieri.jobName, offset: previous}) }}">Precedente</a>
+    <a href="{{ path('cantieri', { nameJob: cantieri.nameJob, offset: previous}) }}">Precedente</a>
 {% endif %}
     {% if next < commenti|length %}
-    <a href="{{ path('cantieri', { jobName: cantieri.jobName, offset: next}) }}">Successiva</a>
+    <a href="{{ path('cantieri', { nameJob: cantieri.nameJob, offset: next}) }}">Successiva</a>
     {% endif %}
     {% else %}
         <div>Non ci sono suggerimenti per questo Cantiere.</div>

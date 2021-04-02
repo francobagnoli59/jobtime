@@ -19,7 +19,7 @@ class CommentiType extends AbstractType
             ->add('author', null, ['label' => 'Il tuo nome', ])
             ->add('textComment', null, ['label' => 'Cosa ci dici?', ])
             ->add('email', EmailType::class, ['label' => 'La tua e-mail', ])
-            ->add('photoFilename')
+            // ->add('photoFilename')
             ->add('photo', FileType::class, ['label' => 'Se vuoi, inviaci una foto', 'required' => false, 'mapped' => false,
                     'constraints' => [ new Image(['maxSize' => '1024k'])  ], ])
            // ->add('cantieri')
