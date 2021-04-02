@@ -29,7 +29,7 @@ class SpamChecker
             'body' => array_merge($context, [
                 // 'blog' => 'https://127.0.0.1:8000',
                 // 'blog' => 'https://akismet-guaranteed-spam@example.com',
-                'blog' => 'https://vj6pjrmqru-w46y7xz5sxjog.eu.s5y.io/',
+                'blog' => 'https://vj6pjrmqru-w46y7xz5sxjog.eu.s5y.io',
                 'comment_type' => 'comment',
                 'comment_author' => $comment->getAuthor(),
                 'comment_author_email' => $comment->getEmail(),
