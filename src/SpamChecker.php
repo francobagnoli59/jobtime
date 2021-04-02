@@ -7,7 +7,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SpamChecker
 {
-    private $client;
+    /* private $client;
     private $endpoint;
 
     public function __construct(HttpClientInterface $client, string $akismetKey)
@@ -16,7 +16,7 @@ class SpamChecker
         $this->endpoint = sprintf('https://%s.rest.akismet.com/1.1/comment-check', $akismetKey);
         // $this->endpoint = sprintf('https://%s.rest.akismet.com/1.1/verify-key', $akismetKey); letto cme esempio
         // https://www.whatsmyip.org/lib/fuspam-akismet-php/
-    }
+    } */
 
     /**
      * @return int Spam score: 0: not spam, 1: maybe spam, 2: blatant spam
