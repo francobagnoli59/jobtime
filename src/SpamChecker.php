@@ -25,7 +25,17 @@ class SpamChecker
      */
     public function getSpamScore(CommentiPubblici $comment, array $context): int
     {
-        $response = $this->client->request('POST', $this->endpoint, [
+        return 0 ;
+
+        // funziona solo su local , su symfonycloud i messaggi rimangono in stato submitted
+        // ho usato il portachiavi di symfony per settare la AKISMET_KEY
+        // Messenger che gestisce il cambio di stato mi manda un errore nel log:
+        // > symfony tunnel:open     > symfony logs --worker=messages all
+        //  Error: "keypair size should be SODIUM_CRYPTO_BOX_KEYPAIRBYTES bytes"
+        
+        // quindi ho deviso di elimanare la chiamata
+
+      /*   $response = $this->client->request('POST', $this->endpoint, [
             'body' => array_merge($context, [
                 // 'blog' => 'https://127.0.0.1:8000',
                 // 'blog' => 'https://akismet-guaranteed-spam@example.com',
@@ -51,6 +61,6 @@ class SpamChecker
             throw new \RuntimeException(sprintf('Non è stato possibile controllare lo spam: %s (%s).', $content, $headers['x-akismet-debug-help'][0]));
         }
 
-        return 'true' === $content ? 1 : 0;
+        return 'true' === $content ? 1 : 0; */
     }
 }
