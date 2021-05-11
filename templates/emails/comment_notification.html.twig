@@ -1,0 +1,14 @@
+{% extends '@email/default/notification/body.html.twig' %}
+{% block content %}
+    Author: {{ comment.author }}<br />
+    Email: {{ comment.email }}<br />
+    State: {{ comment.state }}<br />
+    <p>
+        {{ comment.textComment }}
+</p>
+{% endblock %}
+{% block action %}
+    <spacer size="16"></spacer>
+    <button href="{{ url('review_comment', { id: comment.id }) }}">Accetta</button>
+    <button href="{{ url('review_comment', { id: comment.id, reject: true }) }}">Rifiuta</button>
+{% endblock %}
