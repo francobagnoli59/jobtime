@@ -1,0 +1,5 @@
+{% for cantiere in cantieri %}
+    <a class="nav-conference" href="{{ path('cantieri', { nameJob: cantiere.nameJob }) }}">
+        {{ cantiere }}
+    </a>
+{% endfor %}

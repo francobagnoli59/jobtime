@@ -54,6 +54,19 @@ class CantieriController extends AbstractController
     }
 
 
+     /**
+     * @Route("/cantieri_header", name="cantieri_header")
+     */
+    public function cantieriHeader(CantieriRepository $cantieriRepository): Response
+    {
+        return new Response($this->twig->render('cantieri/header.html.twig', [
+        'cantieri' => $cantieriRepository->findBy(['isPublic' => true], ['dateStartJob' => 'DESC']),
+            //  'conferences' => $cantieriRepository->findAll(),  ESEMPIO GUIDA FAST TRACK 5.2
+
+    ]));
+
+    }
+
     /**
      * @Route("/cantieri/{nameJob}", name="cantieri")
      */

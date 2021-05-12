@@ -1,28 +1,64 @@
 {% extends 'base.html.twig' %}
+
 {% block title %}Cantiere - {{ cantieri }}{% endblock %}
+
 {% block body %}
-    <h2>{{ cantieri }} </h2>
-    {% if commenti|length > 0 %}
-        <div>Ci sono {{ commenti|length}} commenti. </div>
-        {% for commento in commenti %}
-{% if commento.photoFilename %}
-    <img src="{{ asset('uploads/photos/' ~ commento.photoFilename) }}" />
-{% endif %}
-<h4>{{ commento.author }}</h4>
-<small>
-    {{ commento.createdAt|format_datetime('medium', 'short') }}
-</small>
-<p>{{ commento.textComment }}</p>
-{% endfor %}
-{% if previous >= 0 %}
-    <a href="{{ path('cantieri', { nameJob: cantieri.nameJob, offset: previous}) }}">Precedente</a>
-{% endif %}
-    {% if next < commenti|length %}
-    <a href="{{ path('cantieri', { nameJob: cantieri.nameJob, offset: next}) }}">Successiva</a>
-    {% endif %}
-    {% else %}
-        <div>Non ci sono suggerimenti per questo Cantiere.</div>
-    {% endif %}
-    <h2>Aggiungi un tuo commento </h2>
-    {{ form(commento_form) }}
+    <h2 class="mb-5">
+        {{ cantieri }} 
+    </h2>
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            {% if commenti|length > 0 %}
+                {% for commento in commenti %}
+                    <div class="media shadow border rounded-lg p-3 mb-4">
+                        <div class="comment-img mr-3">
+                            {% if commento.photofilename %}
+                                <a href="{{ asset('uploads/photos/' ~ commento.photofilename) }}" target="_blank">
+                                    <img src="{{ asset('uploads/photos/' ~ commento.photofilename) }}" />
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <div class="media-body">
+                            <h4 class="font-weight-light mb-0">
+                                {{ commento.author }}
+                            </h4>
+
+                            <div class="mb-2">
+                                <small class="text-muted text-uppercase">
+                                    {{ commento.createdAt|format_datetime('medium', 'short') }}
+                                </small>
+                            </div>
+
+                            <div class="comment-text">
+                                {{ commento.textComment|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <div>Ci sono {{ commenti|length}} commenti. </div>
+                {% if previous >= 0 %}
+                    <a href="{{ path('cantieri', { nameJob: cantieri.nameJob, offset: previous}) }}">Precedenti</a>
+                {% endif %}
+                {% if next < commenti|length %}
+                    <a href="{{ path('cantieri', { nameJob: cantieri.nameJob, offset: next}) }}">Successivi</a>
+                {% endif %}
+            {% else %}
+                <div class="text-center">
+                   Non ci sono feedback per questo Cantiere.
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="bg-light shadow border rounded-lg p-4">
+                <h3 class="font-weight-light">
+                   Aggiungi un tuo feedback
+                </h3>
+
+                {{ form(commento_form) }}
+            </div>
+        </div>
+    </div>
 {% endblock %}
+
