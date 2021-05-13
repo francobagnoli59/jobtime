@@ -9,9 +9,7 @@
     </p>
     {% if comment.photoFilename %}
     <p>
-        <a href="{{ 'uploads/photos/' ~ comment.photoFilename }}" target="_blank">
-            <img src="{{ 'uploads/photos/' ~ commento.photoFilename }}" />
-        </a>
+    <img src="{{ 'https://vj6pjrmqru-w46y7xz5sxjog.eu.s5y.io/'  ~ 'uploads/photos/' ~ comment.photoFilename   }}" class="thumbnail">
     </p>
     {% endif %}
 {% endblock %}
