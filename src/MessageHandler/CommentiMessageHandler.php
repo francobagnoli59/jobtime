@@ -67,10 +67,9 @@ class CommentiMessageHandler implements MessageHandlerInterface
             ->subject('Pubblicato un nuovo commento per il progetto: '.$comment->getCantieri())
             ->htmlTemplate('emails/comment_notification.html.twig')
             ->from($this->adminEmail)
-            ->to($this->adminEmail)->cc($this->adminEmail)  
+            ->to($this->adminEmail)
             ->context(['comment' => $comment ])
-            ->attachFromPath('uploads/photos/'.$comment->getPhotoFilename()) 
-            ); /* ->cc('info@masotech.it')->importance('medium')  */
+            ); /* ->cc('info@masotech.it')->importance('medium')  ->attachFromPath('uploads/photos/'.$comment->getPhotoFilename())  */
             } elseif ($this->logger) {
             $this->logger->debug('Messaggio di commento pubblico non accettato', ['comment' => $comment->getId(), 'state' => $comment->getState()]);
         }
