@@ -1,11 +1,19 @@
 {% extends '@email/default/notification/body.html.twig' %}
 {% block content %}
-    Author: {{ comment.author }}<br />
-    Email: {{ comment.email }}<br />
-    State: {{ comment.state }}<br />
+    Autore: {{ comment.author }}<br />
+    Email: {{ comment.email }}<br /><br />
+    Stato logico: {{ comment.state }}     (Legenda: ham= da convalidare)<br />
+    <br />
     <p>
         {{ comment.textComment }}
-</p>
+    </p>
+    {% if comment.photoFilename %}
+    <p>
+        <a href="{{ 'uploads/photos/' ~ comment.photoFilename }}" target="_blank">
+            <img src="{{ 'uploads/photos/' ~ commento.photoFilename }}" />
+        </a>
+    </p>
+    {% endif %}
 {% endblock %}
 {% block action %}
     <spacer size="16"></spacer>

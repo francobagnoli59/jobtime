@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}I nostri Cantieri e le vostre preziose considerazioni{% endblock %}
+{% block title %}I nostri Progetti{% endblock %}
 
 {% block body %}
     <h2 class="mb-5">
-        Scegli il tuo Cantiere e dacci una tuo Feedback!
+        Scegli il tuo Progetto e dacci un tuo Feedback!
     </h2>
 
     {% for row in cantieri|batch(4) %}
@@ -20,8 +20,8 @@
                             </div>
 
                             <a href="{{ path('cantieri', { nameJob: cantiere.nameJob }) }}"
-                               class="btn btn-sm btn-blue stretched-link">
-                                Vedi
+                               class="btn btn-sm btn-blue stretched-link text-white">  
+                                Vedi feedback
                             </a>
                         </div>
                     </div>

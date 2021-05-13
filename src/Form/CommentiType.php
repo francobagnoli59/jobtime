@@ -17,13 +17,13 @@ class CommentiType extends AbstractType
     {
         $builder
             ->add('author', null, ['label' => 'Il tuo nome', ])
-            ->add('textComment', null, ['label' => 'Cosa ci dici?', ])
-            ->add('email', EmailType::class, ['label' => 'La tua e-mail', ])
+            ->add('textComment', null, ['label' => 'un tuo commento', ])
+            ->add('email', EmailType::class, ['label' => 'la tua e-mail', ])
             // ->add('photoFilename')
-            ->add('photo', FileType::class, ['label' => 'Se vuoi, inviaci una foto', 'required' => false, 'mapped' => false,
+            ->add('photo', FileType::class, ['label' => 'se vuoi, inviaci una foto', 'required' => false, 'mapped' => false,
                     'constraints' => [ new Image(['maxSize' => '1024k'])  ], ])
            // ->add('cantieri')
-            ->add('submit', SubmitType::class)
+            ->add('submit', SubmitType::class, ['label' => 'Conferma', 'attr' => ['class' => "mt-2 text-white btn-blue" ], ] )
           ;
     }
 

@@ -198,7 +198,7 @@ class DashboardController extends AbstractDashboardController
        
         // yield MenuItem::section();
         yield MenuItem::subMenu('Manutenzioni', 'fas fa-tools')->setSubItems([
-             MenuItem::linkToCrud('Feedback e segnalazioni', 'fas fa-comments', CommentiPubblici::class),
+             MenuItem::linkToCrud('Feedback', 'fas fa-comments', CommentiPubblici::class),
              MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class),
              MenuItem::linkToCrud('Consolidati personale', 'fas fa-calendar-alt', ConsolidatiPersonale::class),
              MenuItem::linkToCrud('Documenti Cantieri', 'fas fa-file-alt', DocumentiCantieri::class),

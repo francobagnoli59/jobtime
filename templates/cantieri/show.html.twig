@@ -12,6 +12,9 @@
             {% if commenti|length > 0 %}
                 {% for commento in commenti %}
                     <div class="media shadow border rounded-lg p-3 mb-4">
+                    <table>
+                    <tr>
+                        <td>
                         <div class="comment-img mr-3">
                             {% if commento.photofilename %}
                                 <a href="{{ asset('uploads/photos/' ~ commento.photofilename) }}" target="_blank">
@@ -19,7 +22,8 @@
                                 </a>
                             {% endif %}
                         </div>
-
+                        </td>
+                        <td>
                         <div class="media-body">
                             <h4 class="font-weight-light mb-0">
                                 {{ commento.author }}
@@ -35,6 +39,9 @@
                                 {{ commento.textComment|nl2br }}
                             </div>
                         </div>
+                        </td>
+                    </tr>
+                    </table>
                     </div>
                 {% endfor %}
                 <div>Ci sono {{ commenti|length}} commenti. </div>
