@@ -5,3 +5,7 @@
 dashboard:
     path: /admin
     controller: App\Controller\Admin\DashboardController::index
+
+blog_feedback:
+    path: /uploads/photos/
+    controller: App\Controller\CantieriController::index 
