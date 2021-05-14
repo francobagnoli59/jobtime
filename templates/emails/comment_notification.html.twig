@@ -7,11 +7,12 @@
     <p>
         {{ comment.textComment }}
     </p>
-    {% set pathfoto = 'https://vj6pjrmqru-w46y7xz5sxjog.eu.s5y.io/uploads/photos/05ead35ace50.jpg' %}
+    {% if comment.photoFilename %}
+    {% set pathfoto = 'https://vj6pjrmqru-w46y7xz5sxjog.eu.s5y.io/uploads/photos/' ~ comment.photoFilename %}
     <p>
-    <img src="{{ pathfoto }}" alt="Immagine Foto!" class="thumbnail" />
+    <img src="{{ pathfoto }}" alt="Vedi Foto!" class="thumbnail" />
     </p>
-  
+    {% endif %}
 {% endblock %}
 {% block action %}
     <spacer size="16"></spacer>
