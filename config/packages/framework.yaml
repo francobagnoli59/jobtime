@@ -16,3 +16,10 @@ framework:
     #fragments: true
     php_errors:
         log: true
+    
+    assets:
+        packages:
+            feedback_package:
+                # Questo package è usato per visualizzare nelle e-mail le immagini postate
+                feedback_path: "%kernel.project_dir%/public/uploads/photos/"
+         
