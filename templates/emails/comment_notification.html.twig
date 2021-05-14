@@ -8,7 +8,7 @@
         {{ comment.textComment }}
     </p>
     {% if comment.photoFilename %}
-    {% set pathfoto =  asset('uploads/photos/', feedback_package)  %}
+    {% set pathfoto =  url(asset('uploads/photos/'))  %}
     <p>
     <img src="{{ pathfoto  ~ comment.photoFilename }}" alt="Vedi Foto!" class="thumbnail" />
     </p>
