@@ -17,9 +17,4 @@ framework:
     php_errors:
         log: true
     
-    assets:
-        packages:
-            feedback_package:
-                # Questo package è usato per visualizzare nelle e-mail le immagini postate
-                base_path: "%kernel.project_dir%"
-         
+            
