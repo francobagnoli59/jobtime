@@ -1,6 +1,8 @@
 <?php
 
 namespace App\MessageHandler;
+
+use App\ImageOptimizer;
 use App\Message\CommentiMessage;
 use App\Repository\CommentiPubbliciRepository;
 use App\SpamChecker;
@@ -11,6 +13,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class CommentiMessageHandler implements MessageHandlerInterface
 {
@@ -20,11 +23,14 @@ class CommentiMessageHandler implements MessageHandlerInterface
     private $bus;
     private $workflow;
     private $mailer;
+    private $imageOptimizer;
     private $adminEmail;
+    private $photoDirFeedback;
     private $logger;
 
     public function __construct(EntityManagerInterface $entityManager, SpamChecker $spamChecker, CommentiPubbliciRepository $commentRepository,
-    MessageBusInterface $bus,  WorkflowInterface $commentStateMachine, MailerInterface $mailer, string $adminEmail, LoggerInterface $logger = null)
+    MessageBusInterface $bus,  WorkflowInterface $commentStateMachine, MailerInterface $mailer, ImageOptimizer $imageOptimizer, 
+     string $adminEmail, string $photoDirFeedback, LoggerInterface $logger = null)
     {
         $this->entityManager = $entityManager;
         $this->spamChecker = $spamChecker;
@@ -32,7 +38,9 @@ class CommentiMessageHandler implements MessageHandlerInterface
         $this->bus = $bus;
         $this->workflow = $commentStateMachine;
         $this->mailer = $mailer;
+        $this->imageOptimizer = $imageOptimizer;
         $this->adminEmail = $adminEmail;
+        $this->photoDirFeedback = $photoDirFeedback;
         $this->logger = $logger;
 }
     public function __invoke(CommentiMessage $message)
@@ -69,7 +77,18 @@ class CommentiMessageHandler implements MessageHandlerInterface
             ->from($this->adminEmail)
             ->to($this->adminEmail)
             ->context(['comment' => $comment ])
-            ); /* ->cc('info@masotech.it')->importance('medium')  ->attachFromPath('uploads/photos/'.$comment->getPhotoFilename())  */
+            ); 
+            } elseif ($this->workflow->can($comment, 'optimize')) {
+                if ($comment->getPhotoFilename()) {
+                    try {
+                        $this->imageOptimizer->resize($this->photoDirFeedback.'/'.$comment->getPhotoFilename());
+                    } catch (FileException $e) {
+                        // messaggio errore
+                        $this->addFlash('danger', 'Non è stato possibile RIDIMENZIONARE la foto, per cortesia riprova.');
+                    }
+                 }
+                $this->workflow->apply($comment, 'optimize');
+                $this->entityManager->flush();
             } elseif ($this->logger) {
             $this->logger->debug('Messaggio di commento pubblico non accettato', ['comment' => $comment->getId(), 'state' => $comment->getState()]);
         }

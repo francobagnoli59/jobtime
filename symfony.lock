@@ -114,6 +114,9 @@
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.1"
     },
+    "imagine/imagine": {
+        "version": "1.2.4"
+    },
     "jms/metadata": {
         "version": "2.4.0"
     },
