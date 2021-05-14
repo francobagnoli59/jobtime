@@ -8,9 +8,9 @@
         {{ comment.textComment }}
     </p>
     {% if comment.photoFilename %}
-    {% set pathfoto = 'https://vj6pjrmqru-w46y7xz5sxjog.eu.s5y.io/'  %}
+    {% set pathfoto =  {{ asset('uploads/photos/') }}  %}
     <p>
-    <img src="{{ pathfoto ~ 'uploads/photos/' ~ comment.photoFilename }}" alt="Vedi Foto!" class="thumbnail" />
+    <img src="{{ pathfoto  ~ comment.photoFilename }}" alt="Vedi Foto!" class="thumbnail" />
     </p>
     {% endif %}
 {% endblock %}
