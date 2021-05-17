@@ -21,7 +21,7 @@ class CommentiType extends AbstractType
             ->add('email', EmailType::class, ['label' => 'la tua e-mail', ])
             // ->add('photoFilename')
             ->add('photo', FileType::class, ['label' => 'se vuoi, inviaci una foto', 'required' => false, 'mapped' => false,
-                    'constraints' => [ new Image(['maxSize' => '1024k'])  ], ])
+                    'constraints' => [ new Image(['maxSize' => '2048k'])  ], ])
            // ->add('cantieri')
             ->add('submit', SubmitType::class, ['label' => 'Conferma', 'attr' => ['class' => "mt-2 text-white btn-blue" ], ] )
           ;

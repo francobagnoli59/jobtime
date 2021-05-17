@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environment;
 
@@ -70,7 +72,7 @@ class CantieriController extends AbstractController
     /**
      * @Route("/cantieri/{nameJob}", name="cantieri")
      */
-     public function show(Request $request, Cantieri $cantieri, CommentiPubbliciRepository $commentiPubbliciRepository, string $photoDirFeedback): Response
+     public function show(Request $request, Cantieri $cantieri, CommentiPubbliciRepository $commentiPubbliciRepository, NotifierInterface $notifier, string $photoDirFeedback): Response
     {
         $commento = new CommentiPubblici();
         $form = $this->createForm(CommentiType::class, $commento);
@@ -101,8 +103,16 @@ class CantieriController extends AbstractController
             }
             $this->entityManager->flush(); */
             $this->bus->dispatch(new CommentiMessage($commento->getId(), $context));
+
+            $notifier->send(new Notification('Grazie per il tuo feedback; il tuo commento verrà pubblicato appena possibile.', ['browser']));
+            
             return $this->redirectToRoute('cantieri', ['nameJob' => $cantieri->getNameJob()]);
         }
+
+        if ($form->isSubmitted()) {
+            $notifier->send(new Notification('Puoi controllare i tuoi dati? Ci sono alcuni problemi nei contenuti.', ['browser']));
+        }
+
         
         $offset = max(0, $request->query->getInt('offset', 0));
         $paginator = $commentiPubbliciRepository->getCommentPaginator($cantieri, $offset);
