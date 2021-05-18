@@ -40,6 +40,11 @@ $theme-colors: (
     "soft-orange": rgba(255, 174, 115, 0.15),
     "teal": $teal,
     "cyan": $cyan,
+    "light": $light,
+    "success": $success,
+    "info": $info,
+    "warning": $warning,
+    "danger": $danger,
 );
 
 $yiq-contrasted-threshold: 190;
