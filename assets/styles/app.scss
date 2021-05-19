@@ -17,6 +17,11 @@ main {
     }
 }
 
+.badge-danger {
+    color: #fff;
+    background-color: #dc3545;
+}
+
 .navbar-brand {
     font-family: $font-family-title;
     font-weight: $font-weight-normal;
