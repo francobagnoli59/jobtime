@@ -3,4 +3,8 @@
     <h2>Commento revisionato, grazie!</h2>
     <p>Transazione applicata: <strong>{{ transition }}</strong></p>
     <p>Nuovo stato: <strong>{{ comment.state }}</strong></p>
+    {% if comment.state == 'ready' %}
+    <p>Con il feedback accettato verrà inviato un messaggio e-mail di conferma all'autore del feedback, </p>
+    <p>riceverai in copia conoscenza nascosta il testo inviato per conferma.</p>
+    {% endif %}
 {% endblock %}

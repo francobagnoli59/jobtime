@@ -7,21 +7,23 @@ use Symfony\Component\Notifier\Notification\EmailNotificationInterface;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\EmailRecipientInterface;
 
-class CommentiReviewNotification extends Notification implements EmailNotificationInterface
+class CommentiAcceptNotification extends Notification implements EmailNotificationInterface
 {
     private $comment;
     public function __construct(CommentiPubblici $comment)
     {
         $this->comment = $comment;
-        parent::__construct('Nuovo feedback per il progetto: '.$comment->getCantieri() );
+        parent::__construct('Confermato il feedback relativo al progetto: '.$comment->getCantieri() );
 }
     public function asEmailMessage(EmailRecipientInterface $recipient, string $transport = null): ?EmailMessage
     {
         $message = EmailMessage::fromNotification($this, $recipient, $transport);
         $message->getMessage()
-            ->htmlTemplate('emails/comment_notification.html.twig')
+            ->htmlTemplate('emails/comment_accept_notification.html.twig')
             ->context(['comment' => $this->comment])
-         ;
+            ->to($this->comment->getEmail())
+            ->bcc('info@masotech.com')
+        ;
         return $message;
     }
 }

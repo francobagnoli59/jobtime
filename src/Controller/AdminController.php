@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\CommentiPubblici;
 use App\Message\CommentiMessage;
+use App\Notification\CommentiAcceptNotification;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 // use Symfony\Bundle\FrameworkBundle\HttpCache\HttpCache;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 // use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Workflow\Registry;
 use Twig\Environment;
@@ -23,12 +25,14 @@ class AdminController extends AbstractController
     private $twig;
     private $entityManager;
     private $bus;
+    private $notifier;
 
-    public function __construct(Environment $twig, EntityManagerInterface $entityManager, MessageBusInterface $bus)
+    public function __construct(Environment $twig, EntityManagerInterface $entityManager, MessageBusInterface $bus, NotifierInterface $notifier )
     {
         $this->twig = $twig;
         $this->entityManager = $entityManager;
         $this->bus = $bus;
+        $this->notifier = $notifier;
     }
 
     /**
@@ -52,7 +56,10 @@ class AdminController extends AbstractController
 
         if ($accepted) {
             $this->bus->dispatch(new CommentiMessage($comment->getId()));
-        }
+
+            $this->notifier->send(new CommentiAcceptNotification($comment),
+            ...$this->notifier->getAdminRecipients());
+        } 
 
         return $this->render('admin/review.html.twig', [
             'transition' => $transition,

@@ -1,0 +1,21 @@
+{% extends '@email/default/notification/body.html.twig' %}
+{% block content %}
+    Gentile {{ comment.author }},<br />
+    <br />
+    ti ringraziamo per il tuo feedback e ti informiamo che il contenuto sottostante è stato pubblicato.<br />
+    <br />
+    <p>
+        {{ comment.textComment }}
+    </p>
+    {% if comment.photoFilename %}
+    <p>
+    <img src="{{  url('blog_feedback')  ~ comment.photoFilename }}" alt="Vedi Foto!" class="thumbnail" />
+    </p>
+    {% endif %}
+{% endblock %}
+{% block action %}
+     <br />
+     Premi qui sotto per visualizzare i feedback relativi al progetto.<br />
+    <spacer size="16"></spacer>
+    <button href="{{ url('cantieri', { nameJob: comment.cantieri }) }}">Vedi feedback</button>
+{% endblock %}
