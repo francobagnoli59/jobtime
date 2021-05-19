@@ -10,9 +10,11 @@ use Symfony\Component\Notifier\Recipient\EmailRecipientInterface;
 class CommentiAcceptNotification extends Notification implements EmailNotificationInterface
 {
     private $comment;
-    public function __construct(CommentiPubblici $comment)
+    private $adminEmail;
+    public function __construct(CommentiPubblici $comment, string $adminEmail)
     {
         $this->comment = $comment;
+        $this->adminEmail = $adminEmail;
         parent::__construct('Confermato il feedback relativo al progetto: '.$comment->getCantieri() );
 }
     public function asEmailMessage(EmailRecipientInterface $recipient, string $transport = null): ?EmailMessage
@@ -22,7 +24,7 @@ class CommentiAcceptNotification extends Notification implements EmailNotificati
             ->htmlTemplate('emails/comment_accept_notification.html.twig')
             ->context(['comment' => $this->comment])
             ->to($this->comment->getEmail())
-            ->bcc('info@masotech.com')
+            ->bcc($this->adminEmail)
         ;
         return $message;
     }
