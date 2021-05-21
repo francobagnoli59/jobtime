@@ -63,9 +63,9 @@ return [
     ],
 
     'batch_action_modal' => [
-        // 'title' => '',
-        // 'content' => '',
-        // 'action' => '',
+        'title' => 'Stai per applicare l\'azione "%action_name%" a %num_items% item(s).',
+        'content' => 'Se procedi non è possibile annullare questa operazione.',
+        'action' => 'Procedi',
     ],
 
     'delete_modal' => [

@@ -22,17 +22,17 @@ use Symfony\Component\HttpFoundation\Request;
 
 class CausaliCrudController extends AbstractCrudController
 {
+    
+    public static function getEntityFqcn(): string
+    {
+        return Causali::class;
+    }
+
     private CsvService $csvService;
 
     public function __construct(CsvService $csvService ) 
     {
     $this->csvService = $csvService;
-    }
-
-
-    public static function getEntityFqcn(): string
-    {
-        return Causali::class;
     }
 
     public function export(Request $request)
@@ -66,6 +66,7 @@ class CausaliCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
+
         return $crud
            
             ->setEntityLabelInSingular('Causale paghe')

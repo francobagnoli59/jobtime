@@ -35,23 +35,23 @@ class CommentiPubbliciCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
-            ->add(EntityFilter::new('cantieri'))
-            ->add('state');
+            ->add(EntityFilter::new('cantieri', 'Cantiere'))
+            ->add('state', 'Stato messaggio');
     }
 
     public function configureFields(string $pageName): iterable
     {
-        $author = TextField::new('author');
+        $author = TextField::new('author', 'Autore');
         $email = EmailField::new('email');
-        $textComment = TextareaField::new('textComment');
+        $textComment = TextareaField::new('textComment', 'Commento');
         $photoFilename = ImageField::new('photoFilename')->setBasePath('/uploads/photos')->setLabel('Foto');
-        $state = TextField::new('state');
-        $createdAt = DateTimeField::new('createdAt');
-        $cantieri = AssociationField::new('cantieri');
+        $state = TextField::new('state', 'Stato messaggio');
+        $createdAt = DateTimeField::new('createdAt', 'Aggiornato il');
+        $cantieri = AssociationField::new('cantieri', 'Cantiere');
         $id = IntegerField::new('id', 'ID');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$author, $email, $createdAt, $textComment, $photoFilename, $state];
+            return [$author, $email, $createdAt, $cantieri, $textComment, $photoFilename, $state];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $author, $email, $textComment,  $state, $createdAt, $cantieri];
         } elseif (Crud::PAGE_NEW === $pageName) {

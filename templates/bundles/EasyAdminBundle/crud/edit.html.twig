@@ -1,0 +1,13 @@
+{# templates/bundles/EasyAdminBundle/edit.html.twig #}
+
+{# in attesa della correzione bug 4377 v3.3.0 #}
+
+{% extends '@!EasyAdmin/crud/edit.html.twig' %}
+
+{% block content_title %}
+    {%- apply spaceless -%}
+        {% set default_title = ea.crud.defaultPageTitle('edit', entity.instance)|trans(ea.i18n.translationParameters, 'EasyAdminBundle') %}
+        {% set custom_title = ea.crud.customPageTitle('edit', entity.instance) %}
+        {{ custom_title is null ? default_title|raw : custom_title|trans(ea.i18n.translationParameters)|raw }}
+    {%- endapply -%}
+{% endblock %}
