@@ -9,6 +9,7 @@ use App\Entity\RegoleFatturazione;
 use App\Entity\Personale;
 use App\Entity\Aziende;
 use App\Entity\Clienti;
+use App\Entity\Attrezzature;
 use App\Entity\Causali;
 use App\Entity\FestivitaAnnuali;
 use App\Entity\MesiAziendali;
@@ -175,6 +176,7 @@ class DashboardController extends AbstractDashboardController
         ->setController(PersonaleCrudController::class);
         // ->setQueryParameter('filters[isEnforce][value]', 1)
         yield MenuItem::linkToCrud('Clienti', 'fas fa-users', Clienti::class);
+        yield MenuItem::linkToCrud('Attrezzature', 'fas fa-blender', Attrezzature::class);
         yield MenuItem::subMenu('Import anagrafiche', 'fas fa-upload')->setSubItems([
             MenuItem::linkToCrud('Import cantieri', 'fas fa-file-excel', ImportCantieri::class),
             MenuItem::linkToCrud('Import personale', 'fas fa-file-excel', ImportPersonale::class),
@@ -197,7 +199,7 @@ class DashboardController extends AbstractDashboardController
             ]) ;
        
         // yield MenuItem::section();
-        yield MenuItem::subMenu('Manutenzioni', 'fas fa-tools')->setSubItems([
+        yield MenuItem::subMenu('Recovery', 'fas fa-tools')->setSubItems([
              MenuItem::linkToCrud('Feedback', 'fas fa-comments', CommentiPubblici::class),
              MenuItem::linkToCrud('Consolidati cantieri', 'fas fa-calendar-check', ConsolidatiCantieri::class),
              MenuItem::linkToCrud('Consolidati personale', 'fas fa-calendar-alt', ConsolidatiPersonale::class),

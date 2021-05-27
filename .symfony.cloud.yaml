@@ -35,6 +35,7 @@ web:
 mounts:
     "/var": { source: local, source_path: var }
     "/public/uploads/photos": { source: service, service: files, source_path: photos }
+    "/public/uploads/images": { source: local, source_path: images }
     "/public/uploads/files/personale/import": { source: local, source_path: import }
     "/public/uploads/files/personale/cv": { source: local, source_path: cv }
     "/public/uploads/files/personale/documenti": { source: local, source_path: documenti }

@@ -311,6 +311,11 @@ class Personale
      */
     private $mansione;
 
+    /**
+     * @ORM\OneToMany(targetEntity=MovimentiAttrezzature::class, mappedBy="persona")
+     */
+    private $movimentiAttrezzature;
+
       
     public function __construct()
     {
@@ -318,7 +323,7 @@ class Personale
         $this->pianoOreCantieri = new ArrayCollection();
         $this->consolidatiPersonale = new ArrayCollection();
         $this->documentiPersonale = new ArrayCollection();
-
+        $this->movimentiAttrezzature = new ArrayCollection();
     }
 
    /*  public function getExportData()
@@ -1068,6 +1073,36 @@ class Personale
         return $this;
     }
 
+     /**
+     * @return Collection|MovimentiAttrezzature[]
+     */
+    public function getMovimentiAttrezzature(): Collection
+    {
+        return $this->movimentiAttrezzature;
+    }
+
+    public function addMovimentiAttrezzature(MovimentiAttrezzature $movimentiAttrezzature): self
+    {
+        if (!$this->movimentiAttrezzature->contains($movimentiAttrezzature)) {
+            $this->movimentiAttrezzature[] = $movimentiAttrezzature;
+            $movimentiAttrezzature->setAttrezzatura($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMovimentiAttrezzature(MovimentiAttrezzature $movimentiAttrezzature): self
+    {
+        if ($this->movimentiAttrezzature->removeElement($movimentiAttrezzature)) {
+            // set the owning side to null (unless already changed)
+            if ($movimentiAttrezzature->getAttrezzatura() === $this) {
+                $movimentiAttrezzature->setAttrezzatura(null);
+            }
+        }
+
+        return $this;
+    }
+   
     
    
 }

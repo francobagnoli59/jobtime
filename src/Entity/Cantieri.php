@@ -218,6 +218,11 @@ class Cantieri
      */
     private $documentiCantiere;
 
+    /**
+     * @ORM\OneToMany(targetEntity=MovimentiAttrezzature::class, mappedBy="cantiere")
+     */
+    private $movimentiAttrezzature;
+
           
     public function __construct()
     {
@@ -228,7 +233,7 @@ class Cantieri
         $this->pianoOreCantiere = new ArrayCollection();
         $this->consolidatiCantieri = new ArrayCollection();
         $this->documentiCantiere = new ArrayCollection();
-        
+        $this->movimentiAttrezzature = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -769,5 +774,36 @@ class Cantieri
 
        return $this;
    }
+
+   /**
+     * @return Collection|MovimentiAttrezzature[]
+     */
+    public function getMovimentiAttrezzature(): Collection
+    {
+        return $this->movimentiAttrezzature;
+    }
+
+    public function addMovimentiAttrezzature(MovimentiAttrezzature $movimentiAttrezzature): self
+    {
+        if (!$this->movimentiAttrezzature->contains($movimentiAttrezzature)) {
+            $this->movimentiAttrezzature[] = $movimentiAttrezzature;
+            $movimentiAttrezzature->setAttrezzatura($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMovimentiAttrezzature(MovimentiAttrezzature $movimentiAttrezzature): self
+    {
+        if ($this->movimentiAttrezzature->removeElement($movimentiAttrezzature)) {
+            // set the owning side to null (unless already changed)
+            if ($movimentiAttrezzature->getAttrezzatura() === $this) {
+                $movimentiAttrezzature->setAttrezzatura(null);
+            }
+        }
+
+        return $this;
+    }
+   
 
 }
