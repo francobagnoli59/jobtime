@@ -71,7 +71,7 @@ class CantieriValidator
                     $context->buildViolation('Se scegli un file documento allora devi inserire anche un Titolo (Tipo documento)')
                         ->addViolation() ;
                 }
-                if ($documento->getDocumentoFile() === null && $documento->getDocumentoPath()  && $documento->getTitolo() !== null ) {
+                if ($documento->getDocumentoFile() === null && $documento->getDocumentoName() === null && $documento->getTitolo() !== null ) {
                     $context->buildViolation('Se inserisci un Titolo nel tipo documento allora devi scegliere un file (pdf o immagini, dalle dimensioni massime di 3MB)')
                         ->addViolation() ;
                 }
