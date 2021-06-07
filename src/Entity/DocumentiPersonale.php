@@ -24,7 +24,18 @@ class DocumentiPersonale
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=80)
+     * @ORM\Column(type="string", length=3, nullable=true, options={"default": "NUL"})
+     * @Assert\Choice({"NUL", "SAP", "INP", "INF", "PSG", "CID", "PAS", "PAT", "OTH"})
+     */
+    private $tipologia;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $scadenza;
+
+    /**
+     * @ORM\Column(type="string", length=80, nullable=true)
      * @Assert\Length( max=80  )
      */
     private $titolo;
@@ -39,7 +50,7 @@ class DocumentiPersonale
      * @Vich\UploadableField(mapping="personale_documenti", fileNameProperty="documentoPath")
      *  @var File
      *  @Assert\File( 
-     *     maxSize="3048k", 
+     *     maxSize="4096k", 
      *     mimeTypes = {"application/pdf", "application/x-pdf", "image/png", "image/jpeg", "image/bmp" },
      *     mimeTypesMessage = "Per favore carica un file PDF o immagini png,bmp,jpeg"
      *  )
@@ -56,10 +67,40 @@ class DocumentiPersonale
      */
     private $persona;
 
+   
+
 
     public function __toString(): string
     {
-            return $this->titolo;
+        $titolodoc = 'documento generico';
+        $tipo = $this->getTipologia();
+        if ($this->titolo === null ) {
+            switch ( $tipo) {
+                case "SAP":
+                    $titolodoc = 'Scheda anagrafica personale ' ;
+                    break;
+                case "INP":
+                    $titolodoc ='Invalidità Psichica ';
+                    break;
+                case "INF":
+                    $titolodoc = 'Invalidità Fisica';
+                    break;
+                case "PSG":
+                    $titolodoc = 'Permesso di soggiorno';
+                    break;
+                case "CID":
+                    $titolodoc = 'Carta di Identità';
+                    break;
+                case "PAT":
+                    $titolodoc = 'Patente auto';
+                    break;
+                case "PAS":
+                    $titolodoc = 'Passaporto';
+                    break;
+                }
+        } else { $titolodoc = $this->titolo; }
+
+            return $titolodoc;
     }
 
     public function getId(): ?int
@@ -142,6 +183,30 @@ class DocumentiPersonale
         if ($documentoFile) {
             $this->createdAt = new \DateTime('now');
         }
+    }
+
+    public function getTipologia(): ?string
+    {
+        return $this->tipologia;
+    }
+
+    public function setTipologia(?string $tipologia): self
+    {
+        $this->tipologia = $tipologia;
+
+        return $this;
+    }
+
+    public function getScadenza(): ?\DateTimeInterface
+    {
+        return $this->scadenza;
+    }
+
+    public function setScadenza(?\DateTimeInterface $scadenza): self
+    {
+        $this->scadenza = $scadenza;
+
+        return $this;
     }
 
    

@@ -12,7 +12,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 
 
 class DocumentiPersonaleCrudController extends AbstractCrudController
@@ -45,8 +45,8 @@ class DocumentiPersonaleCrudController extends AbstractCrudController
             //->add(Crud::PAGE_INDEX, Action::DETAIL)
        
            // ->add(Crud::PAGE_DETAIL,)
-            ->add(Crud::PAGE_EDIT,  Action::INDEX )
-            ->add(Crud::PAGE_NEW,   Action::INDEX )
+           // ->add(Crud::PAGE_EDIT,  Action::INDEX )
+           // ->add(Crud::PAGE_NEW,   Action::INDEX )
 
            /*  ->update(Crud::PAGE_INDEX, Action::EDIT,
              fn (Action $action) => $action->setIcon('fa fa-edit')->setLabel(false)->setHtmlAttributes(['title' => 'Modifica']))
@@ -60,21 +60,23 @@ class DocumentiPersonaleCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('DOCUMENTO PERSONALE');
-        $titolo = TextField::new('titolo', 'Titolo documento');  
+        $tipo = ChoiceField::new('tipologia', 'Tipo')->setChoices([  ' ' => 'NUL'  ,  'Scheda Anagrafica Personale'  => 'SAP', 'Certificato invalidità Psichica'  => 'INP' , 'Certificato invalidità Fisica' => 'INF' ,
+        'Permesso di soggiorno' => 'PSG'  , 'Carta di identità' => 'CID'  , 'Passaporto' => 'PAS' , 'Patente auto' => 'PAT' , ' '  => 'OTH']);
+        $titolo = TextField::new('titolo', 'Titolo');   
         $documentoPath = TextField::new('documentoPath' , 'Path documento' )->setTemplatePath('admin/personale/doc_view.html.twig');
-        $persona = AssociationField::new('persona', 'Persona');
+        $persona = AssociationField::new('persona', 'Persona')->setCrudController(PersonaleCrudController::class);
         $panel_ID = FormField::addPanel('INFORMAZIONI RECORD')->setIcon('fas fa-database')->renderCollapsed('true');
         $id = IntegerField::new('id', 'ID')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $titolo, $persona, $documentoPath, $createdAt];
-        } elseif (Crud::PAGE_DETAIL === $pageName) {
+            return [$id, $tipo, $titolo, $persona, $documentoPath, $createdAt];
+        } /* elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1,  $persona,  $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
             return [$panel1,  $persona, ];
         } elseif (Crud::PAGE_EDIT === $pageName) {
             return [$panel1,  $persona,  $documentoPath, $panel_ID, $id, $createdAt];
-        }
+        } */
     }
 }

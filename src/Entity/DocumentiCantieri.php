@@ -23,8 +23,14 @@ class DocumentiCantieri
      */
     private $id;
 
+     /**
+     * @ORM\Column(type="string", length=3, nullable=true, options={"default": "NUL"})
+     * @Assert\Choice({"NUL", "OTH", "CPA", "DPA", "CPR", "OPR"})
+     */
+    private $tipologia;
+    
     /**
-     * @ORM\Column(type="string", length=80)
+     * @ORM\Column(type="string", length=80, nullable=true)
      * @Assert\Length( max=80  ) 
      */
     private $titolo;
@@ -40,7 +46,7 @@ class DocumentiCantieri
      * @Vich\UploadableField(mapping="cantieri_documenti", fileNameProperty="documentoName")
      *  @var File
      *  @Assert\File( 
-     *     maxSize="3048k", 
+     *     maxSize="4096k", 
      *     mimeTypes = {"application/pdf", "application/x-pdf", "image/png", "image/jpeg", "image/bmp" },
      *     mimeTypesMessage = "Per favore carica un file PDF o immagini png,bmp,jpeg"
      *  )
@@ -57,9 +63,30 @@ class DocumentiCantieri
      */
     private $cantiere;
 
+   
+
     public function __toString(): string
     {
-            return $this->titolo;
+        $titolodoc = 'documento generico';
+        $tipo = $this->getTipologia();
+        if ($this->titolo === null ) {
+            switch ( $tipo) {
+                case "CPA":
+                    $titolodoc = 'Contratto pubblica amministrazione ' ;
+                    break;
+                case "DPA":
+                    $titolodoc = 'Determina pubblica amministrazione ';
+                    break;
+                case "CPR":
+                    $titolodoc = 'Contratto con società non P.A.';
+                    break;
+                case "OPR":
+                    $titolodoc = 'Commessa/Ordine con società non P.A.';
+                    break;
+                }
+        } else { $titolodoc = $this->titolo; }
+
+            return $titolodoc;
     }
     
     public function getId(): ?int
@@ -138,5 +165,17 @@ class DocumentiCantieri
         if ($documentoName) {
             $this->createdAt = new \DateTime('now');
         }
+    }
+
+    public function getTipologia(): ?string
+    {
+        return $this->tipologia;
+    }
+
+    public function setTipologia(?string $tipologia): self
+    {
+        $this->tipologia = $tipologia;
+
+        return $this;
     }
 }

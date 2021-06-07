@@ -17,7 +17,10 @@ class PersonaleValidator
                 ->addViolation()
             ;
         }
-
+        $NazComNascita = ''; $LetComNascita = ''; $ExtraCEE = false ;
+        $NazCee = ['Z102', 'Z103', 'Z104', 'Z107', 'Z109', 'Z110', 'Z112', 'Z115', 'Z116', 'Z120',
+                'Z121', 'Z126', 'Z127', 'Z128', 'Z129', 'Z131', 'Z132', 'Z134', 'Z144', 'Z145', 'Z146',
+                'Z149', 'Z150', 'Z155', 'Z156', 'Z211'];
         $codicefiscale = new CodiceFiscaleValidation;
         $codiceFiscaleVerify = $codicefiscale->verifyFiscalCode($personale->getFiscalCode());
         //print_r($codiceFiscaleVerify);
@@ -26,6 +29,13 @@ class PersonaleValidator
                 ->addViolation() ; } 
         else {
                 // Codice valido 
+                $NazComNascita = \substr($personale->getFiscalCode(), 12, 4);
+                $LetComNascita = \substr($NazComNascita, 1, 1);
+                if ($LetComNascita === "Z" ) { 
+                    if (!in_array($NazComNascita, $NazCee)) {
+                        $ExtraCEE = true ;
+                    }
+                }
                 // controlla corrispondenza sesso
                 if ($personale->getGender() != $codiceFiscaleVerify['Gender']) {
                  $context->buildViolation('Il sesso non corrisponde al codice fiscale')
@@ -83,15 +93,99 @@ class PersonaleValidator
         $documentiPersonale = new ArrayCollection;
         $documentiPersonale = $personale->getDocumentiPersonale();
         foreach ($documentiPersonale as $documento) {
-            if ($documento->getDocumentoFile() !== null && $documento->getTitolo() === null ) {
-                $context->buildViolation('Se scegli un file documento allora devi inserire anche un Titolo (Tipo documento)')
+            if ($documento->getDocumentoFile() !== null && $documento->getTitolo() === null && ($documento->getTipologia() === 'NUL' || $documento->getTipologia() === 'OTH') ) {
+                $context->buildViolation('Se scegli un file documento generico allora devi inserire anche un Titolo (oppure seleziona un tipo documento appropriato)')
                     ->addViolation() ;
             }
-            if ($documento->getDocumentoFile() === null && $documento->getDocumentoPath() === null && $documento->getTitolo() !== null ) {
-                $context->buildViolation('Se inserisci un Titolo nel tipo documento allora devi scegliere un file (pdf o immagini, dalle dimensioni massime di 3MB)')
-                    ->addViolation() ;
+            if ($documento->getDocumentoFile() === null && $documento->getDocumentoPath() === null && ( $documento->getTitolo() !== null || $documento->getTipologia() !== null  ) ) {
+                $context->buildViolation('Se inserisci un Tipo o un Titolo documento allora devi scegliere un file (pdf o immagini, dalle dimensioni massime di 3MB)')
+                ->addViolation() ;
             }
 
+        }
+
+        // Persona convalidata aumenta il livello dei controlli
+        if ($personale->getIsValidated() === true) {
+            if ( ($personale->getMobile() === null || $personale->getMobile() === '' ) &&
+                ($personale->getPhone() === null || $personale->getPhone() === '') &&
+                ($personale->getEmail() === null || $personale->getEmail() === '')
+            )  {
+                $context->buildViolation('Almeno un dato tra numero di cellulare, telefono, e-mail è obbligatorio, se la Persona è Convalidata')
+                ->addViolation() ;
+            }
+            // verifica documenti, anche in funzione del tipo documento e della nazionalità
+            $oggi = new \DateTime('now');
+            $scheda = false;
+            $permessoSoggiorno = false;
+            $documentoIdentita = false;
+            $documentoInvalidi = false;
+            $documentiPersonale = $personale->getDocumentiPersonale();
+            foreach ($documentiPersonale as $documento) {
+                $tipo = $documento->getTipologia();
+                switch ($tipo) {
+                    case "SAP":
+                        $scheda = true;
+                        break;
+                    case "INP":
+                    case "INF":
+                        $documentoInvalidi = true;
+                        if ($documento->getScadenza() === null || $documento->getScadenza() <=  $oggi) {
+                            $context->buildViolation('Per il documento di invalidità indicare una data di scadenza valida')
+                            ->addViolation() ;
+                        }
+                        break;
+                    case "PSG":
+                        $permessoSoggiorno = true;
+                        if ($documento->getScadenza() === null || $documento->getScadenza() <=  $oggi) {
+                            $context->buildViolation('Per il Permesso di Soggiorno indicare una data di scadenza valida')
+                            ->addViolation() ;
+                        }
+                        break;
+                    case "CID":
+                        $documentoIdentita = true;
+                        if ($documento->getScadenza() === null || $documento->getScadenza() <=  $oggi) {
+                            $context->buildViolation('Per il Documento di Identità indicare una data di scadenza valida')
+                            ->addViolation() ;
+                        }
+                        break;
+                    case "PAT":
+                        $documentoIdentita = true;
+                        if ($documento->getScadenza() === null || $documento->getScadenza() <=  $oggi) {
+                            $context->buildViolation('Per la Patente indicare una data di scadenza valida')
+                            ->addViolation() ;
+                        }
+                        break; 
+                    case "PAS":
+                        $documentoIdentita = true;
+                        if ($documento->getScadenza() === null || $documento->getScadenza() <=  $oggi) {
+                            $context->buildViolation('Per il Passaporto indicare una data di scadenza valida')
+                            ->addViolation() ;
+                        }
+                        break;             
+                    }
+            }
+            if ($scheda === false) {
+                $context->buildViolation('Occorre caricare il documento Scheda Anagrafica Personale')
+                ->addViolation() ;
+            }
+            if ($personale->getIsInvalid() === true &&  $documentoInvalidi === false ) {
+                $context->buildViolation('Per le persone diversamente abili è obbligatorio caricare un documento di invalidità')
+                ->addViolation() ;
+            } 
+            if ($personale->getIsInvalid() === false &&  $documentoInvalidi === true ) {
+                $context->buildViolation('Caricato un documento di invalidità, ma la persona non è stata selezionata come diversamente abile')
+                ->addViolation() ;
+            } 
+            if ($ExtraCEE === true ) {
+                if ($permessoSoggiorno === false) {
+                    $context->buildViolation('Per le persone Extra comunitarie è obbligatorio caricare il Permesso di Soggiorno')
+                    ->addViolation() ;
+                }
+            } 
+            if ($documentoIdentita === false) {
+                $context->buildViolation('Non è stato caricato nessun documento di riconoscimento, intentità, passaporto o patente.')
+                ->addViolation() ;
+            }
         }
     }
 }

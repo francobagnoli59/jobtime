@@ -12,7 +12,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 
 
 class DocumentiCantieriCrudController extends AbstractCrudController
@@ -43,10 +43,10 @@ class DocumentiCantieriCrudController extends AbstractCrudController
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
            
             //->add(Crud::PAGE_INDEX, Action::DETAIL)
-       
            // ->add(Crud::PAGE_DETAIL,)
-            ->add(Crud::PAGE_EDIT,  Action::INDEX )
-            ->add(Crud::PAGE_NEW,   Action::INDEX )
+
+           //  ->add(Crud::PAGE_EDIT,  Action::INDEX )
+           // ->add(Crud::PAGE_NEW,   Action::INDEX )
 
            /*  ->update(Crud::PAGE_INDEX, Action::EDIT,
              fn (Action $action) => $action->setIcon('fa fa-edit')->setLabel(false)->setHtmlAttributes(['title' => 'Modifica']))
@@ -60,6 +60,8 @@ class DocumentiCantieriCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('DOCUMENTO CANTIERE');
+        $tipo = ChoiceField::new('tipologia', 'Tipo')->setChoices([ ' ' => 'NUL'  ,  'Contratto Pubblica Amministrazione'  => 'CPA', 'Determina Pubblica Amministrazione'  => 'DPA' ,
+        'Contratto con società non P.A.' => 'CPR'  , 'Commessa/Ordine con società non P.A.' => 'OPR' ]);
         $titolo = TextField::new('titolo', 'Titolo documento');  
         $documentoName = TextField::new('documentoName' , 'Path documento' )->setTemplatePath('admin/cantieri/doc_view.html.twig');
         $cantiere = AssociationField::new('cantiere', 'Cantiere');
@@ -68,13 +70,13 @@ class DocumentiCantieriCrudController extends AbstractCrudController
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $titolo, $cantiere, $documentoName, $createdAt];
-        } elseif (Crud::PAGE_DETAIL === $pageName) {
+            return [$id, $tipo, $titolo, $cantiere, $documentoName, $createdAt];
+        } /*  elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$panel1,  $cantiere,  $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
             return [$panel1,  $cantiere];
         } elseif (Crud::PAGE_EDIT === $pageName) {
             return [$panel1,  $cantiere, $panel_ID, $id, $createdAt];
-        }
+        } */
     }
 }

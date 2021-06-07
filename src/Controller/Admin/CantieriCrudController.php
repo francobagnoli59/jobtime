@@ -211,9 +211,9 @@ class CantieriCrudController extends AbstractCrudController
             return $cs->createQueryBuilder('c')
                ->orderBy('c.categoria', 'ASC');     },
                              ])->addCssClass('list-group-item-primary');
-        $collectionDoc = CollectionField::new('documentiCantiere', 'Contratti/Documenti')
-        ->setEntryType(DocumentiCantieriType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 3MB ciascuno)</mark>')->addCssClass('list-group-item-primary');
-        $collectionDocView = CollectionField::new('documentiCantiere', 'Contratti/Documenti')
+        $collectionDoc = CollectionField::new('documentiCantiere', 'Contratti/Determine')
+        ->setEntryType(DocumentiCantieriType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 4MB ciascuno)</mark>')->addCssClass('list-group-item-primary');
+        $collectionDocView = CollectionField::new('documentiCantiere', 'Contratti/Determine')
         ->setTemplatePath('admin/cantieri/documenti.html.twig')->addCssClass('list-group-item-primary');
      
 

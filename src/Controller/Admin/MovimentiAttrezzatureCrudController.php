@@ -227,6 +227,7 @@ class MovimentiAttrezzatureCrudController extends AbstractCrudController
                     ->orderBy('c.nameJob', 'ASC');
         }, 'disabled' => 'true'
         ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
+        $personaView = AssociationField::new('persona', 'Persona responsabile spostamento')->setCrudController(PersonaleCrudController::class);
         $persona = AssociationField::new('persona', 'Persona responsabile spostamento')
             ->setFormTypeOptions([
             'query_builder' => function (PersonaleRepository $pe) {
@@ -242,9 +243,9 @@ class MovimentiAttrezzatureCrudController extends AbstractCrudController
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
         
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $attrezzatura,  $giorno, $cantiere, $persona ];
+            return [$id, $attrezzatura,  $giorno, $cantiere, $personaView ];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $attrezzatura,  $giorno, $cantiere, $persona, $note, $panel_ID, $id, $createdAt];
+            return [$panel1, $attrezzatura,  $giorno, $cantiere, $personaView, $note, $panel_ID, $id, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
             return [$panel1, $attrezzatura,  $giorno, $cantiere, $persona, $note];
         } elseif (Crud::PAGE_EDIT === $pageName) {

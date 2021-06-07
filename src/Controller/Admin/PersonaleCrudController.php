@@ -130,6 +130,7 @@ class PersonaleCrudController extends AbstractCrudController
                  ->orderBy('azienda.nickName', 'ASC') ) ) */
             ->add(ChoiceFilter::new('gender', 'Sesso')->setChoices(['Femmina' => 'F', 'Maschio' => 'M' ]) )
             ->add(BooleanFilter::new('isPartner', 'Socio'))
+            ->add(BooleanFilter::new('isValidated', 'Persona convalidata'))
             ->add(BooleanFilter::new('isInvalid', 'Diversamente abile'))
             ->add(DateTimeFilter::new('birthday', 'Data di nascita'))
             ->add(DateTimeFilter::new('dateHiring', 'Data di assunzione'))
@@ -358,31 +359,33 @@ class PersonaleCrudController extends AbstractCrudController
         $spreadsheet->getSheet($indexsheet)->getStyle('AA3')->applyFromArray($styleArray->columnWarning());
         $sheet->getCell('AB3')->setValue('Costo straordinario');
         $spreadsheet->getSheet($indexsheet)->getStyle('AB3')->applyFromArray($styleArray->columnWarning());
-        $sheet->getCell('AC3')->setValue('Ore settimanali');
+        $sheet->getCell('AC3')->setValue('Trasferte Italia');
         $spreadsheet->getSheet($indexsheet)->getStyle('AC3')->applyFromArray($styleArray->columnWarning());
+        $sheet->getCell('AD3')->setValue('Ore settimanali');
+        $spreadsheet->getSheet($indexsheet)->getStyle('AD3')->applyFromArray($styleArray->columnWarning());
          
-        $sheet->getCell('AD3')->setValue('Iban');
-        $spreadsheet->getSheet($indexsheet)->getStyle('AD3')->applyFromArray($styleArray->columnGreyLight());
-        $sheet->getCell('AE3')->setValue('Intestatario conto');
+        $sheet->getCell('AE3')->setValue('Iban');
         $spreadsheet->getSheet($indexsheet)->getStyle('AE3')->applyFromArray($styleArray->columnGreyLight());
+        $sheet->getCell('AF3')->setValue('Intestatario conto');
+        $spreadsheet->getSheet($indexsheet)->getStyle('AF3')->applyFromArray($styleArray->columnGreyLight());
 
-        $sheet->getCell('AF3')->setValue('Data ultima visita');
-        $spreadsheet->getSheet($indexsheet)->getStyle('AF3')->applyFromArray($styleArray->columnInfo());
-        $sheet->getCell('AG3')->setValue('Data scadenza visita');
+        $sheet->getCell('AG3')->setValue('Data ultima visita');
         $spreadsheet->getSheet($indexsheet)->getStyle('AG3')->applyFromArray($styleArray->columnInfo());
-        $sheet->getCell('AH3')->setValue('Visita prenotata');
+        $sheet->getCell('AH3')->setValue('Data scadenza visita');
         $spreadsheet->getSheet($indexsheet)->getStyle('AH3')->applyFromArray($styleArray->columnInfo());
-        $sheet->getCell('AI3')->setValue('Data pianificata visita');
+        $sheet->getCell('AI3')->setValue('Visita prenotata');
         $spreadsheet->getSheet($indexsheet)->getStyle('AI3')->applyFromArray($styleArray->columnInfo());
-        $sheet->getCell('AJ3')->setValue('Annotazioni visite');
+        $sheet->getCell('AJ3')->setValue('Data pianificata visita');
         $spreadsheet->getSheet($indexsheet)->getStyle('AJ3')->applyFromArray($styleArray->columnInfo());
+        $sheet->getCell('AK3')->setValue('Annotazioni visite');
+        $spreadsheet->getSheet($indexsheet)->getStyle('AK3')->applyFromArray($styleArray->columnInfo());
 
-        $sheet->getCell('AK3')->setValue('Id Record');
-        $spreadsheet->getSheet($indexsheet)->getStyle('AK3')->applyFromArray($styleArray->columnDark());
-        $sheet->getCell('AL3')->setValue('Chiave registrazione');
+        $sheet->getCell('AL3')->setValue('Id Record');
         $spreadsheet->getSheet($indexsheet)->getStyle('AL3')->applyFromArray($styleArray->columnDark());
-        $sheet->getCell('AM3')->setValue('Data aggiornamento');
+        $sheet->getCell('AM3')->setValue('Chiave registrazione');
         $spreadsheet->getSheet($indexsheet)->getStyle('AM3')->applyFromArray($styleArray->columnDark());
+        $sheet->getCell('AN3')->setValue('Data aggiornamento');
+        $spreadsheet->getSheet($indexsheet)->getStyle('AN3')->applyFromArray($styleArray->columnDark());
 
         // scorre tutto l'array persone ( salta se persona di altra azienda) 
         $row = 4;
@@ -464,39 +467,43 @@ class PersonaleCrudController extends AbstractCrudController
                 $sheet->getCell('AB'.sprintf('%s',$row))->setValue($persona->getCostoStraordinario()/100);
                 $spreadsheet->getActiveSheet()->getStyle('AB'.sprintf('%s',$row))->getNumberFormat()->setFormatCode('#,##0.00');
                 $spreadsheet->getSheet($indexsheet)->getStyle('AB'.sprintf('%s',$row))->applyFromArray($styleArray->rowWarning());
-                $sheet->getCell('AC'.sprintf('%s',$row))->setValue($persona->getStringTotalHourWeek());
+                $sheet->getCell('AC'.sprintf('%s',$row))->setValue($persona->getNumTrasferteItalia());
+                $spreadsheet->getActiveSheet()->getStyle('AC'.sprintf('%s',$row))->getNumberFormat()->setFormatCode('#,##0');
                 $spreadsheet->getSheet($indexsheet)->getStyle('AC'.sprintf('%s',$row))->applyFromArray($styleArray->rowWarning());
-                $spreadsheet->getSheet($indexsheet)->getStyle('AC'.sprintf('%s',$row))->applyFromArray($styleArray->alignHCenter());
+                
+                $sheet->getCell('AD'.sprintf('%s',$row))->setValue($persona->getStringTotalHourWeek());
+                $spreadsheet->getSheet($indexsheet)->getStyle('AD'.sprintf('%s',$row))->applyFromArray($styleArray->rowWarning());
+                $spreadsheet->getSheet($indexsheet)->getStyle('AD'.sprintf('%s',$row))->applyFromArray($styleArray->alignHCenter());
 
-                $sheet->getCell('AD'.sprintf('%s',$row))->setValue($persona->getIbanConto());
-                $spreadsheet->getSheet($indexsheet)->getStyle('AD'.sprintf('%s',$row))->applyFromArray($styleArray->rowGreyLight());
-                $sheet->getCell('AE'.sprintf('%s',$row))->setValue($persona->getIntestatarioConto());
+                $sheet->getCell('AE'.sprintf('%s',$row))->setValue($persona->getIbanConto());
                 $spreadsheet->getSheet($indexsheet)->getStyle('AE'.sprintf('%s',$row))->applyFromArray($styleArray->rowGreyLight());
+                $sheet->getCell('AF'.sprintf('%s',$row))->setValue($persona->getIntestatarioConto());
+                $spreadsheet->getSheet($indexsheet)->getStyle('AF'.sprintf('%s',$row))->applyFromArray($styleArray->rowGreyLight());
 
                 if ($persona->getUltimaVisitaMedica() !== null) {
-                $sheet->getCell('AF'.sprintf('%s',$row))->setValue($persona->getUltimaVisitaMedica()->format('d/m/Y'));
-                 } else {$sheet->getCell('AF'.sprintf('%s',$row))->setValue(' '); }
-                $spreadsheet->getSheet($indexsheet)->getStyle('AF'.sprintf('%s',$row))->applyFromArray($styleArray->rowInfo());
-                if ($persona->getScadenzaVisitaMedica() !== null) {
-                $sheet->getCell('AG'.sprintf('%s',$row))->setValue($persona->getScadenzaVisitaMedica()->format('d/m/Y'));
+                $sheet->getCell('AG'.sprintf('%s',$row))->setValue($persona->getUltimaVisitaMedica()->format('d/m/Y'));
                  } else {$sheet->getCell('AG'.sprintf('%s',$row))->setValue(' '); }
                 $spreadsheet->getSheet($indexsheet)->getStyle('AG'.sprintf('%s',$row))->applyFromArray($styleArray->rowInfo());
-                if ($persona->getIsReservedVisita() === true ) { $state = 'SI' ;} else { $state = 'NO'; } 
-                $sheet->getCell('AH'.sprintf('%s',$row))->setValue($state);
+                if ($persona->getScadenzaVisitaMedica() !== null) {
+                $sheet->getCell('AH'.sprintf('%s',$row))->setValue($persona->getScadenzaVisitaMedica()->format('d/m/Y'));
+                 } else {$sheet->getCell('AH'.sprintf('%s',$row))->setValue(' '); }
                 $spreadsheet->getSheet($indexsheet)->getStyle('AH'.sprintf('%s',$row))->applyFromArray($styleArray->rowInfo());
-                if ($persona->getDataPrevistaVisita() !== null) {
-                $sheet->getCell('AI'.sprintf('%s',$row))->setValue($persona->getDataPrevistaVisita()->format('d/m/Y'));
-                 } else {$sheet->getCell('AI'.sprintf('%s',$row))->setValue(' '); }
+                if ($persona->getIsReservedVisita() === true ) { $state = 'SI' ;} else { $state = 'NO'; } 
+                $sheet->getCell('AI'.sprintf('%s',$row))->setValue($state);
                 $spreadsheet->getSheet($indexsheet)->getStyle('AI'.sprintf('%s',$row))->applyFromArray($styleArray->rowInfo());
-                $sheet->getCell('AJ'.sprintf('%s',$row))->setValue($persona->getNoteVisita());
+                if ($persona->getDataPrevistaVisita() !== null) {
+                $sheet->getCell('AJ'.sprintf('%s',$row))->setValue($persona->getDataPrevistaVisita()->format('d/m/Y'));
+                 } else {$sheet->getCell('AJ'.sprintf('%s',$row))->setValue(' '); }
                 $spreadsheet->getSheet($indexsheet)->getStyle('AJ'.sprintf('%s',$row))->applyFromArray($styleArray->rowInfo());
+                $sheet->getCell('AK'.sprintf('%s',$row))->setValue($persona->getNoteVisita());
+                $spreadsheet->getSheet($indexsheet)->getStyle('AK'.sprintf('%s',$row))->applyFromArray($styleArray->rowInfo());
 
-                $sheet->getCell('AK'.sprintf('%s',$row))->setValue($persona->getId());
-                $spreadsheet->getSheet($indexsheet)->getStyle('AK'.sprintf('%s',$row))->applyFromArray($styleArray->rowDark());
-                $sheet->getCell('AL'.sprintf('%s',$row))->setValue($persona->getKeyReference());
+                $sheet->getCell('AL'.sprintf('%s',$row))->setValue($persona->getId());
                 $spreadsheet->getSheet($indexsheet)->getStyle('AL'.sprintf('%s',$row))->applyFromArray($styleArray->rowDark());
-                $sheet->getCell('AM'.sprintf('%s',$row))->setValue($persona->getCreatedAt()->format('d/m/Y\ H:i:s'));
+                $sheet->getCell('AM'.sprintf('%s',$row))->setValue($persona->getKeyReference());
                 $spreadsheet->getSheet($indexsheet)->getStyle('AM'.sprintf('%s',$row))->applyFromArray($styleArray->rowDark());
+                $sheet->getCell('AN'.sprintf('%s',$row))->setValue($persona->getCreatedAt()->format('d/m/Y\ H:i:s'));
+                $spreadsheet->getSheet($indexsheet)->getStyle('AN'.sprintf('%s',$row))->applyFromArray($styleArray->rowDark());
                 
                 $row++ ;
             }
@@ -538,6 +545,7 @@ class PersonaleCrudController extends AbstractCrudController
     {
           // key Piano ore cantieri
         $fullName =  $entityInstance->getFullName();
+
         $message = $this->verifyEntity($entityManager, $entityInstance);
         if ($message === '') {
             $entityManager->persist($entityInstance);
@@ -609,7 +617,7 @@ class PersonaleCrudController extends AbstractCrudController
             // ->setFormTypeOption('multiple', true);
             $panelContact = FormField::addPanel('DATI CONTATTO')->setIcon('fas fa-address-book');
             $phone = TelephoneField::new('phone', 'Tel. abitazione')->addCssClass('list-group-item-success');
-            $mobile = TelephoneField::new('mobile', 'Cellulare')->addCssClass('list-group-item-success');
+            $mobile = TelephoneField::new('mobile', 'Cellulare')->setHelp('<mark><b>Indicare preferibilmente il numero di cellulare, e-mail e telefono abitazione. Almeno un dato di contatto è obbligatorio se la persona viene convalidata. </b></mark>')->addCssClass('list-group-item-success');
             $email = EmailField::new('email', 'E-mail')->addCssClass('list-group-item-success');
             $address = TextField::new('address', 'Indirizzo')->addCssClass('list-group-item-success');
             $city = TextField::new('city', 'Città')->addCssClass('list-group-item-success');
@@ -644,6 +652,8 @@ class PersonaleCrudController extends AbstractCrudController
 
             $panel2 = FormField::addPanel('DATI LAVORATIVI')->setIcon('fas fa-sitemap');
             $isPartner = BooleanField::new('isPartner', 'Socio')->addCssClass('list-group-item-primary');
+            $isValidated = BooleanField::new('isValidated', 'Persona Convalidata')->addCssClass('list-group-item-primary')->setHelp('<mark><b>Se convalidata, alla conferma la scheda della persona viene controllata tenendo conto anche dei documenti personali.</b></mark>');
+       
             $isInvalid = BooleanField::new('isInvalid', 'Diversamente abile')->addCssClass('list-group-item-warning');
             $areaGeografica = AssociationField::new('areaGeografica', 'Area/Zona geografica')->addCssClass('list-group-item-success');
             $tipoContratto = ChoiceField::new('tipoContratto', 'Tipo Contratto')->addCssClass('list-group-item-warning')->setChoices(['Indeterminato' => 'I', 'Determinato' => 'D', 'Stagionale' => 'T' ]) ;
@@ -688,13 +698,14 @@ class PersonaleCrudController extends AbstractCrudController
             // $cvPdf = UrlField::new('cvPathPdf', 'Curriculum Vitae');  
             // TRATTATO COME LINK ad una nuova  scheda del browser, definita proprietà cvPathPdf su entità personale
             $collectionDoc = CollectionField::new('documentiPersonale', 'Documenti/Certificazioni')
-            ->setEntryType(DocumentiPersonaleType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 3MB)</mark>');
+            ->setEntryType(DocumentiPersonaleType::class)->setHelp('<mark>Caricare file tipo pdf o immagini ( max. 4MB)</mark>');
             $collectionDocView = CollectionField::new('documentiPersonale', 'Documenti/Certificazioni')
             ->setTemplatePath('admin/personale/documenti.html.twig');
             $matr = TextField::new('matricola', 'Id Matr.')->onlyOnIndex();
             $matricola = TextField::new('matricola', 'Codice Matricola')->addCssClass('list-group-item-warning')->setHelp('Inserire solo numeri - (verrà formattata con zeri a sinistra).');
             $fullCostHour = MoneyField::new('fullCostHour', 'Costo orario lordo')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario comprensivo di ferie/tfr ')->addCssClass('list-group-item-warning');
             $costoStraordinario = MoneyField::new('costoStraordinario', 'Costo orario straordinario')->setNumDecimals(2)->setCurrency('EUR')->setHelp('Indicare il costo orario straordinario')->addCssClass('list-group-item-warning');
+            $numTrasferte = IntegerField::new('numTrasferteItalia', 'Giorni trasferte mensili')->setHelp('Numero di giorni trasferte mensili mediamente applicate e aggiunte al flusso TXT applicativo paghe.')->addCssClass('list-group-item-warning');
             $planHourWeek = ArrayField::new('planHourWeek', 'Ore settimanali')->setHelp('<mark><b>Inserire 7 numeri intesi come ore intere dal lunedì alla domenica, se è necessario indicare la mezz\'ora inserire .5  (usare il punto, non la virgola)</b></mark>')->addCssClass('list-group-item-warning');
             $planHW = ArrayField::new('planHourWeek', 'Ore settimanali')->onlyOnIndex();
             $dateHiring = DateField::new('dateHiring', 'Data di assunzione')->setRequired(true)->addCssClass('list-group-item-warning');
@@ -709,11 +720,11 @@ class PersonaleCrudController extends AbstractCrudController
             if (Crud::PAGE_INDEX === $pageName) {
                 return [$matr, $fullName, $photoFile, $eta, $isPart,  $cant, $mans, $pianoOreCantieri, $planHW, $stringTotalHourWeek ];
             } elseif (Crud::PAGE_DETAIL === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $comboAddr, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $isValidated, $panelPortrait, $photoFile, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $comboAddr, $areaGeografica, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $numTrasferte, $planHourWeek, $panel3, $cvPdf, $collectionDocView, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt ];
             } elseif (Crud::PAGE_NEW === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panelPortrait, $photoFile, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal,  $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvFile, $collectionDoc, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita ];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $isValidated, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panelPortrait, $photoFile, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal,  $cantiere, $fullCostHour, $costoStraordinario, $numTrasferte, $planHourWeek, $panel3, $cvFile, $collectionDoc, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita ];
             } elseif (Crud::PAGE_EDIT === $pageName) {
-                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panelPortrait, $photoFile, $imagePortrait, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $planHourWeek, $panel3, $cvFile, $collectionDoc, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt];
+                return [$panel1, $name, $surname, $gender, $fiscalCode, $birthday, $isPartner, $isValidated, $panelContact, $mobile, $email, $phone, $address, $zipCode, $city, $provincia, $areaGeografica, $panelPortrait, $photoFile, $imagePortrait, $panel2, $azienda, $isEnforce, $matricola, $isInvalid, $mansione, $dateHiring, $tipoContratto, $livello, $scadenzaContratto, $dateDismissal, $cantiere, $fullCostHour, $costoStraordinario, $numTrasferte, $planHourWeek, $panel3, $cvFile, $collectionDoc, $ibanConto, $intestatarioConto, $panel4, $ultimaVisitaMedica, $scadenzaVisitaMedica, $isReservedVisita, $dataPrevistaVisita, $noteVisita, $panel_ID, $id, $keyReference, $createdAt];
             }
     }
     

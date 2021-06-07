@@ -4,6 +4,20 @@
 {% endif %} 
 {% if field.value  is not null  %}  
       {% for documento in field.value %}
+      {% if documento.tipologia == 'NUL' or documento.tipologia == 'OTH' %}
       <a href="{{ '/uploads/files/cantieri/documenti/' ~ documento.documentoName }}" target = '_blank'>{{ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'CPA' %}
+      <a href="{{ '/uploads/files/cantieri/documenti/' ~ documento.documentoName }}" target = '_blank'>{{ 'Contratto pubblica amministrazione ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'DPA' %}
+      <a href="{{ '/uploads/files/cantieri/documenti/' ~ documento.documentoName }}" target = '_blank'>{{ 'Determina pubblica amministrazione ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'CPR' %}
+      <a href="{{ '/uploads/files/cantieri/documenti/' ~ documento.documentoName }}" target = '_blank'>{{ 'Contratto con società non P.A. ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'OPR' %}
+      <a href="{{ '/uploads/files/cantieri/documenti/' ~ documento.documentoName }}" target = '_blank'>{{ 'Commessa/Ordine con società non P.A. ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
       {% endfor %} 
 {% endif %} 

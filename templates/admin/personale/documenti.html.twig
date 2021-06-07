@@ -3,7 +3,30 @@
    <a>Nessun documento caricato</a>  
 {% endif %} 
 {% if field.value  is not null  %}  
-      {% for documento in field.value %}
+    {% for documento in field.value %}
+      {% if documento.tipologia == 'NUL' or documento.tipologia == 'OTH' %}
       <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ documento.titolo }}   -  </a>  
-      {% endfor %} 
+      {% endif %}
+      {% if documento.tipologia == 'SAP' %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ 'Scheda anagrafica personale ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'CID' %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ 'Carta di identità ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'PSG' %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ 'Permesso di soggiorno ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'PAS' %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ 'Passaporto ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'PAT' %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ 'Patente ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'INP' %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ 'Certificato invalidità psichica ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+      {% if documento.tipologia == 'INF' %}
+      <a href="{{ '/uploads/files/personale/documenti/' ~ documento.documentoPath }}" target = '_blank'>{{ 'Certificato invalidità fisica ' ~ documento.titolo }}   -  </a>  
+      {% endif %}
+    {% endfor %} 
 {% endif %} 

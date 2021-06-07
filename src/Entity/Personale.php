@@ -180,7 +180,7 @@ class Personale
      * @Assert\Iban(
      *     message="Inserire un valido International Bank Account Number (IBAN)."
      * ) 
-     */
+     */  
     private $ibanConto;
 
     /**
@@ -228,6 +228,18 @@ class Personale
      */
     private $isPartner;
 
+    /**
+     * @ORM\Column(type="smallint", nullable=true, options={"default": 0})
+     * @Assert\Length( max=2  )
+     */
+    private $numTrasferteItalia;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true, options={"default": false})
+     */
+    private $isValidated;
+
+      
     /**
      * @ORM\Column(type="date", nullable=true)
      */
@@ -316,7 +328,7 @@ class Personale
      */
     private $movimentiAttrezzature;
 
-      
+    
     public function __construct()
     {
         $this->orelavorate = new ArrayCollection();
@@ -1099,6 +1111,30 @@ class Personale
                 $movimentiAttrezzature->setAttrezzatura(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNumTrasferteItalia(): ?int
+    {
+        return $this->numTrasferteItalia;
+    }
+
+    public function setNumTrasferteItalia(?int $numTrasferteItalia): self
+    {
+        $this->numTrasferteItalia = $numTrasferteItalia;
+
+        return $this;
+    }
+
+    public function getIsValidated(): ?bool
+    {
+        return $this->isValidated;
+    }
+
+    public function setIsValidated(?bool $isValidated): self
+    {
+        $this->isValidated = $isValidated;
 
         return $this;
     }

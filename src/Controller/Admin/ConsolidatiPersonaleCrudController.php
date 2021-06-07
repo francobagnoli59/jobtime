@@ -58,6 +58,7 @@ class ConsolidatiPersonaleCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('CONSOLIDATO DEL MESE per PERSONA')->setIcon('fas fa-calendar-alt');
+        $personaView = AssociationField::new('persona', 'Persona')->setCrudController(PersonaleCrudController::class);
         $persona = AssociationField::new('persona', 'Persona')
             ->setFormTypeOptions([
             'query_builder' => function (PersonaleRepository $pe) {
@@ -83,9 +84,9 @@ class ConsolidatiPersonaleCrudController extends AbstractCrudController
         $keyReference = TextField::new('keyReference', 'Chiave registrazione')->setFormTypeOptions(['disabled' => 'true']);
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
         if (Crud::PAGE_INDEX === $pageName) {
-            return [ $persona, $meseaziendale, $oreLavoro, $orePianificate, $oreStraordinario, $oreImproduttive, $oreIninfluenti, $costoLavoro];
+            return [ $personaView, $meseaziendale, $oreLavoro, $orePianificate, $oreStraordinario, $oreImproduttive, $oreIninfluenti, $costoLavoro];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $persona, $meseaziendale, $oreLavoro, $orePianificate, $oreStraordinario, $oreImproduttive, $oreIninfluenti, $costoLavoro, $panel_ID, $id, $keyReference, $createdAt];
+            return [$panel1, $personaView, $meseaziendale, $oreLavoro, $orePianificate, $oreStraordinario, $oreImproduttive, $oreIninfluenti, $costoLavoro, $panel_ID, $id, $keyReference, $createdAt];
          } elseif (Crud::PAGE_NEW === $pageName) {
             return [$panel1, $persona, $meseaziendale, $oreLavoro, $orePianificate, $oreStraordinario, $oreImproduttive, $oreIninfluenti, $costoLavoro];
         } elseif (Crud::PAGE_EDIT === $pageName) {

@@ -164,7 +164,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToRoute('Analisi Cantieri', 'fas fa-chart-bar', 'main_cantieri_barchart');
         yield MenuItem::linktoRoute('Portale Feedback', 'fas fa-comment-alt', 'homepage');
          } 
-         
+                
         yield MenuItem::section('Inserimento orari di lavoro')->setCssClass('list-group-item-dark');
         yield MenuItem::linkToRoute('Prepara mensilità', 'fas fa-calendar', 'planning_month');
         yield MenuItem::linkToCrud('Ore lavorate', 'fas fa-clock',  OreLavorate::class);

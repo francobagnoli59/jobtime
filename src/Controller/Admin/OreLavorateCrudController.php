@@ -685,6 +685,7 @@ class OreLavorateCrudController extends AbstractCrudController
                      ->orderBy('c.nameJob', 'ASC');
             },
             ])->setRequired(true)->setCustomOptions(array('widget' => 'native'));
+        $personaView = AssociationField::new('persona', 'Persona')->setCrudController(PersonaleCrudController::class);
         $persona = AssociationField::new('persona', 'Nome persona')
             ->setFormTypeOptions([
             'query_builder' => function (PersonaleRepository $pe) {
@@ -705,9 +706,9 @@ class OreLavorateCrudController extends AbstractCrudController
         $createdAt = DateTimeField::new('createdAt', 'Data ultimo aggiornamento')->setFormTypeOptions(['disabled' => 'true']);
         
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $azienda, $persona, $cantiere, $giorno, $dayOfWeek, $causale,  $orePianificate, $oreRegistrate, $isConfirmed];
+            return [$id, $azienda, $personaView, $cantiere, $giorno, $dayOfWeek, $causale,  $orePianificate, $oreRegistrate, $isConfirmed];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$panel1, $azienda, $persona, $cantiere, $giorno, $dayOfWeek, $causale, $orePianificate, $oreRegistrate, $isConfirmed,  $panel_ID, $id, $keyReference, $createdAt];
+            return [$panel1, $azienda, $personaView, $cantiere, $giorno, $dayOfWeek, $causale, $orePianificate, $oreRegistrate, $isConfirmed,  $panel_ID, $id, $keyReference, $createdAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
             return [$panel1, $azienda, $persona, $cantiere, $giorno, $dayOfWeek, $causale, $orePianificate, $oreRegistrate, $isConfirmed];
         } elseif (Crud::PAGE_EDIT === $pageName) {
