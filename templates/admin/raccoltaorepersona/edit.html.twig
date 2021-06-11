@@ -1,0 +1,148 @@
+{% extends '@EasyAdmin/page/content.html.twig' %} 
+
+
+{% block page_content %}
+
+  
+       {{ form_start(form, {'attr': {'id': form.vars.id}}  ) }}
+
+    <div class="row" id="table_jobtime_month"> 
+    <div class="col">
+    <h4> Aggiornamento ore  {{ fullName }} / {{ descPeriodo }} </h4>
+    <h5> Sono state pianificate {{ pianificato }} ore </h5>
+    <caption> Nel caso delle frazioni orarie, inserire gli orari con il punto (.) come separatore centesimale</caption>
+        
+    </div>
+        <aside>
+           <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save" aria-hidden="true"></i> {{ 'Conferma' }}
+           </button>
+        </aside>
+    </div>
+        <div class="form-error">
+            {{ form_errors(form) }}
+       </div>
+    {% if form.oreMeseCantieri is not null  %}
+    {% set numCantieri = 0 %}
+      {% for oreCantiere in form.oreMeseCantieri %}
+      {% set numCantieri = numCantieri + 1 %}  
+        <div class="row">
+            <div class="col" style='padding:2px' >
+                {% if numCantieri == 1  %}
+                {{ form_row(oreCantiere.cantiere,  {'attr': {'style': 'padding:2px ; width:150px' } }  ) }}
+                {% endif %}
+                {% if numCantieri != 1  %}
+                {{ form_widget(oreCantiere.cantiere,  {'attr': {'style': 'padding:2px ; width:150px' } }  ) }}
+                {% endif %}
+            </div>
+          {% if oreCantiere.oreGiornaliere is not null  %}
+            {% set count = 0 %}  
+            {% for oreGiornata in oreCantiere.oreGiornaliere %}
+              {% set count = count + 1 %}  
+            <div class="col" style='padding:1px' >
+
+                {% if form.tipogiorno.vars.value[count - 1] == 'F'  %}
+                    {% if numCantieri == 1  %}
+                      {{ form_row(oreGiornata, {'attr': {'style': 'padding:2px ; background-color:#FFE6DC' },  
+                      'label': form.nomegiorno.vars.value[count - 1] , 'label_attr': {'style': 'color:red ; padding-left:1px ; padding-right:0px '}  }) }}
+                    {% endif %} 
+                    {% if numCantieri != 1  %}
+                      {{ form_widget(oreGiornata, {'attr': {'style': 'padding:2px ; background-color:#FFE6DC' }  }) }}
+                    {% endif %}
+                {% endif %} 
+               
+                {% if form.tipogiorno.vars.value[count - 1] == 'L'  %}
+                    {% if numCantieri == 1  %}
+                      {{ form_row(oreGiornata, {'attr': {'style': 'padding:2px' }, 'label': form.nomegiorno.vars.value[count - 1] ,  'label_attr': {'style': 'padding-left:6px ; padding-right:2px'}   }) }}
+                    {% endif %}
+                    {% if numCantieri != 1  %}
+                      {{ form_widget(oreGiornata, {'attr': {'style': 'padding:2px' } }) }}
+                    {% endif %}
+                {% endif %} 
+
+                {% if form.tipogiorno.vars.value[count - 1] == 'P'  %}
+                    {% if numCantieri == 1  %}
+                      {{ form_row(oreGiornata, {'attr': {'style': 'padding:2px ; background-color:#E1F3FE' }, 'disabled': 'true', 
+                      'label': form.nomegiorno.vars.value[count - 1] , 'label_attr': {'style': ' padding-left:1px ; padding-right:0px '}  }) }}
+                    {% endif %} 
+                    {% if numCantieri != 1  %}
+                      {{ form_widget(oreGiornata, {'attr': {'style': 'padding:2px ; background-color:#E1F3FE'}, 'disabled': 'true',  }) }}
+                    {% endif %}
+                {% endif %} 
+
+                {% if form.tipogiorno.vars.value[count - 1] == 'N'  %}
+                    {% if numCantieri == 1  %}
+                      {{ form_row(oreGiornata, {'attr': {'style': 'padding:2px ; background-color:#EAEAEA' }, 'disabled': 'true', 
+                      'label': form.nomegiorno.vars.value[count - 1] , 'label_attr': {'style': ' padding-left:1px ; padding-right:0px '}  }) }}
+                    {% endif %} 
+                    {% if numCantieri != 1  %}
+                      {{ form_widget(oreGiornata, {'attr': {'style': 'padding:2px ; background-color:#EAEAEA'}, 'disabled': 'true',  }) }}
+                    {% endif %}
+                {% endif %} 
+
+            </div>
+            {% endfor %} 
+          {% endif %} 
+        </div> 
+     {% endfor %}
+
+      {% if form.altreCausali is not null  %}
+        {% set count = 0 %}  
+        <div class="row">
+         {% for totaleAltro in form.altreCausali %}
+              {% set count = count + 1 %} 
+              {% if count == 1  %} 
+               <div class="col" style='padding:2px' >
+                  {{ form_widget(totaleAltro,  {'attr': {'style': 'padding:2px ; width:150px ; background-color:#EAEAEA' }, 'disabled': 'true' }  ) }}
+              </div>
+              {% endif %}
+              {% if count != 1  %} 
+              <div class="col" style='padding:2px' >
+                  {{ form_widget(totaleAltro, {'attr': {'style': 'padding:2px ; background-color:#EAEAEA'}, 'disabled': 'true',  }) }}
+              </div>
+              {% endif %}
+         {% endfor %} 
+        </div>
+        {% endif %}
+
+      {% if form.totaleXGiorno is not null  %}
+        {% set count = 0 %}  
+        <div class="row">
+         {% for totaleDay in form.totaleXGiorno %}
+              {% set count = count + 1 %} 
+              {% if count == 1  %} 
+               <div class="col" style='padding:2px' >
+                  {{ form_widget(totaleDay,  {'attr': {'style': 'padding:2px ; width:150px ; background-color:#E1F3FE' }, 'disabled': 'true' }  ) }}
+              </div>
+              {% endif %}
+              {% if count > 1 and count < 33 %} 
+              <div class="col" style='padding:2px' >  
+                  {% if totaleDay.vars.value > 8  %} 
+                  {{ form_widget(totaleDay, {'attr': {'style': 'padding:2px ; background-color:#FF737C'}, 'disabled': 'true',  }) }}
+                  {% endif %}
+                  {% if totaleDay.vars.value <= 8  %} 
+                  {{ form_widget(totaleDay, {'attr': {'style': 'padding:2px ; background-color:#E1F3FE'}, 'disabled': 'true',  }) }}
+                  {% endif %}
+              </div>
+              {% endif %}
+              {% if count == 33 %} 
+              <div class="col" style='padding:2px' >  
+                  {% if totaleDay.vars.value > pianificato  %} 
+                  {{ form_widget(totaleDay, {'attr': {'style': 'padding:2px ; background-color:#FF737C'}, 'disabled': 'true',  }) }}
+                  {% endif %}
+                  {% if totaleDay.vars.value <= pianificato  %} 
+                  {{ form_widget(totaleDay, {'attr': {'style': 'padding:2px ; background-color:#E1F3FE'}, 'disabled': 'true',  }) }}
+                  {% endif %}
+              </div>
+              {% endif %}
+         {% endfor %} 
+        </div>
+        {% endif %}
+
+
+  {% endif %} 
+  {{ form_end(form) }}
+
+{% endblock %}
+
+ 

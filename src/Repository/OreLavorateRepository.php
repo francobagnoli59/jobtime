@@ -119,6 +119,58 @@ class OreLavorateRepository extends ServiceEntityRepository
             ])
         ;
     }
+
+    // conta se esistono ore registrate nel mese
+    public function countPersonaMonth($persona, $datestart, $dateend): int
+    {
+        return $this->getCountPersonaQueryBuilder($persona, false, $datestart, $dateend)->select('COUNT(ol.id)')->getQuery()->getSingleScalarResult();
+    }
+
+    private function getCountPersonaQueryBuilder($persona, $transfer, $datestart, $dateend): QueryBuilder
+    {
+        return $this->createQueryBuilder('ol')
+            ->andWhere('ol.isTransfer = :state ')
+            ->andWhere('ol.giorno >= :datestart')
+            ->andWhere('ol.giorno <= :dateend')
+            ->andWhere('ol.persona = :persona')
+            ->setParameters([
+                'state' => $transfer ,
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+                'persona' => $persona,
+            ])
+          
+        ;
+    }
+
+
+    // 'Ritorna per persona tutte le ore lavorate nel mese registrate (confermate e non) ma non trasferite
+    public function collectionPersonaMonth($persona, $datestart, $dateend): array
+    {
+        $query = $this->getHoursPersonaQueryBuilder($persona, false, $datestart, $dateend)->select('ol')->getQuery();
+        $subSetOreLavPersona = $query->getResult();
+        return $subSetOreLavPersona;
+    }
+
+
+    private function getHoursPersonaQueryBuilder($persona, $transfer, $datestart, $dateend): QueryBuilder
+    {
+        return $this->createQueryBuilder('ol')
+            ->andWhere('ol.isTransfer = :state ')
+            ->andWhere('ol.giorno >= :datestart')
+            ->andWhere('ol.giorno <= :dateend')
+            ->andWhere('ol.persona = :persona')
+            ->orderBy('ol.giorno', 'ASC')
+            ->addOrderBy('ol.causale', 'ASC')
+            ->setParameters([
+                'state' => $transfer ,
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+                'persona' => $persona,
+            ])
+          
+        ;
+    }
     // /**
     //  * @return OreLavorate[] Returns an array of OreLavorate objects
     //  */

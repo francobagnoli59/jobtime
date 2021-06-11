@@ -106,6 +106,7 @@ class PreparaMensilitaController extends AbstractController
             $arrayCantieri = []; // utilizzato per contare i cantieri
             $personaledataset = $entityManager->getRepository(Personale::class)->findBy(['azienda'=> $azienda]);
             foreach ($personaledataset as $personale) {
+                  // per test :  && ($personale->getId() === 1 || $personale->getId() === 2 || $personale->getId() === 52  )
                    // personale con flag assunto su true  
                   if ( $personale->getIsEnforce() === true ) {
                     // ciclo mese

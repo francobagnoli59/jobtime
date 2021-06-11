@@ -65,7 +65,7 @@ class PersonaleValidator
                 ->addViolation() ; }
         }
         if ($totday != 7 ) {
-            $context->buildViolation(sprintf('%s inserire 7 item rispettivamente dal lunedì alla domenica',$title, $totday))
+            $context->buildViolation(sprintf('%s inserire 7 item rispettivamente dal lunedì alla domenica',$title))
             ->addViolation() ;
         }
         
