@@ -170,7 +170,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Ore lavorate', 'fas fa-clock',  OreLavorate::class);
         yield MenuItem::linkToCrud('Elabora mensilità', 'fas fa-calendar-day', MesiAziendali::class);
         yield MenuItem::section();
-        yield MenuItem::linkToRoute('Aggiorna ore mese', 'fas fa-clock', 'person_hour_month');
+        yield MenuItem::linkToRoute('Aggiorna ore mese', 'fas fa-clock', 'person_hour_month', ['persona' => '1', 'anno' => '2021', 'mese' => '01']);
         yield MenuItem::section();
         yield MenuItem::section('Anagrafiche')->setCssClass('list-group-item-dark');
         yield MenuItem::linkToCrud('Cantieri', 'fas fa-building', Cantieri::class);

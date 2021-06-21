@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -23,11 +24,17 @@ class ModuliRaccoltaOreCantieriType extends AbstractType
                 'query_builder' => function (EntityRepository $ca) {
                 return $ca->createQueryBuilder('c')
                     ->orderBy('c.nameJob', 'ASC');   },
-                'choice_label' => 'nameJob',  'label' => 'Scegli il cantiere'
+                'choice_label' => 'nameJob',  'label' => 'Scegli il cantiere' , 
                 ])
+            ->add('prevIdPlanned', IntegerType::class, [
+                 'required' => false , 'row_attr' => ['style' => 'visibility:hidden']
+            ])   
             ->add('oreGiornaliere', CollectionType::class, [
                 // each entry in the array sono ore lavorate ordinarie
                 'entry_type' => TextType::class
+            ])
+            ->add('isOreConfermate', CollectionType::class, [
+                'entry_type' => HiddenType::class,  'required' => false , 'row_attr' => ['style' => 'visibility:hidden']
             ]);        
     }
 

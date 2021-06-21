@@ -14,7 +14,8 @@ use App\Repository\CantieriRepository;
 use App\Repository\PersonaleRepository;
 use App\ServicesRoutine\PhpOfficeStyle;
 use App\ServicesRoutine\DateUtility;
- 
+use App\Controller\RaccoltaOrePersonaController;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 
@@ -600,9 +601,12 @@ class OreLavorateCrudController extends AbstractCrudController
     
     public function configureActions(Actions $actions): Actions
     {
-          $add_orelavorate = Action::new('addOreLavorate', 'Aggiungi Ore lavorate', 'fa fa-calendar-plus')
+         $add_orelavorate = Action::new('addOreLavorate', 'Aggiungi Ore lavorate', 'fa fa-calendar-plus')
          ->linkToCrudAction('addOreLavorate')->setCssClass('btn')->displayIf(fn ($entity) => !$entity->getIsTransfer());
          
+         $planningRaccoltaOre = Action::new('raccoltaOreLavorate', 'Modulo raccolta ore', 'fa fa-calendar-week')
+         ->linkToCrudAction('raccoltaOreLavorate')->setCssClass('btn btn-secondary')->displayIf(fn ($entity) => !$entity->getIsTransfer());
+
          $confirmView = Action::new('confirmView', 'Conferma orari in elenco')
          ->setIcon('fa fa-clipboard-check')->setHtmlAttributes(['title' => 'Conferma gli orari dell\'elenco attuale (usare i filtri per la selezione desiderata)'])
          ->linkToCrudAction('confirmView')
@@ -620,7 +624,8 @@ class OreLavorateCrudController extends AbstractCrudController
              //   ->remove(Crud::PAGE_INDEX, Action::DELETE)
                 ->remove(Crud::PAGE_DETAIL, Action::DELETE)
                 ->add(Crud::PAGE_INDEX, $add_orelavorate)->add(Crud::PAGE_EDIT, $add_orelavorate)
-                ->add(Crud::PAGE_INDEX, $confirmView)  ->add(Crud::PAGE_INDEX, $riepilogoOre)
+                ->add(Crud::PAGE_INDEX, $planningRaccoltaOre)->add(Crud::PAGE_EDIT, $planningRaccoltaOre)
+                ->add(Crud::PAGE_INDEX, $confirmView)->add(Crud::PAGE_INDEX, $riepilogoOre)
                 // ...
                 ->add(Crud::PAGE_INDEX, Action::DETAIL)
                 // ->add(Crud::PAGE_DETAIL,)
@@ -655,6 +660,19 @@ class OreLavorateCrudController extends AbstractCrudController
             ->set('mese', $oreitem->getGiorno()->format('m'))
             ->set('giorno', $oreitem->getGiorno()->format('d'));
             return $this->redirect($url);
+    }
+
+    public function raccoltaOreLavorate(AdminContext $context)
+    {
+        $orelavorate = $context->getEntity()->getInstance();
+        $url = $this->adminUrlGenerator->unsetAll()
+            ->setRoute('person_hour_month', [
+            'persona' => $orelavorate->getPersona()->getId(),
+            'anno' => $orelavorate->getGiorno()->format('Y'),
+            'mese'=> $orelavorate->getGiorno()->format('m')
+            ])->generateUrl();
+           //  $this->addFlash('warning',  $url);
+            return new RedirectResponse($url);
     }
 
      public function configureFields(string $pageName): iterable

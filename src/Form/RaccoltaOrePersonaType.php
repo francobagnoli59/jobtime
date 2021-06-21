@@ -25,21 +25,27 @@ class RaccoltaOrePersonaType extends AbstractType
                 'entry_type' => HiddenType::class,  'mapped' => false, 'required' => false , 'row_attr' => ['style' => 'visibility:hidden']
             ])
             ->add('altreCausali', CollectionType::class, [
-                'entry_type' => TextType::class,  'mapped' => false, 'required' => false 
-            ])      
+                'entry_type' => TextType::class, 'disabled' => true, 'mapped' => false, 'required' => false 
+            ])
+            ->add('altreCausaliOreConfermate', CollectionType::class, [
+                'entry_type' => HiddenType::class,  'mapped' => false, 'required' => false , 'row_attr' => ['style' => 'visibility:hidden']
+            ])  
             ->add('totaleXGiorno', CollectionType::class, [
-                'entry_type' => TextType::class,  'mapped' => false, 'required' => false 
-            ])            
+                'entry_type' => TextType::class, 'disabled' => true, 'mapped' => false, 'required' => false 
+            ])                    
             ->add('oreMeseCantieri', CollectionType::class, [
-                'entry_type' => ModuliRaccoltaOreCantieriType::class
+                'entry_type' => ModuliRaccoltaOreCantieriType::class, 'required' => false , 'row_attr' => ['style' => 'visibility:hidden'],
+                'disabled' => $options['disabled_cantiere'],
             ])        
             ;
     }
 
+      
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
             'data_class' => RaccoltaOrePersone::class,
+            'disabled_cantiere' => false,
         ]);
     }
 }

@@ -26,6 +26,11 @@ class ModuliRaccoltaOreCantieri
     private $oreGiornaliere = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
     /**
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $isOreConfermate = [];
+
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $createdAt;
@@ -34,6 +39,11 @@ class ModuliRaccoltaOreCantieri
      * @ORM\ManyToOne(targetEntity=Cantieri::class)
      */
     private $cantiere;
+
+    /** 
+     * @ORM\Column(type="smallint", nullable=true, options={"default": 0})
+     */
+    private $prevIdPlanned;
 
     /**
      * @ORM\ManyToOne(targetEntity=RaccoltaOrePersone::class, inversedBy="oreMeseCantieri")
@@ -57,6 +67,18 @@ class ModuliRaccoltaOreCantieri
         return $this;
     }
 
+    public function getIsOreConfermate(): ?array
+    {
+        return $this->isOreConfermate;
+    }
+
+    public function setIsOreConfermate(array $isOreConfermate): self
+    {
+        $this->isOreConfermate = $isOreConfermate;
+
+        return $this;
+    }
+    
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -98,6 +120,18 @@ class ModuliRaccoltaOreCantieri
     public function setRaccoltaOrePersona(?RaccoltaOrePersone $raccoltaOrePersona): self
     {
         $this->raccoltaOrePersona = $raccoltaOrePersona;
+
+        return $this;
+    }
+
+    public function getPrevIdPlanned(): ?int
+    {
+        return $this->prevIdPlanned;
+    }
+
+    public function setPrevIdPlanned(?int $prevIdPlanned): self
+    {
+        $this->prevIdPlanned = $prevIdPlanned;
 
         return $this;
     }

@@ -2,13 +2,11 @@
 
 namespace App\Controller;
 
-use App\Entity\MesiAziendali;
-use App\Repository\MesiAziendaliRepository;
+
 use App\Entity\RaccoltaOrePersone;
-use App\Repository\RaccoltaOrePersoneRepository;
 use App\Entity\ModuliRaccoltaOreCantieri;
 use App\Entity\FestivitaAnnuali;
-use App\Entity\Aziende;
+// use App\Entity\Aziende;
 use App\Entity\Personale;
 use App\Entity\Cantieri;
 use App\Entity\Causali;
@@ -51,54 +49,31 @@ class RaccoltaOrePersonaController extends AbstractController
         $this->adminUrlGenerator = $adminUrlGenerator;
     }
 
-//  MesiAziendaliRepository $mesiAziendaliRepository
-
     /**
-     * @Route("/editMonth/mesepersona", methods="GET|POST", name="person_hour_month")
+     * @Route("/person_hour_month/persona/{persona}/anno/{anno}/mese/{mese}",  name="person_hour_month")
      */
-    public function editMonth(Request $request ): Response
+    public function editMonth(Request $request): Response
     {
-        /* $entityManager = $this->getDoctrine()->getManager();
-
-        $mesiaziendali = new MesiAziendali();
-        $azienda = $this->getUser()->getAziendadefault();
-        if ($azienda !== null ) {
-            $mesiaziendali->setAzienda($azienda);
-            }
-        $mesiaziendali->setIsHoursCompleted(false);
-        $mesiaziendali->setIsInvoicesCompleted(false);
-        $mesiaziendali->setCostMonthHuman(0)->setCostMonthMaterial(0)->setIncomeMonth(0)->setNumeroPersone(0)->setNumeroCantieri(0)
-        ->setOreLavoro(0)->setOrePianificate(0)->setOreStraordinario(0)->setOreImproduttive(0)->setOreIninfluenti(0); 
-                     
-        $form = $this->createForm(MesiAziendaliType::class, $mesiaziendali); */
-
-
+                
         $entityManager = $this->getDoctrine()->getManager();
 
         // elenco ore lavorate per persona per Id=1   ( da personalizzare con filtro persona / anno / mese)
-        $idPersona = 1 ;
+        
+        $idPersona =  $request->get('persona');
+        $anno =  $request->get('anno');
+        $mese =  $request->get('mese');
+       
+        //  $this->addFlash('info',  $idPersona.' '.$annoParm.' '.$meseParm);
+ 
         $personale = $entityManager->getRepository(Personale::class)->findOneBy(['id'=> $idPersona]);
         $fullName = $personale->getFullName();
-        $listaorari = $entityManager->getRepository(OreLavorate::class)->findBy(['persona'=> $personale]);
-
-        // Determina Anno e mese dal primo orario in lista
-        $lastdate = new \DateTime; 
-            $first = true; 
-            foreach ($listaorari as $orarioRecord) {
-                // data più recente nei risultati
-                if ($first === true) {
-                    $lastdate = $orarioRecord->getGiorno(); 
-                    $first = false; 
-                } else {  
-                    if ($orarioRecord->getGiorno() > $lastdate ) { $lastdate = $orarioRecord->getGiorno(); }
-                }
-            }  
-
+         
         // valori iniziali per preparazione periodo mensile (primo e ultimo giorno)
-        $anno = sprintf("%04d",  intval($lastdate->format('Y')));
-        $mese = $lastdate->format('m');
+        $annoInt = intval($anno);
+        $meseInt = intval($mese);
         $dateutility = new DateUtility ;
-        $limitiMese = $dateutility->calculateLimitMonth($anno, sprintf('%d', intval($lastdate->format('m')) ) );
+        // $limitiMese = $dateutility->calculateLimitMonth($anno, sprintf('%d', intval($lastdate->format('m')) ) );
+        $limitiMese = $dateutility->calculateLimitMonth($annoInt, $meseInt );
         $dataInizio = $limitiMese[1] ;
         $dataFine = $limitiMese[2] ;
 
@@ -110,15 +85,16 @@ class RaccoltaOrePersonaController extends AbstractController
         foreach ($arrayFestivita as $ar) {
             $gg = substr($ar,0,2);
             $mm = substr($ar,2,2);
-            $dateholiday = sprintf("%d-%'.02d-%'.02d", $anno, $mm, $gg );
+            $dateholiday = sprintf("%d-%'.02d-%'.02d", $annoInt, $mm, $gg );
             $dateFeste[] = $dateholiday;
         }
                     
         // prepara array (giorni del mese)
-        $arrDaysOfMonth = $this->daysOfMonth($lastdate, $dateFeste);
+        $arrDaysOfMonth = $this->daysOfMonth($annoInt, $meseInt, $dateFeste);
         $meseanno=array('','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre');//0 vuoto
-        $descPeriodo = $meseanno[intval($lastdate->format('m'))]. ' '.$anno ;
-        $giorninelmese = cal_days_in_month(CAL_GREGORIAN, intval($lastdate->format('m')) , intval($lastdate->format('Y')));
+        $descPeriodo = $meseanno[$meseInt]. ' '.$anno ;
+        // $giorninelmese = cal_days_in_month(CAL_GREGORIAN, intval($lastdate->format('m')) , intval($lastdate->format('Y')));
+        $giorninelmese = cal_days_in_month(CAL_GREGORIAN, $meseInt , $annoInt);
         $tipogiorno = [];
         $nomegiorno = [];
         $d = 0; $countDayMonth = 0;
@@ -144,8 +120,18 @@ class RaccoltaOrePersonaController extends AbstractController
             }  
         } 
 
-        // determina cantieri
+        // entity null
+        $raccoltaOrePersone = null;
+
+        // contiene id cantieri
         $cantierilavorati = [];
+        // contiene true se un orario risulta trasferito, blocca l'input su tutti i cantieri
+        // non dovrebbe essere possibile che si creino condizioni miste nello stesso mese (miste = ore lavorate trasferite e non trasferite)
+        $cantieriTrasferiti = false;
+
+        // per default rigo cantiere senza orari
+        $firstCantiere = null;
+
         // cerca per persona se ci sono ore registrate nel mese 
         $count = $entityManager->getRepository(OreLavorate::class)->countPersonaMonth($idPersona, $dataInizio, $dataFine);
         if ($count > 0) {
@@ -173,41 +159,58 @@ class RaccoltaOrePersonaController extends AbstractController
                     $raccoltaOrePersone = $entityManager->getRepository(RaccoltaOrePersone::class)->findOneByKeyReference($keyreference) ;
                     $deleteItems = $entityManager->getRepository(ModuliRaccoltaOreCantieri::class)->deleteOreCantieri($raccoltaOrePersone->getId());
                  }
-                 // totalizzatori
+                 // totalizzatori 
+                $othercau = ['Test causali',1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9];
                 $altreCausali = ['Altre causali',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+                $altreCausaliOreConfermate = [false,false,false,false,false,false,false,false,false,false,
+                false,false,false,false,false,false,false,false,false,false,false,false,false,
+                false,false,false,false,false,false,false,false,false,false];
                 $totaleXGiorno = ['TOTALI',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
                 $totalePianificato = 0 ; 
                 // ciclo per cantiere crea nuove raccolte ore
                 $cantierikeys = array_keys($cantierilavorati) ;
                 foreach ( $cantierikeys as $idCantiere) {
                    //
+                   if ($firstCantiere === null) { $firstCantiere = $idCantiere ;}
                     $nomeCantiere = $cantierilavorati[$idCantiere];
                     $cantiere = $entityManager->getRepository(Cantieri::class)->findOneBy(['id'=> $idCantiere]);
                     $oreMeseCantieri = new ModuliRaccoltaOreCantieri();
                         $oreMeseCantieri->setCantiere($cantiere);
+                        $oreMeseCantieri->setPrevIdPlanned($idCantiere);
                         // crea Array giorni del mese con ore registrate 
                         $totOre = 0 ;
                         $oreGiornaliere = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+                        $isOreConfermate = [false,false,false,false,false,false,false,false,false,false,
+                        false,false,false,false,false,false,false,false,false,false,false,false,false,
+                        false,false,false,false,false,false,false,false,false];
                         foreach ($oreLavorateCollection as $ol ) {
                             if ($idCantiere === $ol->getCantiere()->getId()) {
                                 $causale = $ol->getCausale()->getCode();
                                 $oreReg = $ol->getOreRegistrate();
                                 $orePian = $ol->getOrePianificate();
+                                if ($ol->getIsTransfer() === true) {
+                                    $cantieriTrasferiti = true ;
+                                }
                                 if( $orePian > 0) { $totalePianificato = $totalePianificato + $orePian ;}
                                 $giorno = $ol->getGiorno();
                                 $d = intval($giorno->format('d')) -1;
                                 if( $oreReg > 0) { 
                                     $totaleXGiorno[$d+1] = $totaleXGiorno[$d+1] + $oreReg ;
                                     if($causale === 'ORDI') { 
-                                    $oreGiornaliere[$d] = $oreReg; 
+                                    $isOreConfermate[$d] = $ol->getIsConfirmed(); 
+                                    $oreGiornaliere[$d] = $oreReg;
                                     $totOre = $totOre + $oreReg; 
-                                    } else { $altreCausali[$d+1] = $altreCausali[$d+1] + $oreReg ;}
+                                    } else { $altreCausali[$d+1] = $altreCausali[$d+1] + $oreReg ;
+                                        if ($ol->getIsConfirmed() === true) {
+                                          $altreCausaliOreConfermate[$d+1] = $ol->getIsConfirmed(); }
+                                    }
                                 }
                             }
                         }
                         $oreGiornaliere[31] = $totOre;
                         $oreMeseCantieri->setOreGiornaliere($oreGiornaliere);
-                        
+                        $oreMeseCantieri->setIsOreConfermate($isOreConfermate);
+
                         // verifica se esiste raccolta persona
                         $keyreference =  sprintf("%010d-%s-%s", $idPersona, $anno, $mese);
                         if ( $entityManager->getRepository(RaccoltaOrePersone::class)->findOneByKeyReference($keyreference) === null ) {
@@ -229,6 +232,7 @@ class RaccoltaOrePersonaController extends AbstractController
                         $entityManager->flush();
                         }
                     }
+                    
                     // sommatoria altre causali e totali 
                     $totAltreCausali = 0; $tot = 0;
                     for ($i=1 ; $i<=31; $i++) { 
@@ -236,251 +240,169 @@ class RaccoltaOrePersonaController extends AbstractController
                         $totAltreCausali = $totAltreCausali + $altreCausali[$i];
                      }
                     $totaleXGiorno[32] = $tot;
-                    $altreCausali[32] = $totAltreCausali;  
-                   
-                }
-        } 
-        else { 
-            // persona senza ore registrate nel mese
-            // VALUTARE SE INSERIRE RIGA CANTIERE VUOTA !!!
-        }      
-        
+                    $altreCausali[32] = $totAltreCausali;
+                 // aggiunge cantiere con orari tutti azzerati 
+                    $oreGiornaliere = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+                    $isOreConfermate = [false,false,false,false,false,false,false,false,false,false,
+                    false,false,false,false,false,false,false,false,false,false,false,false,false,
+                    false,false,false,false,false,false,false,false,false];
+                    $cantiere = $entityManager->getRepository(Cantieri::class)->findOneBy(['id'=> $firstCantiere]);
+                    $oreMeseCantieri = new ModuliRaccoltaOreCantieri();
+                    $oreMeseCantieri->setCantiere($cantiere);
+                    $oreMeseCantieri->setPrevIdPlanned(0);
+                    $oreMeseCantieri->setOreGiornaliere($oreGiornaliere);
+                    $oreMeseCantieri->setIsOreConfermate($isOreConfermate);
 
-/*         $row = 8;  // prima riga utile dopo l'intestazione colonne
-        // ciclo lettura orari personale 
-        $daConfermare = false;
-        $causaliLavoro = [];
-            // cerca per persona se ci sono ore lavorate CONFERMATE nel mese 
-            $count = $this->entityManager->getRepository(OreLavorate::class)->countPersonaConfirmed($idPersona, true , $dataInizio, $dataFine);
-            if ($count > 0) {
-                // Seleziona le ore lavorate e confermate del mese
-                $oreLavorateCollection = $this->entityManager->getRepository(OreLavorate::class)->collectionPersonaConfirmed($idPersona, true , $dataInizio, $dataFine);
-                // ciclo sulla collection delle ore lavorate
-                foreach ($oreLavorateCollection as $ol ){
-                    $giorno = $ol->getGiorno();
-                    $causale = $ol->getCausale()->getCode();
-                    $oreReg = $ol->getOreRegistrate(); 
-                    if(array_key_exists($causale,  $causaliLavoro) === false) { 
-                        $causaliLavoro[$causale] = $oreReg ;  }
-                        else { $causaliLavoro[$causale] = $causaliLavoro[$causale]+$oreReg ; }
-                    $idCantiere = $ol->getCantiere()->getId();
-                    // determina riga cantiere
-                    if(array_key_exists($idCantiere,  $cantierilavorati) === false) { 
-                        $cantierilavorati[$idCantiere] = $row ;
-                        $currentRow = $row ;
-                        $row++ ;
-                    } else { $currentRow = $cantierilavorati[$idCantiere] ; } 
-                    $d = intval($giorno->format('d'));
-                    $sheet->getCell($col[$d].sprintf('%s',$currentRow))->setValue($oreReg);
-                    $lettcol = $col[$d];
-                    if (in_array( $lettcol, $dayFestiviMese)) { 
-                        $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
-                    }
-                    else {
-                        $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowGrey());
-                        }
-                }
+                    $keyreference =  sprintf("%010d-%s-%s", $idPersona, $anno, $mese);
+                    $raccoltaOrePersone = $entityManager->getRepository(RaccoltaOrePersone::class)->findOneByKeyReference($keyreference) ;
+                        // registra le ore cantiere libero
+                    $raccoltaOrePersone->addOreMeseCantieri($oreMeseCantieri);
+                    $entityManager->persist($raccoltaOrePersone);
+                    $entityManager->flush();
+
+            }
+        } 
+               
+            if ($raccoltaOrePersone === null) { 
+             // non ci sono orari
+              $this->addFlash('warning',  'Raccolta ore non eseguibile, non ci sono ore ordinarie registrate '); 
+        
+            // Ritorna alle ore lavorate del personale
+            $url = $this->adminUrlGenerator->unsetAll()
+            ->setController(OreLavorateCrudController::class)
+            ->setAction(Action::INDEX)
+            ->set('filters[persona][comparison]', '=')
+            ->set('filters[persona][value]', $idPersona)
+            ->set('filters[isTransfer][value]', 0); // 0 = false, 1= true
+            return new RedirectResponse($url);
             }
 
-            // cerca per persona se ci sono ore lavorate da confermare nel mese 
-            $count = $this->entityManager->getRepository(OreLavorate::class)->countPersonaConfirmed($idPersona, false , $dataInizio, $dataFine);
-            if ($count > 0) {
-                $daConfermare = true;
-                // Seleziona le ore lavorate e NON confermate del mese
-                $oreLavorateCollection = $this->entityManager->getRepository(OreLavorate::class)->collectionPersonaConfirmed($idPersona, false , $dataInizio, $dataFine);
-                // ciclo sulla collection delle ore lavorate
-                foreach ($oreLavorateCollection as $ol ){
-                    $giorno = $ol->getGiorno();
-                    $causale = $ol->getCausale()->getCode();
-                    $orePian = $ol->getOrePianificate();
-                    if(array_key_exists($causale,  $causaliLavoro) === false) { 
-                        $causaliLavoro[$causale] = $orePian ;  }
-                        else { $causaliLavoro[$causale] = $causaliLavoro[$causale]+$orePian ; }
-                    $idCantiere = $ol->getCantiere()->getId();
-                    // determina riga cantiere
-                    if(array_key_exists($idCantiere,  $cantierilavorati) === false) { 
-                        $cantierilavorati[$idCantiere] = $row ;
-                        $currentRow = $row ;
-                        $row++ ;
-                    } else { $currentRow = $cantierilavorati[$idCantiere] ; } 
-                    $d = intval($giorno->format('d'));
-                    $sheet->getCell($col[$d].sprintf('%s',$currentRow))->setValue($orePian);
-                    $lettcol = $col[$d];
-                    if (in_array( $lettcol, $dayFestiviMese)) { 
-                        $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
-                    }
-                    else {
-                        $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->corsivo3());    
-                    
-                        }
-                        
-                }
-            } */
         
-
-
-
-
-        //
-       
-       // $raccoltaOrePersone = $entityManager->getRepository(RaccoltaOrePersone::class)->findOneBy(['id'=> '1']);
-        
-        $form = $this->createForm(RaccoltaOrePersonaType::class, $raccoltaOrePersone);
+        $form = $this->createForm(RaccoltaOrePersonaType::class, $raccoltaOrePersone, ['disabled_cantiere' =>  $cantieriTrasferiti ]);
         $form->get('tipogiorno')->setData($tipogiorno);
         $form->get('nomegiorno')->setData($nomegiorno);
-        if ($totAltreCausali === 0) {
-        $altreCausali = null;
-        }  
+
         $form->get('altreCausali')->setData($altreCausali);
+        $form->get('altreCausaliOreConfermate')->setData($altreCausaliOreConfermate);
         $form->get('totaleXGiorno')->setData($totaleXGiorno);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid() ) {
+        //    $this->addFlash('success',  'Raccolta ore confermata ');
 
-        /*     $entityManager->persist($mesiaziendali);
+        if ( $cantieriTrasferiti === false) {
+            $entityManager->persist($raccoltaOrePersone);
             $entityManager->flush();
-            $this->addFlash('success',  'Mensilità richiesta inserita nel consolidato mensile ');
-          
-            // dati pianificazione appena inserita
-            $azienda_id = $mesiaziendali->getAzienda()->getId();
-            $azienda = $mesiaziendali->getAzienda();
-            $festivitaAnnuale_id = $mesiaziendali->getFestivitaAnnuale();
-            $mese = $mesiaziendali->getMese();
-           
-            // legge le festività dell'anno
-            $festivita = $entityManager->getRepository(FestivitaAnnuali::class)->findOneBy(['id'=> $festivitaAnnuale_id]);
-            $anno = $festivita->getAnno();
 
-            // costruisce keyreference mese anzindale appena inserito
-            $keyReference = sprintf("%010d-%s-%s", $azienda_id, $anno, $mese);
+            // Rilegge il modulo raccolta ore e aggiorna le ore lavorate
+            $raccoltaOrePersone = $entityManager->getRepository(RaccoltaOrePersone::class)->findOneByKeyReference($keyreference) ;
+            $oreMesiCantieriCollection =  $raccoltaOrePersone->getOreMeseCantieri();
+            // scorre la collection aggiornando ogni giorno per le ore ordinarie
+            foreach ($oreMesiCantieriCollection as $mroc ) {
+                $oreGiornaliere = $mroc->getOreGiornaliere();
+                if ($mroc->getPrevIdPlanned() > 0 ) {
+                // raccolta ore su cantiere pianificato
+                    if ($mroc->getPrevIdPlanned() ===  $mroc->getCantiere()->getId() ) {
+                        // stesso cantiere (non modificato)
+                        for ($i=1 ; $i<=$giorninelmese; $i++) { 
+                            $keyRefggLav = sprintf("%010d-%010d-%s-%s-%02d-ORDI", $mroc->getCantiere()->getId(), $raccoltaOrePersone->getPersona()->getId(), $anno, $mese, $i );
+                            $orelavorate = $entityManager->getRepository(OreLavorate::class)->findOneByKeyReference($keyRefggLav) ;
+                            if ($orelavorate === null) {
+                                // giorno non registrato in ore lavorate, lo deve inserire se ore > 0
+                                if ($oreGiornaliere[$i-1] > 0) {
+                                    $orelavorate = new Orelavorate();
+                                    $orelavorate->setAzienda($personale->getAzienda());
+                                    $orelavorate->setCantiere($mroc->getCantiere());
+                                    $orelavorate->setPersona($raccoltaOrePersone->getPersona());
+                                    $orelavorate->setIsConfirmed(false);
+                                    $orelavorate->setIsTransfer(false);
 
-            $arrayFestivita = $festivita->getDateFestivita();
-            // Costruisce date festività
-            $dateFeste = [];
-            foreach ($arrayFestivita as $ar) {
-                $gg = substr($ar,0,2);
-                $mm = substr($ar,2,2);
-                $dateholiday = mktime(0,0,0,$mm,$gg,$anno);
-                $dateFeste[] = $dateholiday;
-            }
-           
-            // valori iniziali per preparazione fine mese
-            $dateutility = new DateUtility ;
-            $limitiMese = $dateutility->calculateLimitMonth($anno, $mese);
-            $finemese = $limitiMese[0] ;
-                     
-            // per ogni dipendente dell'azienda richiesta inserisce le ore pianificate nel mese impostato
-            $count = 0;   // contatore items
-            $countPersone = 0; // contatore persone
-            $arrayCantieri = []; // utilizzato per contare i cantieri
-            $personaledataset = $entityManager->getRepository(Personale::class)->findBy(['azienda'=> $azienda]);
-            foreach ($personaledataset as $personale) {
-                   // personale con flag assunto su true  
-                  if ( $personale->getIsEnforce() === true ) {
-                    // ciclo mese
-                    $countPersone++ ;
-                    for ($i = 1; $i <= $finemese ; $i++) {   
-                        $giorno = mktime(0,0,0,$mese,$i,$anno);
-                        $num_gg=(int)date("N",$giorno);//1 (for Monday) through 7 (for Sunday)
+                                    $keyCausale = 'ORDI';
+                                    $orelavorate->setCausale($entityManager->getRepository(Causali::class)->findOneBy(['code' => $keyCausale]));
+                                    $orelavorate->setOrePianificate(0);
+                                    $orelavorate->setOreRegistrate($oreGiornaliere[$i-1]);
+                                    $date = new \DateTime();
+                                    $date->setTime(0,0,0);
+                                    $date->setDate(intval($anno), intval($mese), $i);
+                                    $orelavorate->setGiorno($date);
+                                    // Verifica data licenziamento 
+                                        if ($personale->getDateDismissal() === null || $date <= $personale->getDateDismissal() ) {
+                                            // inserisce ore lavorate
+                                            $entityManager->persist($orelavorate);
+                                            $entityManager->flush();
+                                        }             
+                                    } 
+                            } else {
+                                // giorno presente in ore lavorate, aggiorna se differenza sulle ore
+                                // (ammette anche zero) essendo cantiere pianificato, altrimenti salta
+                                if ($orelavorate->getOreRegistrate() !== $oreGiornaliere[$i-1] ) {
+                                    $orelavorate->setOreRegistrate($oreGiornaliere[$i-1]) ;
+                                    $entityManager->persist($orelavorate);
+                                    $entityManager->flush();
+                                }
+                            }
+                        } //end for stesso cantiere
+                    } else {
+                         // modificato cantiere pianificato su ore già assegnate, determina id record dal precedente,
+                         // e aggiorna tutti gli orari modificando il cantiere.
+                         for ($i=1 ; $i<=$giorninelmese; $i++) { 
+                            $keyRefggLav = sprintf("%010d-%010d-%s-%s-%02d-ORDI", $mroc->getPrevIdPlanned(), $raccoltaOrePersone->getPersona()->getId(), $anno, $mese, $i );
+                            $orelavorate = $entityManager->getRepository(OreLavorate::class)->findOneByKeyReference($keyRefggLav) ;
+                                if ($orelavorate !== null) {
+                                $orelavorate->setOreRegistrate($oreGiornaliere[$i-1]) ;
+                                $orelavorate->setCantiere(
+                                    $entityManager->getRepository(Cantieri::class)->findOneBy(['id'=>  $mroc->getCantiere()->getId()])  
+                                );
+                                $entityManager->persist($orelavorate);
+                                $entityManager->flush();
+                                }   
+                        }
+                    }
+                } else {
+                    // cantiere non pianificato, verifica/inserisce aggiorna orari se > 0
+                    for ($i=1 ; $i<=$giorninelmese; $i++) { 
+                        if ( $oreGiornaliere[$i-1] > 0 ) {
+                            $keyRefggLav = sprintf("%010d-%010d-%s-%s-%02d-ORDI", $mroc->getCantiere()->getId(), $raccoltaOrePersone->getPersona()->getId(), $anno, $mese, $i );
+                            $orelavorate = $entityManager->getRepository(OreLavorate::class)->findOneByKeyReference($keyRefggLav) ;
+                            if ($orelavorate === null) {
+                                // giorno e cantiere non esistente, inserisce
+                                $orelavorate = new Orelavorate();
+                                $orelavorate->setAzienda($personale->getAzienda());
+                                $orelavorate->setCantiere($mroc->getCantiere());
+                                $orelavorate->setPersona($raccoltaOrePersone->getPersona());
+                                $orelavorate->setIsConfirmed(false);
+                                $orelavorate->setIsTransfer(false);
 
-                        // ciclo su planning settimanale essendo assegnato ad unico cantiere
-                        if ( $personale->getCantiere() !== null ) {
-                        $orelavorate = new Orelavorate();
-                        $orelavorate->setAzienda($azienda);
-                        $orelavorate->setCantiere($personale->getCantiere());
-                        $orelavorate->setPersona($entityManager->getRepository(Personale::class)->findOneBy(['id' => $personale->getId()]));
-                        $orelavorate->setIsConfirmed(false);
-                        $orelavorate->setIsTransfer(false);
-                        
-                        // aggiunge id cantiere
-                        array_push($arrayCantieri, $personale->getCantiere()->getId());
-                       
-                        // planning settimana sulla persona    
-                        $planweek = $personale->getPlanHourWeek();
-                            if ( $planweek[$num_gg - 1] != null && $planweek[$num_gg - 1] != '0') { 
                                 $keyCausale = 'ORDI';
-                                if ($num_gg <= 6 ) { 
-                                    if (in_array($giorno, $dateFeste)) { $keyCausale = '*EF';  $orelavorate->setIsConfirmed(true); }
-                                } 
                                 $orelavorate->setCausale($entityManager->getRepository(Causali::class)->findOneBy(['code' => $keyCausale]));
-                                $orelavorate->setOrePianificate($planweek[$num_gg - 1]);
-                                $orelavorate->setOreRegistrate($planweek[$num_gg - 1]);
+                                $orelavorate->setOrePianificate(0);
+                                $orelavorate->setOreRegistrate($oreGiornaliere[$i-1]);
                                 $date = new \DateTime();
                                 $date->setTime(0,0,0);
-                                $date->setDate($anno, $mese, $i);
+                                $date->setDate(intval($anno), intval($mese), $i);
                                 $orelavorate->setGiorno($date);
                                 // Verifica data licenziamento 
                                     if ($personale->getDateDismissal() === null || $date <= $personale->getDateDismissal() ) {
-                                        // scrive la pianificazione
+                                        // inserisce ore lavorate
                                         $entityManager->persist($orelavorate);
                                         $entityManager->flush();
-                                        $count++ ;
                                     }             
-                            }
-                        }  // unico cantiere
-                        else {
-                        // ciclo su Piani orari per cantieri  
-                            if ($personale->getCantiere() === null) {
-                                $oreCantieri = $personale->getPianoOreCantieri();
-                                foreach ($oreCantieri as $oc) {
-                                    if ($oc->getPersona()->getId() === $personale->getId() && $oc->getOrePreviste() > 0 && $oc->getdayOfWeek() === $num_gg) {
-                                            
-                                       $orelavorate = new Orelavorate();
-                                       $orelavorate->setAzienda($azienda);
-                                       $orelavorate->setCantiere($oc->getCantiere());
-                                       $orelavorate->setPersona($oc->getPersona());
-                                       $orelavorate->setIsConfirmed(false);
-                                       $orelavorate->setIsTransfer(false);
-       
-                                       // aggiunge id cantiere
-                                       array_push($arrayCantieri, $oc->getCantiere()->getId());
-
-                                       $keyCausale = 'ORDI';
-                                       if ($num_gg <= 6 ) { 
-                                           if (in_array($giorno, $dateFeste)) { $keyCausale = '*EF';  $orelavorate->setIsConfirmed(true); }
-                                       } 
-                                       $orelavorate->setCausale($entityManager->getRepository(Causali::class)->findOneBy(['code' => $keyCausale]));
-                                       $orelavorate->setOrePianificate($oc->getOrePreviste());
-                                       $orelavorate->setOreRegistrate($oc->getOrePreviste());
-                                       $date = new \DateTime();
-                                       $date->setTime(0,0,0);
-                                       $date->setDate($anno, $mese, $i);
-                                       $orelavorate->setGiorno($date);
-                                       // Verifica data licenziamento 
-                                           if ($personale->getDateDismissal() === null || $date <= $personale->getDateDismissal() ) {
-                                               // scrive la pianificazione
-                                               $entityManager->persist($orelavorate);
-                                               $entityManager->flush();
-                                               $count++ ;
-                                           }             
-       
-                                       } // stessa persona, ore Previste e stesso giorno della settimana
-                                    } // ciclo su collection PianoOreCantieri
-
-                            }  // Piani orari per cantieri
-                        }
-
-                    }   // ciclo mese
-                  }   // enforce = true
-       
-            } // ciclo sul personale dell'azienda
-
-            // Aggiorna numero persone / cantieri
-            $mesiaziendali = $mesiAziendaliRepository->findOneByKeyReference($keyReference);
-            $mesiaziendali->setNumeroPersone($countPersone)->setNumeroCantieri(count(array_unique($arrayCantieri)));
-            $entityManager->persist($mesiaziendali);
-            $entityManager->flush();
-
-            $this->addFlash('success', sprintf('Sono stati inseriti %d item di pianificazione ore mensili relative all\'azienda richiesta.' , $count ));
-            */         
-           // $url = $this->adminUrlGenerator->unsetAll();   senza altri metodi ritorna all'index del dashboard
-           
-        
-
-           $entityManager->persist($raccoltaOrePersone);
-           $entityManager->flush();
-
-           $url = $this->adminUrlGenerator->unsetAll()
+                                } 
+                            //
+                            else {
+                                // giorno esistente, aggiorna orario
+                                $orelavorate->setOreRegistrate($oreGiornaliere[$i-1]) ;
+                                $entityManager->persist($orelavorate);
+                                $entityManager->flush();   
+                                }
+                        } //orario inserito (> 0)
+                    } // end for cantiere non pianificato
+                }
+            } //end for each cantieri collection
+        } // mese non ancora trasferito
+        else {  $this->addFlash('warning',  'Raccolta ore non modificabile, la mensilità è già stata consolidata e trasferita. ');  }
+        // Ritorna alle ore lavorate del personale
+        $url = $this->adminUrlGenerator->unsetAll()
            ->setController(OreLavorateCrudController::class)
            ->setAction(Action::INDEX)
            ->set('filters[persona][comparison]', '=')
@@ -491,28 +413,32 @@ class RaccoltaOrePersonaController extends AbstractController
         return new RedirectResponse($url);
 
         } // premuto submit
-        
 
+       
         return $this->render('admin/raccoltaorepersona/edit.html.twig', [
             'fullName' => $fullName,
             'descPeriodo' => $descPeriodo,
             'pianificato' => $totalePianificato,
             'form' => $form->createView(),
         ]);
+
+        
+
     }
 
-    public function daysOfMonth($lastdate, $dateFeste): array
+   
+    public function daysOfMonth($annoP, $meseP, $dateFeste): array
     {
         $giornodellasettimana=array('','Lu','Ma','Me','Gi','Ve','Sa','Do');//0 vuoto
         $arrDays = [];
-        $mese = intval($lastdate->format('m')) ; $anno = intval($lastdate->format('Y'));
-        $numday = cal_days_in_month(CAL_GREGORIAN, $mese , $anno);
+        // $mese = intval($lastdate->format('m')) ; $anno = intval($lastdate->format('Y'));
+        $numday = cal_days_in_month(CAL_GREGORIAN, $meseP , $annoP);
         for ($ii=1; $ii<=$numday; $ii++) {
             // $giorno = new \DateTime;
-            $giorno=mktime(0,0,0,$mese,$ii,$anno);
+            $giorno=mktime(0,0,0,$meseP,$ii,$annoP);
             $num_gg=(int)date("N",$giorno);
             $dayColumn = sprintf('%d %s', $ii, $giornodellasettimana[$num_gg] );
-            $day = sprintf("%d-%'.02d-%'.02d", $anno, $mese, $ii );
+            $day = sprintf("%d-%'.02d-%'.02d", $annoP, $meseP, $ii );
             if ($num_gg === 6 || $num_gg === 7 || in_array($day, $dateFeste) === true ) { $festa = true ;} else {$festa = false ; }
             $arrDays[] = [$day => $dayColumn, 'festa' => $festa ]; 
             // $arrDays[] = $dayColumn;
