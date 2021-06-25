@@ -31,6 +31,9 @@ class PhpOfficeStyle
         case "rowGrey":
           return $this->rowGrey();
           break;
+        case "rowLightGreen":
+          return $this->rowLightGreen();
+          break;
         case "rowCoral":
           return $this->rowCoral();
           break;
@@ -214,6 +217,27 @@ class PhpOfficeStyle
       return $styleArray;
     }
     
+    public function rowLightGreen(): array
+    {
+     // Calibri 11 nero, sfondo sfumato verdolino, senza bordi, allineato al centro
+      $styleArray = [
+        'font' => [
+            'size' => 11,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'FF02B875',
+            ],
+          ],
+      ];
+      return $styleArray;
+    }
+    
+
     public function rowCoral(): array
     {
       // Calibri 11 nero, sfondo sfumato corallo, senza bordi, allineato al centro

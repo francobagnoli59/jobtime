@@ -17,7 +17,7 @@ class RaccoltaOrePersoneValidator
         foreach ($moduliRaccoltaOreCantieri as $oreCantiere) {
             // Controlla piano ore settimanali
             $hourdayarray = $oreCantiere->getOreGiornaliere();
-            $anno = $oreCantiere->getRaccoltaOrePersona()->getAnno();
+            $anno = $oreCantiere->getRaccoltaOrePersona()->getAnno()->getAnno();
             $mese = $oreCantiere->getRaccoltaOrePersona()->getMese();
             $giorninelmese = cal_days_in_month(CAL_GREGORIAN, intval($mese) , intval($anno));
             $itemDay = 0;

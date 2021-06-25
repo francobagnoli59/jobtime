@@ -350,8 +350,8 @@ class MesiAziendaliCrudController extends AbstractCrudController
             ->setEntityLabelInSingular($LabelSing)
             ->setEntityLabelInPlural($LabelPlur)
             ->setPageTitle(Crud::PAGE_INDEX,  $Labellist)
-            ->setPageTitle(Crud::PAGE_DETAIL, fn (MesiAziendali $name) => sprintf('Consolidato mensile %s <b>%s</b>',  $name ))
-            ->setPageTitle(Crud::PAGE_EDIT, fn (MesiAziendali $name) => sprintf('Consolidato mensile %s <b>%s</b>',  $name->getKeyReference()))
+            ->setPageTitle(Crud::PAGE_DETAIL, fn (MesiAziendali $name) => sprintf('Consolidato mensile <b>%s</b>',  $name ))
+            ->setPageTitle(Crud::PAGE_EDIT, fn (MesiAziendali $name) => sprintf('Consolidato mensile <b>%s</b>',  $name->getKeyReference()))
             ->setSearchFields(['festivitaAnnuale', 'mese', 'azienda' ])
             ->setDefaultSort(['festivitaAnnuale' => 'ASC', 'mese' => 'ASC', 'azienda' => 'ASC'])
             ->showEntityActionsAsDropdown();

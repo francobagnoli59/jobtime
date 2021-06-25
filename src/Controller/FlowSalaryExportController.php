@@ -78,7 +78,7 @@ class FlowSalaryExportController extends AbstractController
                      if ( $this->entityManager->getRepository(ConsolidatiPersonale::class)->findOneByKeyReference($keyRef_Pers_MeseAz) !== null ) {
                         
                         $matricola = $persona->getMatricola();
-
+                        $trasferte = $persona->getNumTrasferteItalia();
                         // calcola ore giornaliere teoriche      
                         $oreweek = $persona->getTotalHourWeek();
                         $hourdayarray = $persona->getPlanHourWeek();
@@ -137,10 +137,21 @@ class FlowSalaryExportController extends AbstractController
                                 $oreReg = sprintf('%010d', $ore);
                                 $linea = $linea.'H0000000000'.$oreReg.'0000000000'.$oreggteoriche.'G '; // da valutare come aggungere S come inizio malattia
                                 $list[] = $linea ;
+                                // tratta trasferte italia se presenti
+                                if ($trasferte > 0) {
+                                    // prepara prima parte della linea
+                                    $causale = '800';
+                                    $lc = strlen($causale);  $causaleFill = (5 - $lc);
+                                    $linea = $this->prepareLine($codicePaghe, $matricola, $causale, $causaleFill, $giorno);  // inserisce ultimo giorno trattato
+                                    // assegna quantita
+                                    $num = $trasferte*100;
+                                    $numtrasf = sprintf('%010d', $num);
+                                    $linea = $linea.'Q0000000000'.$numtrasf.'0000000000'.$oreggteoriche.'M '; 
+                                    $list[] = $linea ;
+                                }
                                 // set Transfer a true per persona, filtra i record con isTransfer = false
                                 $itemTransfer = $this->entityManager->getRepository(OreLavorate::class)->setMonthPersonaTransfer($persona, false , $dataInizio, $dataFine);
                                 $countTransfer += $itemTransfer;
-
                              } // nessuna ora da confermare
                         } // ore confermate
                     } // persona assunta

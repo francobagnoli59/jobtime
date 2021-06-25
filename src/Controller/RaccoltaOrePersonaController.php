@@ -65,6 +65,15 @@ class RaccoltaOrePersonaController extends AbstractController
        
         //  $this->addFlash('info',  $idPersona.' '.$annoParm.' '.$meseParm);
  
+        // Link per ritornare alle ore lavorate del personale
+        $linkPersona = $this->adminUrlGenerator->unsetAll()
+        ->setController(OreLavorateCrudController::class)
+        ->setAction(Action::INDEX)
+        ->set('filters[persona][comparison]', '=')
+        ->set('filters[persona][value]', $idPersona)
+        ->set('filters[isTransfer][value]', 0); // 0 = false, 1= true
+        // return new RedirectResponse($url);
+
         $personale = $entityManager->getRepository(Personale::class)->findOneBy(['id'=> $idPersona]);
         $fullName = $personale->getFullName();
          
@@ -401,24 +410,23 @@ class RaccoltaOrePersonaController extends AbstractController
             } //end for each cantieri collection
         } // mese non ancora trasferito
         else {  $this->addFlash('warning',  'Raccolta ore non modificabile, la mensilità è già stata consolidata e trasferita. ');  }
-        // Ritorna alle ore lavorate del personale
-        $url = $this->adminUrlGenerator->unsetAll()
-           ->setController(OreLavorateCrudController::class)
-           ->setAction(Action::INDEX)
-           ->set('filters[persona][comparison]', '=')
-           ->set('filters[persona][value]', $idPersona)
-           ->set('filters[isTransfer][value]', 0); // 0 = false, 1= true
-       //    return $this->redirect($url);   
-          
-        return new RedirectResponse($url);
-
-        } // premuto submit
-
        
+        $url = $this->adminUrlGenerator->unsetAll()
+        ->setRoute('person_hour_month', [
+        'persona' => $idPersona,
+        'anno' => $anno,
+        'mese'=> $mese
+        ])->generateUrl();
+      
+        return new RedirectResponse($url);
+               
+        } // premuto submit 
+    
         return $this->render('admin/raccoltaorepersona/edit.html.twig', [
             'fullName' => $fullName,
             'descPeriodo' => $descPeriodo,
             'pianificato' => $totalePianificato,
+            'linkToName' => $linkPersona,
             'form' => $form->createView(),
         ]);
 

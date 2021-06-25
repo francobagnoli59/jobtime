@@ -390,12 +390,12 @@ class OreLavorateCrudController extends AbstractCrudController
                                 $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
                             }
                             else {
-                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowGrey());
+                                $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowLightGreen());
                              }
                         }
                     }
 
-                    // cerca per persona se ci sono ore lavorate da confrmare nel mese 
+                    // cerca per persona se ci sono ore lavorate da confermare nel mese 
                     $count = $this->entityManager->getRepository(OreLavorate::class)->countPersonaConfirmed($idPersona, false , $dataInizio, $dataFine);
                     if ($count > 0) {
                         $daConfermare = true;
@@ -405,10 +405,11 @@ class OreLavorateCrudController extends AbstractCrudController
                         foreach ($oreLavorateCollection as $ol ){
                             $giorno = $ol->getGiorno();
                             $causale = $ol->getCausale()->getCode();
+                            $oreReg = $ol->getOreRegistrate();
                             $orePian = $ol->getOrePianificate();
                             if(array_key_exists($causale,  $causaliLavoro) === false) { 
                                 $causaliLavoro[$causale] = $orePian ;  }
-                                else { $causaliLavoro[$causale] = $causaliLavoro[$causale]+$orePian ; }
+                                else { $causaliLavoro[$causale] = $causaliLavoro[$causale]+$oreReg ; }
                             $idCantiere = $ol->getCantiere()->getId();
                             // determina riga cantiere
                             if(array_key_exists($idCantiere,  $cantierilavorati) === false) { 
@@ -417,7 +418,7 @@ class OreLavorateCrudController extends AbstractCrudController
                                 $row++ ;
                             } else { $currentRow = $cantierilavorati[$idCantiere] ; } 
                             $d = intval($giorno->format('d'));
-                            $sheet->getCell($col[$d].sprintf('%s',$currentRow))->setValue($orePian);
+                            $sheet->getCell($col[$d].sprintf('%s',$currentRow))->setValue($oreReg);
                             $lettcol = $col[$d];
                             if (in_array( $lettcol, $dayFestiviMese)) { 
                                 $spreadsheet->getSheet($indexsheet)->getStyle($col[$d].sprintf('%s',$currentRow))->applyFromArray($styleArray->rowCoral()); 
