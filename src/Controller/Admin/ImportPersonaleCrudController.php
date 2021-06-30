@@ -184,7 +184,7 @@ class ImportPersonaleCrudController extends AbstractCrudController
                                 if ($testContratto[0] !== 'OK') { $commentiImport[] = $testContratto[1] ;}
                                 break;
                             case "DataScadenzaContratto":
-                                if ($testContratto[0] === 'OK' && ($testContratto[1] === 'D' || $testContratto[0] === 'I')) {
+                                if ($testContratto[0] === 'OK' && ($testContratto[1] === 'D' || $testContratto[1] === 'T')) {
                                     $testScadenzaContratto = $this->controlDataScadenzaContratto($cellValue, $row);
                                     if ($testScadenzaContratto[0] !== 'OK') { $commentiImport[] = $testScadenzaContratto[1] ;}
                                 }
